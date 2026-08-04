@@ -14,10 +14,18 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 import feedparser
+import requests
+from bs4 import BeautifulSoup
 
 LOOKBACK_HOURS = 24
 MAX_ITEMS_PER_SECTION = 4
 MIN_ITEMS_PER_SECTION = 2
+SCRAPE_TIMEOUT_SECONDS = 6
+SCRAPE_MIN_CHARS = 80
+USER_AGENT = (
+    "Mozilla/5.0 (compatible; ManojDailyBriefingBot/1.0; "
+    "+https://github.com/WilliamGitty/manoj-daily-briefing)"
+)
 
 BBC_TECH = "http://feeds.bbci.co.uk/news/technology/rss.xml"
 TECHCRUNCH_AI = "https://techcrunch.com/category/artificial-intelligence/feed/"
@@ -54,11 +62,47 @@ def clean_text(raw):
     return text
 
 
-def first_two_sentences(text):
+MAX_SUMMARY_CHARS = 500
+
+
+def trim_summary(text):
     if not text:
         return ""
     parts = re.split(r"(?<=[.!?])\s+", text)
-    return " ".join(parts[:2]).strip()
+    out = []
+    length = 0
+    for part in parts:
+        if out and length + len(part) > MAX_SUMMARY_CHARS:
+            break
+        out.append(part)
+        length += len(part) + 1
+    return " ".join(out).strip()
+
+
+def scrape_article_paragraph(url):
+    """Fetch the linked article and pull its opening real body text.
+
+    Returns None on any failure so callers can fall back to the feed's own
+    teaser summary. Never fabricates text - only extracts what's actually
+    on the page.
+    """
+    try:
+        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=SCRAPE_TIMEOUT_SECONDS)
+        if resp.status_code != 200:
+            return None
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for tag in soup(["script", "style", "nav", "aside", "footer", "header", "figure"]):
+            tag.decompose()
+        container = soup.find("article") or soup.body
+        if container is None:
+            return None
+        paragraphs = [p.get_text(" ", strip=True) for p in container.find_all("p")]
+        paragraphs = [p for p in paragraphs if len(p) > 40]
+        if not paragraphs:
+            return None
+        return trim_summary(" ".join(paragraphs))
+    except requests.RequestException:
+        return None
 
 
 def entry_published(entry):
@@ -93,7 +137,7 @@ def fetch_recent_items(feed_url, cutoff, keyword=None):
         if published is None or published < cutoff:
             continue
         title = clean_text(entry.get("title", ""))
-        summary = first_two_sentences(clean_text(entry.get("summary", entry.get("description", ""))))
+        summary = trim_summary(clean_text(entry.get("summary", entry.get("description", ""))))
         link = entry.get("link", "")
         if link in seen_links:
             continue
@@ -131,6 +175,9 @@ def build_sections():
         picked = deduped[:MAX_ITEMS_PER_SECTION]
         for item in picked:
             used_links.add(item["link"])
+            scraped = scrape_article_paragraph(item["link"])
+            if scraped and len(scraped) > max(len(item["summary"]), SCRAPE_MIN_CHARS):
+                item["summary"] = scraped
 
         rendered_sections.append({"title": section["title"], "items": picked})
 
