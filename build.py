@@ -38,7 +38,7 @@ USER_AGENT = (
 )
 
 BBC_TECH = "http://feeds.bbci.co.uk/news/technology/rss.xml"
-VERGE_TECH = "https://www.theverge.com/rss/index.xml"
+VERGE_TECH = "https://www.theverge.com/rss/tech/index.xml"
 ARSTECHNICA_TECH = "https://feeds.arstechnica.com/arstechnica/index"
 
 TECHCRUNCH_AI = "https://techcrunch.com/category/artificial-intelligence/feed/"
