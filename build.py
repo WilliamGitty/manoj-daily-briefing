@@ -28,26 +28,60 @@ USER_AGENT = (
 )
 
 BBC_TECH = "http://feeds.bbci.co.uk/news/technology/rss.xml"
+VERGE_TECH = "https://www.theverge.com/rss/index.xml"
+ARSTECHNICA_TECH = "https://feeds.arstechnica.com/arstechnica/index"
+
 TECHCRUNCH_AI = "https://techcrunch.com/category/artificial-intelligence/feed/"
+VERGE_AI = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+ARSTECHNICA_AI = "https://arstechnica.com/ai/feed/"
+
 BBC_POLITICS = "http://feeds.bbci.co.uk/news/politics/rss.xml"
+GUARDIAN_POLITICS = "https://www.theguardian.com/politics/rss"
+FT_POLITICS = "https://www.ft.com/political-fix?format=rss"
+ECONOMIST_BRITAIN = "https://www.economist.com/britain/rss.xml"
+
 BBC_WORLD = "http://feeds.bbci.co.uk/news/world/rss.xml"
+GUARDIAN_WORLD = "https://www.theguardian.com/world/rss"
+AL_JAZEERA = "https://www.aljazeera.com/xml/rss/all.xml"
+ECONOMIST_INTERNATIONAL = "https://www.economist.com/international/rss.xml"
+
 BBC_HEALTH = "http://feeds.bbci.co.uk/news/health/rss.xml"
+SCIENCEDAILY_HEALTH = "https://www.sciencedaily.com/rss/top/health.xml"
+STATNEWS = "https://www.statnews.com/feed/"
+
 ESPN_CRICKET = "https://www.espncricinfo.com/rss/content/story/feeds/0.xml"
+
 BBC_SPORT = "http://feeds.bbci.co.uk/sport/rss.xml"
+SKY_SPORTS_NEWS = "https://www.skysports.com/rss/12040"
+
 BBC_INDIA = "http://feeds.bbci.co.uk/news/world/asia/india/rss.xml"
+HINDUSTAN_TIMES_INDIA = "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml"
+TIMES_OF_INDIA = "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"
 
 # Order matters for dedupe: earlier sections in this list "claim" a story
 # first only where explicitly noted below (BCCI claims from Cricket/India).
 SECTIONS = [
-    {"key": "tech", "title": "Tech", "feeds": [BBC_TECH]},
-    {"key": "ai", "title": "AI", "feeds": [TECHCRUNCH_AI]},
-    {"key": "politics_uk", "title": "Politics — UK", "feeds": [BBC_POLITICS]},
-    {"key": "politics_global", "title": "Politics — Global", "feeds": [BBC_WORLD]},
-    {"key": "health", "title": "Health & Fitness", "feeds": [BBC_HEALTH]},
+    {"key": "tech", "title": "Tech", "feeds": [BBC_TECH, VERGE_TECH, ARSTECHNICA_TECH]},
+    {"key": "ai", "title": "AI", "feeds": [TECHCRUNCH_AI, VERGE_AI, ARSTECHNICA_AI]},
+    {
+        "key": "politics_uk",
+        "title": "Politics — UK",
+        "feeds": [BBC_POLITICS, GUARDIAN_POLITICS, FT_POLITICS, ECONOMIST_BRITAIN],
+    },
+    {
+        "key": "politics_global",
+        "title": "Politics — Global",
+        "feeds": [BBC_WORLD, GUARDIAN_WORLD, AL_JAZEERA, ECONOMIST_INTERNATIONAL],
+    },
+    {"key": "health", "title": "Health & Fitness", "feeds": [BBC_HEALTH, SCIENCEDAILY_HEALTH, STATNEWS]},
     {"key": "bcci", "title": "BCCI", "feeds": [ESPN_CRICKET], "keyword": "bcci"},
     {"key": "cricket", "title": "Cricket", "feeds": [ESPN_CRICKET]},
-    {"key": "sport", "title": "Sport", "feeds": [BBC_SPORT]},
-    {"key": "india", "title": "India News", "feeds": [BBC_INDIA]},
+    {"key": "sport", "title": "Sport", "feeds": [BBC_SPORT, SKY_SPORTS_NEWS]},
+    {
+        "key": "india",
+        "title": "India News",
+        "feeds": [BBC_INDIA, HINDUSTAN_TIMES_INDIA, TIMES_OF_INDIA],
+    },
 ]
 
 TAG_RE = re.compile(r"<[^>]+>")
@@ -105,6 +139,10 @@ def scrape_article_paragraph(url):
         return None
 
 
+def is_live_blog(link):
+    return "/live/" in link.lower()
+
+
 def entry_published(entry):
     for attr in ("published_parsed", "updated_parsed"):
         val = getattr(entry, attr, None)
@@ -121,6 +159,18 @@ def source_name(entry, feed_url):
         "feeds.bbci.co.uk": "BBC News",
         "techcrunch.com": "TechCrunch",
         "espncricinfo.com": "ESPNcricinfo",
+        "theverge.com": "The Verge",
+        "arstechnica.com": "Ars Technica",
+        "theguardian.com": "The Guardian",
+        "ft.com": "Financial Times",
+        "economist.com": "The Economist",
+        "aljazeera.com": "Al Jazeera",
+        "sciencedaily.com": "ScienceDaily",
+        "statnews.com": "STAT News",
+        "skysports.com": "Sky Sports",
+        "hindustantimes.com": "Hindustan Times",
+        "timesofindia.indiatimes.com": "Times of India",
+        "indiatimes.com": "Times of India",
     }
     for k, v in known.items():
         if k in host:
@@ -169,10 +219,26 @@ def build_sections():
         for feed_url in section["feeds"]:
             candidates.extend(fetch_recent_items(feed_url, cutoff, keyword=section.get("keyword")))
 
+        # Merge multiple sources by recency, not by feed order.
+        candidates.sort(key=lambda i: i["published"], reverse=True)
+
         # Dedupe: skip stories already claimed by an earlier (more specific) section.
         deduped = [c for c in candidates if c["link"] not in used_links]
 
-        picked = deduped[:MAX_ITEMS_PER_SECTION]
+        # Rolling live-blogs continuously refresh their timestamp, so cap them
+        # at one slot per section rather than letting them crowd out distinct
+        # stories from other outlets.
+        picked = []
+        live_blog_count = 0
+        for item in deduped:
+            if len(picked) >= MAX_ITEMS_PER_SECTION:
+                break
+            if is_live_blog(item["link"]):
+                if live_blog_count >= 1:
+                    continue
+                live_blog_count += 1
+            picked.append(item)
+
         for item in picked:
             used_links.add(item["link"])
             scraped = scrape_article_paragraph(item["link"])
