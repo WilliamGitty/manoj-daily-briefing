@@ -201,6 +201,8 @@ def fetch_recent_items(feed_url, cutoff, keyword=None):
         title = clean_text(entry.get("title", ""))
         summary = trim_summary(clean_text(entry.get("summary", entry.get("description", ""))))
         link = entry.get("link", "")
+        if not link.lower().startswith(("http://", "https://")):
+            continue
         if link in seen_links:
             continue
         seen_links.add(link)
