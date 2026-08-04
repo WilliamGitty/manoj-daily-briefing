@@ -159,6 +159,7 @@ def source_name(entry, feed_url):
         "feeds.bbci.co.uk": "BBC News",
         "techcrunch.com": "TechCrunch",
         "espncricinfo.com": "ESPNcricinfo",
+        "cricinfo.com": "ESPNcricinfo",
         "theverge.com": "The Verge",
         "arstechnica.com": "Ars Technica",
         "theguardian.com": "The Guardian",
