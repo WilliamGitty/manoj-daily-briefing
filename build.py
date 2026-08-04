@@ -210,6 +210,46 @@ def fetch_recent_items(feed_url, cutoff, keyword=None):
     return items
 
 
+def select_diverse(candidates):
+    """Pick up to MAX_ITEMS_PER_SECTION items, round-robin across sources.
+
+    Candidates must already be sorted by recency (most recent first). This
+    stops any single prolific outlet from filling a whole section just
+    because it happened to publish the most today - each source gets one
+    slot per round before any source gets a second. Rolling live-blogs are
+    capped at one slot total, since their timestamp keeps refreshing all
+    day. Falls back to a single source's own stories if nothing else in
+    the lookback window qualifies - no padding with stale content either way.
+    """
+    queues = {}
+    order = []
+    for item in candidates:
+        if item["source"] not in queues:
+            queues[item["source"]] = []
+            order.append(item["source"])
+        queues[item["source"]].append(item)
+
+    picked = []
+    live_blog_count = 0
+    made_progress = True
+    while len(picked) < MAX_ITEMS_PER_SECTION and made_progress:
+        made_progress = False
+        for source in order:
+            if len(picked) >= MAX_ITEMS_PER_SECTION:
+                break
+            queue = queues[source]
+            while queue:
+                candidate = queue.pop(0)
+                if is_live_blog(candidate["link"]):
+                    if live_blog_count >= 1:
+                        continue
+                    live_blog_count += 1
+                picked.append(candidate)
+                made_progress = True
+                break
+    return picked
+
+
 def build_sections():
     cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
     used_links = set()
@@ -226,19 +266,7 @@ def build_sections():
         # Dedupe: skip stories already claimed by an earlier (more specific) section.
         deduped = [c for c in candidates if c["link"] not in used_links]
 
-        # Rolling live-blogs continuously refresh their timestamp, so cap them
-        # at one slot per section rather than letting them crowd out distinct
-        # stories from other outlets.
-        picked = []
-        live_blog_count = 0
-        for item in deduped:
-            if len(picked) >= MAX_ITEMS_PER_SECTION:
-                break
-            if is_live_blog(item["link"]):
-                if live_blog_count >= 1:
-                    continue
-                live_blog_count += 1
-            picked.append(item)
+        picked = select_diverse(deduped)
 
         for item in picked:
             used_links.add(item["link"])
