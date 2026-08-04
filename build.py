@@ -22,6 +22,16 @@ MAX_ITEMS_PER_SECTION = 4
 MIN_ITEMS_PER_SECTION = 2
 SCRAPE_TIMEOUT_SECONDS = 6
 SCRAPE_MIN_CHARS = 80
+PROMO_KEYWORDS = [
+    "giveaway",
+    "sweepstakes",
+    "coupon",
+    "promo code",
+    "discount code",
+    "enter to win",
+    "win a ",
+    "/deals/",
+]
 USER_AGENT = (
     "Mozilla/5.0 (compatible; ManojDailyBriefingBot/1.0; "
     "+https://github.com/WilliamGitty/manoj-daily-briefing)"
@@ -132,6 +142,7 @@ def scrape_article_paragraph(url):
             return None
         paragraphs = [p.get_text(" ", strip=True) for p in container.find_all("p")]
         paragraphs = [p for p in paragraphs if len(p) > 40]
+        paragraphs = list(dict.fromkeys(paragraphs))
         if not paragraphs:
             return None
         return trim_summary(" ".join(paragraphs))
@@ -193,6 +204,9 @@ def fetch_recent_items(feed_url, cutoff, keyword=None):
         if link in seen_links:
             continue
         seen_links.add(link)
+        promo_haystack = f"{title} {link}".lower()
+        if any(kw in promo_haystack for kw in PROMO_KEYWORDS):
+            continue
         if keyword:
             haystack = f"{title} {summary}".lower()
             if keyword.lower() not in haystack:
