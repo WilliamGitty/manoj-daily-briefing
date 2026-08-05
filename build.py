@@ -460,6 +460,9 @@ def render_html(sections, today_str):
 '''
 
 
+MIN_SECTIONS_WITH_CONTENT = len(SECTIONS) // 2
+
+
 def main():
     today_str = datetime.now(timezone.utc).strftime("%A, %d %B %Y")
     sections = build_sections()
@@ -476,6 +479,22 @@ def main():
             print(f"  - {item['title']}")
             print(f"    published: {item['published'].isoformat()}")
             print(f"    link: {item['link']}")
+
+    # Sanity check: a single feed going quiet is normal and expected (that
+    # section just says so honestly). Most sections going empty at once is
+    # not normal - it means something broke pipeline-wide (feedparser,
+    # network, a shared bug), not that the news dried up. Fail loudly so
+    # GitHub's automatic failure email fires and this deploy is blocked,
+    # leaving yesterday's good page live instead of publishing a near-empty
+    # briefing.
+    sections_with_content = sum(1 for s in sections if s["items"])
+    if sections_with_content < MIN_SECTIONS_WITH_CONTENT:
+        raise SystemExit(
+            f"Only {sections_with_content}/{len(sections)} sections had any "
+            f"qualifying stories (need at least {MIN_SECTIONS_WITH_CONTENT}) - "
+            "this looks like a pipeline-wide failure, not a quiet news day. "
+            "Failing the build so the last good deploy stays live."
+        )
 
 
 if __name__ == "__main__":
