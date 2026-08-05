@@ -12,6 +12,7 @@ import html
 import re
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 import feedparser
 import requests
@@ -295,7 +296,7 @@ def build_sections():
     return rendered_sections
 
 
-def render_html(sections, today_str):
+def render_html(sections, today_str, updated_str):
     story_blocks = []
     for section in sections:
         if section["items"]:
@@ -448,7 +449,7 @@ def render_html(sections, today_str):
 <body>
   <div class="masthead">
     <h1>Manoj's Daily Briefing</h1>
-    <span class="date">{today_str}</span>
+    <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
   </div>
   <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
   <main>
@@ -464,9 +465,12 @@ MIN_SECTIONS_WITH_CONTENT = len(SECTIONS) // 2
 
 
 def main():
-    today_str = datetime.now(timezone.utc).strftime("%A, %d %B %Y")
+    now_utc = datetime.now(timezone.utc)
+    today_str = now_utc.strftime("%A, %d %B %Y")
+    now_uk = now_utc.astimezone(ZoneInfo("Europe/London"))
+    updated_str = now_uk.strftime("%H:%M %Z")
     sections = build_sections()
-    output = render_html(sections, today_str)
+    output = render_html(sections, today_str, updated_str)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
 
