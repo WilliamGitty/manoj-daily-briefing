@@ -54,6 +54,13 @@ ARSTECHNICA_TECH = "https://feeds.arstechnica.com/arstechnica/index"
 TECHCRUNCH_AI = "https://techcrunch.com/category/artificial-intelligence/feed/"
 VERGE_AI = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
 ARSTECHNICA_AI = "https://arstechnica.com/ai/feed/"
+# Verge AI and Ars Technica AI only post every 2-4 days each, so on most
+# days they never have anything inside the 24h window and TechCrunch (which
+# posts several times a day) ends up as the section's only real source.
+# These three post far more often - verified live before adding.
+ZDNET_AI = "https://www.zdnet.com/topic/artificial-intelligence/rss.xml"
+REGISTER_AI = "https://www.theregister.com/software/ai_ml/headlines.atom"
+MIT_TECH_REVIEW_AI = "https://www.technologyreview.com/topic/artificial-intelligence/feed"
 
 BBC_POLITICS = "http://feeds.bbci.co.uk/news/politics/rss.xml"
 GUARDIAN_POLITICS = "https://www.theguardian.com/politics/rss"
@@ -82,7 +89,11 @@ TIMES_OF_INDIA = "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"
 # first only where explicitly noted below (BCCI claims from Cricket/India).
 SECTIONS = [
     {"key": "tech", "title": "Tech", "feeds": [BBC_TECH, VERGE_TECH, ARSTECHNICA_TECH]},
-    {"key": "ai", "title": "AI", "feeds": [TECHCRUNCH_AI, VERGE_AI, ARSTECHNICA_AI]},
+    {
+        "key": "ai",
+        "title": "AI",
+        "feeds": [TECHCRUNCH_AI, VERGE_AI, ARSTECHNICA_AI, ZDNET_AI, REGISTER_AI, MIT_TECH_REVIEW_AI],
+    },
     {
         "key": "politics_uk",
         "title": "Politics — UK",
@@ -193,11 +204,21 @@ def source_name(entry, feed_url):
         "hindustantimes.com": "Hindustan Times",
         "timesofindia.indiatimes.com": "Times of India",
         "indiatimes.com": "Times of India",
+        "zdnet.com": "ZDNet",
+        "theregister.com": "The Register",
+        "technologyreview.com": "MIT Technology Review",
     }
     for k, v in known.items():
         if k in host:
             return v
     return host or "Source"
+
+
+# Sources that meter or fully paywall articles - checked mechanically
+# against the source name, never guessed per-article. FT and The Economist
+# are both on Manoj's own priority source list, so this flags rather than
+# excludes them.
+PAYWALLED_SOURCES = {"Financial Times", "The Economist", "MIT Technology Review"}
 
 
 def fetch_recent_items(feed_url, cutoff, keyword=None):
@@ -223,13 +244,15 @@ def fetch_recent_items(feed_url, cutoff, keyword=None):
             haystack = f"{title} {summary}".lower()
             if keyword.lower() not in haystack:
                 continue
+        source = source_name(entry, feed_url)
         items.append(
             {
                 "title": title,
                 "summary": summary,
                 "link": link,
                 "published": published,
-                "source": source_name(entry, feed_url),
+                "source": source,
+                "paywalled": source in PAYWALLED_SOURCES,
             }
         )
     items.sort(key=lambda i: i["published"], reverse=True)
@@ -300,7 +323,7 @@ def build_sections():
             if scraped and len(scraped) > max(len(item["summary"]), SCRAPE_MIN_CHARS):
                 item["summary"] = scraped
 
-        rendered_sections.append({"title": section["title"], "items": picked})
+        rendered_sections.append({"key": section["key"], "title": section["title"], "items": picked})
 
     return rendered_sections
 
@@ -386,29 +409,48 @@ def render_archive_nav(other_dates, current_iso_date, current_is_today):
     )
 
 
+def render_story(item):
+    paywall_html = (
+        '<span class="paywall">🔒 May require a subscription</span>' if item.get("paywalled") else ""
+    )
+    return f'''        <article class="story">
+          <a class="headline" href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['title'])}</a>
+          <p class="summary">{html.escape(item['summary'])}</p>
+          <span class="source"><a href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['source'])}</a></span>
+          {paywall_html}
+        </article>'''
+
+
+def render_filter_bar(sections):
+    """A sticky row of topic chips - Manoj reads this mostly on his phone,
+    so jumping straight to one topic beats scrolling past nine sections to
+    find it. Pure client-side show/hide, no page reload, no dependencies."""
+    chips = ['<button type="button" class="chip active" data-topic="all">All</button>']
+    for section in sections:
+        chips.append(
+            f'<button type="button" class="chip" data-topic="{html.escape(section["key"])}">'
+            f'{html.escape(section["title"])}</button>'
+        )
+    return '<nav class="filter-bar">' + "".join(chips) + "</nav>"
+
+
 def render_html(sections, today_str, updated_str, archive_nav_html=""):
     story_blocks = []
     for section in sections:
         if section["items"]:
-            stories_html = "\n".join(
-                f'''        <article class="story">
-          <a class="headline" href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['title'])}</a>
-          <p class="summary">{html.escape(item['summary'])}</p>
-          <span class="source"><a href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['source'])}</a></span>
-        </article>'''
-                for item in section["items"]
-            )
+            stories_html = "\n".join(render_story(item) for item in section["items"])
         else:
             stories_html = '        <p class="no-story">No qualifying story in the last 24 hours.</p>'
 
         story_blocks.append(
-            f'''      <section class="section">
+            f'''      <section class="section" data-topic="{html.escape(section['key'])}">
         <h2>{html.escape(section['title'])}</h2>
 {stories_html}
       </section>'''
         )
 
     sections_html = "\n".join(story_blocks)
+    filter_bar_html = render_filter_bar(sections)
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -525,6 +567,53 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
     color: var(--source);
     font-style: italic;
   }}
+  .paywall {{
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: #92400e;
+    background: #fff4e6;
+    border: 1px solid #f0d2a6;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }}
+  .filter-bar {{
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }}
+  .filter-bar::-webkit-scrollbar {{
+    display: none;
+  }}
+  .chip {{
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--navy);
+    background: #ffffff;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }}
+  .chip.active {{
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }}
+  .section[hidden] {{
+    display: none;
+  }}
   footer {{
     max-width: 680px;
     margin: 0 auto 40px;
@@ -542,11 +631,28 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
     <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
     {archive_nav_html}
   </div>
+  {filter_bar_html}
   <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
   <main>
 {sections_html}
   </main>
   <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {{
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {{
+        chip.addEventListener('click', function () {{
+          chips.forEach(function (c) {{ c.classList.remove('active'); }});
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {{
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          }});
+        }});
+      }});
+    }})();
+  </script>
 </body>
 </html>
 '''
