@@ -505,8 +505,8 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manoj's Daily Briefing — {today_str}</title>
 <link rel="manifest" href="{asset_prefix}manifest.webmanifest">
-<link rel="icon" href="{asset_prefix}icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="{asset_prefix}icon.svg">
+<link rel="icon" href="{asset_prefix}icon.png" type="image/png">
+<link rel="apple-touch-icon" href="{asset_prefix}icon.png">
 <meta name="theme-color" content="#1a2a4a">
 <style>
   :root {{
