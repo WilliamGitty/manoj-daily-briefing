@@ -43,9 +43,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --quiet --cached || git commit -m "Automated daily rebuild"
-          git push
+          git add -A -- index.html archive
+          if git diff --quiet --cached; then
+            echo "No changes to commit."
+          else
+            git commit -m "Automated daily rebuild"
+            git pull --rebase --autostash
+            git push
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

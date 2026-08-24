@@ -9,6 +9,7 @@ of asking an LLM to "search the web" and report back.
 """
 
 import html
+import os
 import re
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
@@ -23,6 +24,14 @@ MAX_ITEMS_PER_SECTION = 4
 MIN_ITEMS_PER_SECTION = 2
 SCRAPE_TIMEOUT_SECONDS = 6
 SCRAPE_MIN_CHARS = 80
+
+# Same root URL always serves today's edition - this must never change,
+# since it's what's saved to a phone home screen. Past editions live at
+# fixed sub-paths under archive/ instead of replacing it.
+SITE_BASE_URL = "https://williamgitty.github.io/manoj-daily-briefing/"
+ARCHIVE_DIR = "archive"
+ARCHIVE_RETENTION_DAYS = 14
+ARCHIVE_FILENAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.html$")
 PROMO_KEYWORDS = [
     "giveaway",
     "sweepstakes",
@@ -296,7 +305,88 @@ def build_sections():
     return rendered_sections
 
 
-def render_html(sections, today_str, updated_str):
+def list_archive_dates():
+    """Return sorted (newest first) ISO date strings for existing archive pages.
+
+    Returns [] on any problem reading the directory - the archive dropdown
+    is a bonus feature and must never be able to stop today's edition from
+    being built.
+    """
+    try:
+        if not os.path.isdir(ARCHIVE_DIR):
+            return []
+        dates = []
+        for name in os.listdir(ARCHIVE_DIR):
+            m = ARCHIVE_FILENAME_RE.match(name)
+            if m:
+                dates.append(m.group(1))
+        return sorted(dates, reverse=True)
+    except OSError:
+        return []
+
+
+def prune_old_archives(dates, today_iso):
+    """Delete archive pages older than ARCHIVE_RETENTION_DAYS and return the survivors."""
+    try:
+        cutoff = (datetime.strptime(today_iso, "%Y-%m-%d") - timedelta(days=ARCHIVE_RETENTION_DAYS)).date()
+    except ValueError:
+        return dates
+    kept = []
+    for d in dates:
+        try:
+            is_old = datetime.strptime(d, "%Y-%m-%d").date() < cutoff
+        except ValueError:
+            continue
+        if is_old:
+            try:
+                os.remove(os.path.join(ARCHIVE_DIR, f"{d}.html"))
+            except OSError:
+                pass
+        else:
+            kept.append(d)
+    return kept
+
+
+def format_archive_label(iso_date):
+    try:
+        return datetime.strptime(iso_date, "%Y-%m-%d").strftime("%A, %d %B %Y")
+    except ValueError:
+        return iso_date
+
+
+def render_archive_nav(other_dates, current_iso_date, current_is_today):
+    """A single <select> that jumps to any edition. Plain onchange navigation
+    only - no localStorage, no fetch, nothing that can throw at runtime.
+
+    `other_dates` should be every known archive date; today's own date is
+    filtered out here unconditionally, so it's never listed twice (once as
+    the fixed "Today" option, once as a same-day archive entry).
+    """
+    other_dates = [d for d in other_dates if d != current_iso_date]
+
+    options = [
+        f'<option value="{html.escape(SITE_BASE_URL)}"{" selected" if current_is_today else ""}>Today</option>'
+    ]
+    if current_iso_date and not current_is_today:
+        # This is today's own archive copy - it's the most recent entry
+        # after "Today" itself, so it goes first among the dated options.
+        url = f"{SITE_BASE_URL}{ARCHIVE_DIR}/{current_iso_date}.html"
+        options.append(f'<option value="{html.escape(url)}" selected>{html.escape(format_archive_label(current_iso_date))}</option>')
+    for d in other_dates:
+        url = f"{SITE_BASE_URL}{ARCHIVE_DIR}/{d}.html"
+        options.append(f'<option value="{html.escape(url)}">{html.escape(format_archive_label(d))}</option>')
+
+    return (
+        '<select onchange="if (this.value) { window.location.href = this.value; }" '
+        'aria-label="Jump to a previous edition" '
+        'style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;'
+        'padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;">'
+        + "".join(options)
+        + "</select>"
+    )
+
+
+def render_html(sections, today_str, updated_str, archive_nav_html=""):
     story_blocks = []
     for section in sections:
         if section["items"]:
@@ -450,6 +540,7 @@ def render_html(sections, today_str, updated_str):
   <div class="masthead">
     <h1>Manoj's Daily Briefing</h1>
     <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
+    {archive_nav_html}
   </div>
   <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
   <main>
@@ -470,9 +561,32 @@ def main():
     now_uk = now_utc.astimezone(ZoneInfo("Europe/London"))
     updated_str = now_uk.strftime("%H:%M %Z")
     sections = build_sections()
-    output = render_html(sections, today_str, updated_str)
+    today_iso = now_utc.strftime("%Y-%m-%d")
+
+    # Archive dropdown setup is entirely best-effort: if anything here goes
+    # wrong, today's edition must still build and publish with no dropdown,
+    # never fail the whole run over a bonus feature.
+    archive_nav_index = ""
+    archive_nav_for_copy = ""
+    try:
+        os.makedirs(ARCHIVE_DIR, exist_ok=True)
+        existing_dates = prune_old_archives(list_archive_dates(), today_iso)
+        archive_nav_index = render_archive_nav(existing_dates, today_iso, current_is_today=True)
+        archive_nav_for_copy = render_archive_nav(existing_dates, today_iso, current_is_today=False)
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! archive dropdown setup failed (non-fatal, continuing without it): {exc}")
+
+    output = render_html(sections, today_str, updated_str, archive_nav_html=archive_nav_index)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
+
+    if archive_nav_for_copy:
+        try:
+            archive_copy = render_html(sections, today_str, updated_str, archive_nav_html=archive_nav_for_copy)
+            with open(os.path.join(ARCHIVE_DIR, f"{today_iso}.html"), "w", encoding="utf-8") as f:
+                f.write(archive_copy)
+        except OSError as exc:
+            print(f"  ! failed to write today's archive copy (non-fatal): {exc}")
 
     # Console summary for local testing / CI logs.
     for section in sections:
