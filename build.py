@@ -413,12 +413,57 @@ def render_story(item):
     paywall_html = (
         '<span class="paywall">🔒 May require a subscription</span>' if item.get("paywalled") else ""
     )
+    # Hidden by default and only ever unhidden by JS after feature-detecting
+    # navigator.share - so a browser without the Web Share API never shows
+    # a button that would do nothing (or throw) when tapped.
     return f'''        <article class="story">
           <a class="headline" href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['title'])}</a>
           <p class="summary">{html.escape(item['summary'])}</p>
           <span class="source"><a href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['source'])}</a></span>
           {paywall_html}
+          <button type="button" class="share-btn" hidden data-title="{html.escape(item['title'])}" data-url="{html.escape(item['link'])}">&#8599; Share</button>
         </article>'''
+
+
+def pick_top_picks(sections, n=3):
+    """The n most recent stories, but from n *different* topics where
+    possible - a pure top-n-by-timestamp pick tends to land on whichever
+    single topic happened to break most recently (e.g. three Politics
+    stories in a row), which isn't a useful cross-section snapshot for a
+    10-second glance. Deterministic recency ranking only, no AI judgment."""
+    all_items = []
+    for section in sections:
+        for item in section["items"]:
+            all_items.append((item, section["title"]))
+    all_items.sort(key=lambda pair: pair[0]["published"], reverse=True)
+
+    picks = []
+    used_titles = set()
+    for item, section_title in all_items:
+        if section_title in used_titles:
+            continue
+        picks.append((item, section_title))
+        used_titles.add(section_title)
+        if len(picks) >= n:
+            break
+    return picks
+
+
+def render_top_picks(sections):
+    picks = pick_top_picks(sections)
+    if not picks:
+        return ""
+    rows = "\n".join(
+        f'''      <a class="pick" href="{html.escape(item['link'])}" target="_blank" rel="noopener">
+        <span class="pick-topic">{html.escape(section_title)}</span>
+        <span class="pick-headline">{html.escape(item['title'])}</span>
+      </a>'''
+        for item, section_title in picks
+    )
+    return f'''  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+{rows}
+  </div>'''
 
 
 def render_filter_bar(sections):
@@ -434,7 +479,7 @@ def render_filter_bar(sections):
     return '<nav class="filter-bar">' + "".join(chips) + "</nav>"
 
 
-def render_html(sections, today_str, updated_str, archive_nav_html=""):
+def render_html(sections, today_str, updated_str, archive_nav_html="", asset_prefix=""):
     story_blocks = []
     for section in sections:
         if section["items"]:
@@ -451,6 +496,7 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
 
     sections_html = "\n".join(story_blocks)
     filter_bar_html = render_filter_bar(sections)
+    top_picks_html = render_top_picks(sections)
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -458,6 +504,10 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manoj's Daily Briefing — {today_str}</title>
+<link rel="manifest" href="{asset_prefix}manifest.webmanifest">
+<link rel="icon" href="{asset_prefix}icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{asset_prefix}icon.svg">
+<meta name="theme-color" content="#1a2a4a">
 <style>
   :root {{
     --navy: #1a2a4a;
@@ -578,6 +628,61 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
     border-radius: 4px;
     padding: 2px 7px;
   }}
+  .share-btn {{
+    display: block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--navy);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }}
+  .top-picks {{
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }}
+  .top-picks-label {{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }}
+  .pick {{
+    display: block;
+    background: #ffffff;
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--navy);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }}
+  .pick-topic {{
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--navy);
+  }}
+  .pick-headline {{
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: #1a1a1a;
+    margin-top: 2px;
+  }}
   .filter-bar {{
     position: sticky;
     top: 0;
@@ -631,6 +736,7 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
     <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
     {archive_nav_html}
   </div>
+{top_picks_html}
   {filter_bar_html}
   <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
   <main>
@@ -651,6 +757,18 @@ def render_html(sections, today_str, updated_str, archive_nav_html=""):
           }});
         }});
       }});
+
+      if (navigator.share) {{
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {{
+          btn.hidden = false;
+          btn.addEventListener('click', function () {{
+            navigator.share({{
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }}).catch(function () {{}});
+          }});
+        }});
+      }}
     }})();
   </script>
 </body>
@@ -682,13 +800,15 @@ def main():
     except Exception as exc:  # noqa: BLE001
         print(f"  ! archive dropdown setup failed (non-fatal, continuing without it): {exc}")
 
-    output = render_html(sections, today_str, updated_str, archive_nav_html=archive_nav_index)
+    output = render_html(sections, today_str, updated_str, archive_nav_html=archive_nav_index, asset_prefix="")
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
 
     if archive_nav_for_copy:
         try:
-            archive_copy = render_html(sections, today_str, updated_str, archive_nav_html=archive_nav_for_copy)
+            archive_copy = render_html(
+                sections, today_str, updated_str, archive_nav_html=archive_nav_for_copy, asset_prefix="../"
+            )
             with open(os.path.join(ARCHIVE_DIR, f"{today_iso}.html"), "w", encoding="utf-8") as f:
                 f.write(archive_copy)
         except OSError as exc:
