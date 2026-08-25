@@ -409,19 +409,32 @@ def render_archive_nav(other_dates, current_iso_date, current_is_today):
     )
 
 
-def render_story(item):
+def format_pubdate(dt):
+    """UK-local, human-readable publish time - e.g. "24 Aug, 15:32"."""
+    return dt.astimezone(ZoneInfo("Europe/London")).strftime("%-d %b, %H:%M")
+
+
+def render_story(item, section_title):
     paywall_html = (
         '<span class="paywall">🔒 May require a subscription</span>' if item.get("paywalled") else ""
     )
+    pubdate = format_pubdate(item["published"])
     # Hidden by default and only ever unhidden by JS after feature-detecting
     # navigator.share - so a browser without the Web Share API never shows
     # a button that would do nothing (or throw) when tapped.
-    return f'''        <article class="story">
+    #
+    # data-* attributes carry everything the bookmark feature needs to
+    # reconstruct this story from scratch client-side: bookmarking must
+    # save the full content, not just a link, because tomorrow's rebuild
+    # removes this story from index.html entirely - only localStorage (not
+    # this page) will still have it.
+    return f'''        <article class="story" data-id="{html.escape(item['link'])}" data-title="{html.escape(item['title'])}" data-summary="{html.escape(item['summary'])}" data-source="{html.escape(item['source'])}" data-published="{html.escape(item['published'].isoformat())}" data-section="{html.escape(section_title)}" data-paywalled="{"true" if item.get('paywalled') else "false"}">
           <a class="headline" href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['title'])}</a>
           <p class="summary">{html.escape(item['summary'])}</p>
-          <span class="source"><a href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['source'])}</a></span>
+          <span class="source"><a href="{html.escape(item['link'])}" target="_blank" rel="noopener">{html.escape(item['source'])}</a> &middot; <span class="pubdate">{html.escape(pubdate)}</span></span>
           {paywall_html}
           <button type="button" class="share-btn" hidden data-title="{html.escape(item['title'])}" data-url="{html.escape(item['link'])}">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>'''
 
 
@@ -483,7 +496,7 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     story_blocks = []
     for section in sections:
         if section["items"]:
-            stories_html = "\n".join(render_story(item) for item in section["items"])
+            stories_html = "\n".join(render_story(item, section["title"]) for item in section["items"])
         else:
             stories_html = '        <p class="no-story">No qualifying story in the last 24 hours.</p>'
 
@@ -502,6 +515,17 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {{
+    try {{
+      if (localStorage.getItem('manojTheme') === 'dark') {{
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }}
+    }} catch (e) {{}}
+  }})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manoj's Daily Briefing — {today_str}</title>
 <link rel="manifest" href="{asset_prefix}manifest.webmanifest">
@@ -511,17 +535,36 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
 <style>
   :root {{
     --navy: #1a2a4a;
+    --accent: #1a2a4a;
     --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
     --muted: #767676;
     --source: #999999;
     --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }}
+  [data-theme="dark"] {{
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
   }}
   * {{ box-sizing: border-box; }}
   body {{
     margin: 0;
     background: var(--cream);
     font-family: Georgia, 'Times New Roman', serif;
-    color: #1a1a1a;
+    color: var(--text);
   }}
   .masthead {{
     background: var(--navy);
@@ -542,6 +585,46 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     letter-spacing: 0.5px;
+  }}
+  .masthead-controls {{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }}
+  .masthead-controls select,
+  .masthead-controls button {{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }}
+  .bookmarks-toggle.active {{
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }}
+  #bookmarks-view {{
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }}
+  #bookmarks-view[hidden] {{
+    display: none;
+  }}
+  .bookmarks-empty {{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
   }}
   .intro {{
     max-width: 680px;
@@ -564,10 +647,10 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
   .section h2 {{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
-    color: var(--navy);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 2px solid var(--navy);
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 6px;
     margin: 0 0 14px;
   }}
@@ -583,7 +666,7 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 17px;
     font-weight: bold;
-    color: var(--navy);
+    color: var(--accent);
     text-decoration: none;
     line-height: 1.35;
   }}
@@ -622,24 +705,37 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     margin-top: 6px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
-    color: #92400e;
-    background: #fff4e6;
-    border: 1px solid #f0d2a6;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
     border-radius: 4px;
     padding: 2px 7px;
   }}
-  .share-btn {{
-    display: block;
+  .pubdate {{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }}
+  .share-btn, .bookmark-btn {{
+    display: inline-block;
     margin-top: 8px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
     font-weight: bold;
-    color: var(--navy);
+    color: var(--accent);
     background: none;
     border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 4px 12px;
     cursor: pointer;
+  }}
+  .bookmark-btn {{
+    margin-left: 6px;
+  }}
+  .bookmark-btn.active {{
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
   }}
   .top-picks {{
     max-width: 680px;
@@ -657,9 +753,9 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
   }}
   .pick {{
     display: block;
-    background: #ffffff;
+    background: var(--card-bg);
     border: 1px solid var(--rule);
-    border-left: 4px solid var(--navy);
+    border-left: 4px solid var(--accent);
     border-radius: 6px;
     padding: 8px 12px;
     margin-bottom: 6px;
@@ -673,14 +769,14 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--navy);
+    color: var(--accent);
   }}
   .pick-headline {{
     display: block;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 15px;
     font-weight: bold;
-    color: #1a1a1a;
+    color: var(--text);
     margin-top: 2px;
   }}
   .filter-bar {{
@@ -704,8 +800,8 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     font-weight: bold;
-    color: var(--navy);
-    background: #ffffff;
+    color: var(--accent);
+    background: var(--card-bg);
     border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 6px 14px;
@@ -716,7 +812,11 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     color: #ffffff;
     border-color: var(--navy);
   }}
-  .section[hidden] {{
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {{
     display: none;
   }}
   footer {{
@@ -734,7 +834,12 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
   <div class="masthead">
     <h1>Manoj's Daily Briefing</h1>
     <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
-    {archive_nav_html}
+    <div class="masthead-controls">
+      {archive_nav_html}
+      <button type="button" id="refresh-btn" title="Fetches whichever edition is currently published - does not run new research on demand">&#10227; Refresh</button>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
   </div>
 {top_picks_html}
   {filter_bar_html}
@@ -742,6 +847,7 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
   <main>
 {sections_html}
   </main>
+  <div id="bookmarks-view" hidden></div>
   <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
   <script>
     (function () {{
@@ -769,6 +875,146 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
           }});
         }});
       }}
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {{
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }}
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {{
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {{
+          document.documentElement.removeAttribute('data-theme');
+          try {{ localStorage.setItem('manojTheme', 'light'); }} catch (e) {{}}
+        }} else {{
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try {{ localStorage.setItem('manojTheme', 'dark'); }} catch (e) {{}}
+        }}
+        refreshThemeLabel();
+      }});
+
+      // Refresh - re-fetches whichever edition is currently published.
+      // There's no live news search behind this: the page rebuilds a few
+      // times a day on its own schedule, so this just guarantees you're
+      // seeing that latest build rather than a cached older copy.
+      document.getElementById('refresh-btn').addEventListener('click', function () {{
+        window.location.href = window.location.pathname + '?_r=' + Date.now();
+      }});
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {{
+        try {{ return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }}
+        catch (e) {{ return []; }}
+      }}
+      function saveBookmarks(list) {{
+        try {{ localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); }} catch (e) {{}}
+      }}
+      function updateBookmarksCount() {{
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }}
+      function syncBookmarkButtons() {{
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {{
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) {{ return b.id === id; }});
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        }});
+        updateBookmarksCount();
+      }}
+      function toggleBookmark(story) {{
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {{
+          if (bookmarks[i].id === id) {{ idx = i; break; }}
+        }}
+        if (idx >= 0) {{
+          bookmarks.splice(idx, 1);
+        }} else {{
+          bookmarks.unshift({{
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          }});
+        }}
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }}
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {{
+        btn.addEventListener('click', function () {{ toggleBookmark(btn.closest('.story')); }});
+      }});
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {{
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }}
+      function renderBookmarksView() {{
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {{
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }}
+        bookmarksView.innerHTML = bookmarks.map(function (b) {{
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {{
+            pub = new Date(b.published).toLocaleString('en-GB', {{ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }});
+          }} catch (e) {{}}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }}).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {{
+          btn.addEventListener('click', function () {{
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) {{ return b.id !== id; }}));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          }});
+        }});
+      }}
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {{
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      }});
     }})();
   </script>
 </body>
