@@ -836,7 +836,6 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
     <span class="date">{today_str}, Updated as of {html.escape(updated_str)}</span>
     <div class="masthead-controls">
       {archive_nav_html}
-      <button type="button" id="refresh-btn" title="Fetches whichever edition is currently published - does not run new research on demand">&#10227; Refresh</button>
       <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
       <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
     </div>
@@ -894,14 +893,6 @@ def render_html(sections, today_str, updated_str, archive_nav_html="", asset_pre
           try {{ localStorage.setItem('manojTheme', 'dark'); }} catch (e) {{}}
         }}
         refreshThemeLabel();
-      }});
-
-      // Refresh - re-fetches whichever edition is currently published.
-      // There's no live news search behind this: the page rebuilds a few
-      // times a day on its own schedule, so this just guarantees you're
-      // seeing that latest build rather than a cached older copy.
-      document.getElementById('refresh-btn').addEventListener('click', function () {{
-        window.location.href = window.location.pathname + '?_r=' + Date.now();
       }});
 
       // Bookmarks - stores each bookmarked story's full content (not just
