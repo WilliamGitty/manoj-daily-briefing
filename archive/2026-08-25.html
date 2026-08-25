@@ -2,6 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manoj's Daily Briefing — Tuesday, 25 August 2026</title>
 <link rel="manifest" href="../manifest.webmanifest">
@@ -11,17 +22,36 @@
 <style>
   :root {
     --navy: #1a2a4a;
+    --accent: #1a2a4a;
     --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
     --muted: #767676;
     --source: #999999;
     --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--cream);
     font-family: Georgia, 'Times New Roman', serif;
-    color: #1a1a1a;
+    color: var(--text);
   }
   .masthead {
     background: var(--navy);
@@ -42,6 +72,46 @@
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
   }
   .intro {
     max-width: 680px;
@@ -64,10 +134,10 @@
   .section h2 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
-    color: var(--navy);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 2px solid var(--navy);
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 6px;
     margin: 0 0 14px;
   }
@@ -83,7 +153,7 @@
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 17px;
     font-weight: bold;
-    color: var(--navy);
+    color: var(--accent);
     text-decoration: none;
     line-height: 1.35;
   }
@@ -122,24 +192,37 @@
     margin-top: 6px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
-    color: #92400e;
-    background: #fff4e6;
-    border: 1px solid #f0d2a6;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
     border-radius: 4px;
     padding: 2px 7px;
   }
-  .share-btn {
-    display: block;
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
     margin-top: 8px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
     font-weight: bold;
-    color: var(--navy);
+    color: var(--accent);
     background: none;
     border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 4px 12px;
     cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
   }
   .top-picks {
     max-width: 680px;
@@ -157,9 +240,9 @@
   }
   .pick {
     display: block;
-    background: #ffffff;
+    background: var(--card-bg);
     border: 1px solid var(--rule);
-    border-left: 4px solid var(--navy);
+    border-left: 4px solid var(--accent);
     border-radius: 6px;
     padding: 8px 12px;
     margin-bottom: 6px;
@@ -173,14 +256,14 @@
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--navy);
+    color: var(--accent);
   }
   .pick-headline {
     display: block;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 15px;
     font-weight: bold;
-    color: #1a1a1a;
+    color: var(--text);
     margin-top: 2px;
   }
   .filter-bar {
@@ -204,8 +287,8 @@
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     font-weight: bold;
-    color: var(--navy);
-    background: #ffffff;
+    color: var(--accent);
+    background: var(--card-bg);
     border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 6px 14px;
@@ -216,7 +299,11 @@
     color: #ffffff;
     border-color: var(--navy);
   }
-  .section[hidden] {
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
     display: none;
   }
   footer {
@@ -233,22 +320,27 @@
 <body>
   <div class="masthead">
     <h1>Manoj's Daily Briefing</h1>
-    <span class="date">Tuesday, 25 August 2026, Updated as of 08:57 BST</span>
-    <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-08-25.html" selected>Tuesday, 25 August 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-08-24.html">Monday, 24 August 2026</option></select>
+    <span class="date">Tuesday, 25 August 2026, Updated as of 10:25 BST</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-08-25.html" selected>Tuesday, 25 August 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-08-24.html">Monday, 24 August 2026</option></select>
+      <button type="button" id="refresh-btn" title="Fetches whichever edition is currently published - does not run new research on demand">&#10227; Refresh</button>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
   </div>
   <div class="top-picks">
     <div class="top-picks-label">Right now</div>
-      <a class="pick" href="https://www.skysports.com/football/news/12040/13569345/free-stream-the-transfer-show-on-sky-sports-news-latest-football-transfer-news-updates-and-rumours" target="_blank" rel="noopener">
+      <a class="pick" href="https://www.skysports.com/football/news/12040/13575398/savio-transfer-news-tottenham-sign-winger-from-manchester-city-in-85m-deal" target="_blank" rel="noopener">
         <span class="pick-topic">Sport</span>
-        <span class="pick-headline">FREE STREAM: Good Morning Transfers on Sky Sports News</span>
+        <span class="pick-headline">Spurs sign Savio from Man City in £85m deal</span>
       </a>
-      <a class="pick" href="https://timesofindia.indiatimes.com/science/scientists-reidentify-irelands-famous-kerry-cow-bones-as-ancient-bear-and-wild-boar-remains-challenging-a-long-held-theory-about-how-farming-reached-the-island/articleshow/133497087.cms" target="_blank" rel="noopener">
-        <span class="pick-topic">India News</span>
-        <span class="pick-headline">Scientists reidentify Ireland’s “Kerry Cow” bones as bear and wild boar, challenging farming theory</span>
+      <a class="pick" href="https://www.theverge.com/ai-artificial-intelligence/984239/alabama-attorney-general-subpoena-openai-hugging-face-hack" target="_blank" rel="noopener">
+        <span class="pick-topic">AI</span>
+        <span class="pick-headline">OpenAI subpoenaed by Alabama AG over Hugging Face hack</span>
       </a>
-      <a class="pick" href="https://www.aljazeera.com/sports/2026/8/25/federer-to-play-tennis-at-us-open-but-rules-out-williams-like-return?traffic_source=rss" target="_blank" rel="noopener">
+      <a class="pick" href="https://www.theguardian.com/world/live/2026/aug/25/europe-ukraine-patriot-missiles-zelenskyy-trump-russia-drone-germany-latest-news-update" target="_blank" rel="noopener">
         <span class="pick-topic">Politics — Global</span>
-        <span class="pick-headline">Federer to play tennis at US Open but rules out Williams-like return</span>
+        <span class="pick-headline">Burnham to take Zelenskyy’s pleas for Patriot missiles to Trump – Europe live</span>
       </a>
   </div>
   <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
@@ -256,157 +348,177 @@
   <main>
       <section class="section" data-topic="tech">
         <h2>Tech</h2>
-        <article class="story">
+        <article class="story" data-id="https://www.theverge.com/tech/984226/google-motion-assist-anti-nausea-car-sickness-cure" data-title="Android is getting its own weird dots to cure car sickness" data-summary="The anti-nausea tech that really works, at least on Apple devices. Google is rolling out a new Android feature that’s been proven to reduce, or even eliminate, motion sickness when using a phone inside a moving vehicle. Dubbed Motion Assist by Google, it’s very similar to Apple’s Motion Cues, first introduced in 2024. The Android 17 feature appears to be rolling out in phases, with some Pixel phones getting it first, according to Android Authority ." data-source="The Verge" data-published="2026-08-25T08:36:27+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/984226/google-motion-assist-anti-nausea-car-sickness-cure" target="_blank" rel="noopener">Android is getting its own weird dots to cure car sickness</a>
+          <p class="summary">The anti-nausea tech that really works, at least on Apple devices. Google is rolling out a new Android feature that’s been proven to reduce, or even eliminate, motion sickness when using a phone inside a moving vehicle. Dubbed Motion Assist by Google, it’s very similar to Apple’s Motion Cues, first introduced in 2024. The Android 17 feature appears to be rolling out in phases, with some Pixel phones getting it first, according to Android Authority .</p>
+          <span class="source"><a href="https://www.theverge.com/tech/984226/google-motion-assist-anti-nausea-car-sickness-cure" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">25 Aug, 09:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Android is getting its own weird dots to cure car sickness" data-url="https://www.theverge.com/tech/984226/google-motion-assist-anti-nausea-car-sickness-cure">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c20vl4vm2pno?at_medium=RSS&amp;at_campaign=rss" data-title="Songs created by AI banned from Australia&#x27;s music charts" data-summary="Songs that are largely or wholly created by AI have been banned from Australia&#x27;s music charts. From this week, all releases must be &quot;substantially human made&quot; to be eligible. The Australian Recording Industry Association (ARIA) said the new code would help &quot;promote the human nature of artistry&quot;. It follows a controversy around a cover of Madonna&#x27;s Like A Prayer by Australian DJ Josh Fawaz which recently topped the ARIA dance singles chart and peaked at number 2 on the country&#x27;s overall chart." data-source="BBC News" data-published="2026-08-25T04:54:01+00:00" data-section="Tech" data-paywalled="false">
           <a class="headline" href="https://www.bbc.co.uk/news/articles/c20vl4vm2pno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Songs created by AI banned from Australia&#x27;s music charts</a>
           <p class="summary">Songs that are largely or wholly created by AI have been banned from Australia&#x27;s music charts. From this week, all releases must be &quot;substantially human made&quot; to be eligible. The Australian Recording Industry Association (ARIA) said the new code would help &quot;promote the human nature of artistry&quot;. It follows a controversy around a cover of Madonna&#x27;s Like A Prayer by Australian DJ Josh Fawaz which recently topped the ARIA dance singles chart and peaked at number 2 on the country&#x27;s overall chart.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c20vl4vm2pno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c20vl4vm2pno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 05:54</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Songs created by AI banned from Australia&#x27;s music charts" data-url="https://www.bbc.co.uk/news/articles/c20vl4vm2pno?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked" target="_blank" rel="noopener">Lenovo confirms Legion Go issues after gamers report bricked devices</a>
-          <p class="summary">﻿I installed Lenovo’s forbidden BIOS and my Legion Go lived. You might be less lucky. When a company’s software update turns your computer into a useless brick, should fixes be free? Framework, the modular computer startup, apparently thinks so . But it’s not clear that computing giant Lenovo will go that far. Three weeks after a Redditor presented a nearly $300 repair bill for their handheld gaming PC — among other reports of damage and high repair bills — the company is breaking its silence.</p>
-          <span class="source"><a href="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked" target="_blank" rel="noopener">The Verge</a></span>
-          
-          <button type="button" class="share-btn" hidden data-title="Lenovo confirms Legion Go issues after gamers report bricked devices" data-url="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked">&#8599; Share</button>
-        </article>
-        <article class="story">
+        <article class="story" data-id="https://arstechnica.com/ai/2026/08/ai-is-hitting-entry-level-jobs-hardest-stanford-study-finds/" data-title="AI is hitting entry-level jobs hardest, Stanford study finds" data-summary="For years , AI industry watchers of all stripes have been warning of a coming jobs apocalypse driven by ultra-intelligent AI systems that will be able to replicate most human tasks more cheaply. Now, newly updated research from Stanford University economists suggests AI seems to be causing significant entry-level job losses for younger workers in some fields, even as older workers appear largely unaffected so far. The August 2026 edition of “Canaries in the Coal Mine?" data-source="Ars Technica" data-published="2026-08-24T21:45:53+00:00" data-section="Tech" data-paywalled="false">
           <a class="headline" href="https://arstechnica.com/ai/2026/08/ai-is-hitting-entry-level-jobs-hardest-stanford-study-finds/" target="_blank" rel="noopener">AI is hitting entry-level jobs hardest, Stanford study finds</a>
           <p class="summary">For years , AI industry watchers of all stripes have been warning of a coming jobs apocalypse driven by ultra-intelligent AI systems that will be able to replicate most human tasks more cheaply. Now, newly updated research from Stanford University economists suggests AI seems to be causing significant entry-level job losses for younger workers in some fields, even as older workers appear largely unaffected so far. The August 2026 edition of “Canaries in the Coal Mine?</p>
-          <span class="source"><a href="https://arstechnica.com/ai/2026/08/ai-is-hitting-entry-level-jobs-hardest-stanford-study-finds/" target="_blank" rel="noopener">Ars Technica</a></span>
+          <span class="source"><a href="https://arstechnica.com/ai/2026/08/ai-is-hitting-entry-level-jobs-hardest-stanford-study-finds/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">24 Aug, 22:45</span></span>
           
           <button type="button" class="share-btn" hidden data-title="AI is hitting entry-level jobs hardest, Stanford study finds" data-url="https://arstechnica.com/ai/2026/08/ai-is-hitting-entry-level-jobs-hardest-stanford-study-finds/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/news/articles/ce308l1w5q5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Sharing dangerous driving videos is &#x27;truly reprehensible&#x27;, PM says</a>
-          <p class="summary">The government has urged social media companies to remove posts celebrating dangerous driving, as Prime Minister Andy Burnham branded sharing them &quot;truly reprehensible&quot;. Earlier Defence Minister Luke Pollard told BBC Breakfast that &quot;social media companies could take the content down easily and adjust their algorithms to stop it being distributed&quot;. Two police officers died when a car going the wrong way down a dual carriageway crashed into their vehicle near Middlesbrough on Saturday.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/ce308l1w5q5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked" data-title="Lenovo confirms Legion Go issues after gamers report bricked devices" data-summary="﻿I installed Lenovo’s forbidden BIOS and my Legion Go lived. You might be less lucky. When a company’s software update turns your computer into a useless brick, should fixes be free? Framework, the modular computer startup, apparently thinks so . But it’s not clear that computing giant Lenovo will go that far. Three weeks after a Redditor presented a nearly $300 repair bill for their handheld gaming PC — among other reports of damage and high repair bills — the company is breaking its silence." data-source="The Verge" data-published="2026-08-24T23:38:10+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked" target="_blank" rel="noopener">Lenovo confirms Legion Go issues after gamers report bricked devices</a>
+          <p class="summary">﻿I installed Lenovo’s forbidden BIOS and my Legion Go lived. You might be less lucky. When a company’s software update turns your computer into a useless brick, should fixes be free? Framework, the modular computer startup, apparently thinks so . But it’s not clear that computing giant Lenovo will go that far. Three weeks after a Redditor presented a nearly $300 repair bill for their handheld gaming PC — among other reports of damage and high repair bills — the company is breaking its silence.</p>
+          <span class="source"><a href="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">25 Aug, 00:38</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Sharing dangerous driving videos is &#x27;truly reprehensible&#x27;, PM says" data-url="https://www.bbc.co.uk/news/articles/ce308l1w5q5o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Lenovo confirms Legion Go issues after gamers report bricked devices" data-url="https://www.theverge.com/games/983457/lenovo-bad-legion-go-bios-update-bricked">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="ai">
         <h2>AI</h2>
-        <article class="story">
+        <article class="story" data-id="https://www.theverge.com/ai-artificial-intelligence/984239/alabama-attorney-general-subpoena-openai-hugging-face-hack" data-title="OpenAI subpoenaed by Alabama AG over Hugging Face hack" data-summary="Alabama&#x27;s attorney general issued a subpoena to OpenAI on Monday as part of an investigation into how one of its AI agents escaped a supposedly secure testing environment and autonomously hacked another company last month. The investigation seeks to determine whether OpenAI&#x27;s safety practices violated state consumer protection laws and pose a risk to Alabama […]" data-source="The Verge" data-published="2026-08-25T09:15:03+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/ai-artificial-intelligence/984239/alabama-attorney-general-subpoena-openai-hugging-face-hack" target="_blank" rel="noopener">OpenAI subpoenaed by Alabama AG over Hugging Face hack</a>
+          <p class="summary">Alabama&#x27;s attorney general issued a subpoena to OpenAI on Monday as part of an investigation into how one of its AI agents escaped a supposedly secure testing environment and autonomously hacked another company last month. The investigation seeks to determine whether OpenAI&#x27;s safety practices violated state consumer protection laws and pose a risk to Alabama […]</p>
+          <span class="source"><a href="https://www.theverge.com/ai-artificial-intelligence/984239/alabama-attorney-general-subpoena-openai-hugging-face-hack" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">25 Aug, 10:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="OpenAI subpoenaed by Alabama AG over Hugging Face hack" data-url="https://www.theverge.com/ai-artificial-intelligence/984239/alabama-attorney-general-subpoena-openai-hugging-face-hack">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.technologyreview.com/2026/08/25/1141907/dispatch-shanghai-humanoid-robot-carnival/" data-title="I spent a day at a robot “carnival” in Shanghai. Here’s what I saw." data-summary="Humanoid robots are having a moment in China. The popular machines are part of the country’s strategy to bring artificial intelligence into daily life. Embedding the technology into physical systems—an idea called embodied AI—was a key facet of China’s latest five-year plan , and companies here are already world leaders in humanoids. Nearly 90% of the more than 13,000 two-armed, two-legged robots delivered globally last year were made in China." data-source="MIT Technology Review" data-published="2026-08-25T09:00:00+00:00" data-section="AI" data-paywalled="true">
+          <a class="headline" href="https://www.technologyreview.com/2026/08/25/1141907/dispatch-shanghai-humanoid-robot-carnival/" target="_blank" rel="noopener">I spent a day at a robot “carnival” in Shanghai. Here’s what I saw.</a>
+          <p class="summary">Humanoid robots are having a moment in China. The popular machines are part of the country’s strategy to bring artificial intelligence into daily life. Embedding the technology into physical systems—an idea called embodied AI—was a key facet of China’s latest five-year plan , and companies here are already world leaders in humanoids. Nearly 90% of the more than 13,000 two-armed, two-legged robots delivered globally last year were made in China.</p>
+          <span class="source"><a href="https://www.technologyreview.com/2026/08/25/1141907/dispatch-shanghai-humanoid-robot-carnival/" target="_blank" rel="noopener">MIT Technology Review</a> &middot; <span class="pubdate">25 Aug, 10:00</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="I spent a day at a robot “carnival” in Shanghai. Here’s what I saw." data-url="https://www.technologyreview.com/2026/08/25/1141907/dispatch-shanghai-humanoid-robot-carnival/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/08/24/situational-awareness-star-ai-hedge-fund-that-nearly-imploded-now-being-probed-by-the-sec/" data-title="Situational Awareness, star AI hedge fund that nearly imploded, now being probed by the SEC" data-summary="🚨 Flash Sale 🚨 Get $100 off your Disrupt 2026 ticket Back by popular demand: Save up to $300 on Disrupt Situational Awareness, the AI focused hedge fund that was Wall Street’s fleeting obsession, is having a very bad month. The company, led by twentysomething OpenAI alum Leopold Aschenbrenner, went all-in on a variety of AI investments and, for a period, enjoyed phenomenal growth. Then, at the end of July, a downturn in AI stocks erased billions of dollars in value at the firm." data-source="TechCrunch" data-published="2026-08-25T00:23:12+00:00" data-section="AI" data-paywalled="false">
           <a class="headline" href="https://techcrunch.com/2026/08/24/situational-awareness-star-ai-hedge-fund-that-nearly-imploded-now-being-probed-by-the-sec/" target="_blank" rel="noopener">Situational Awareness, star AI hedge fund that nearly imploded, now being probed by the SEC</a>
           <p class="summary">🚨 Flash Sale 🚨 Get $100 off your Disrupt 2026 ticket Back by popular demand: Save up to $300 on Disrupt Situational Awareness, the AI focused hedge fund that was Wall Street’s fleeting obsession, is having a very bad month. The company, led by twentysomething OpenAI alum Leopold Aschenbrenner, went all-in on a variety of AI investments and, for a period, enjoyed phenomenal growth. Then, at the end of July, a downturn in AI stocks erased billions of dollars in value at the firm.</p>
-          <span class="source"><a href="https://techcrunch.com/2026/08/24/situational-awareness-star-ai-hedge-fund-that-nearly-imploded-now-being-probed-by-the-sec/" target="_blank" rel="noopener">TechCrunch</a></span>
+          <span class="source"><a href="https://techcrunch.com/2026/08/24/situational-awareness-star-ai-hedge-fund-that-nearly-imploded-now-being-probed-by-the-sec/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">25 Aug, 01:23</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Situational Awareness, star AI hedge fund that nearly imploded, now being probed by the SEC" data-url="https://techcrunch.com/2026/08/24/situational-awareness-star-ai-hedge-fund-that-nearly-imploded-now-being-probed-by-the-sec/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
+        <article class="story" data-id="https://www.zdnet.com/article/businesses-must-reinvent-their-processes-and-workforce-to-scale-agentic-ai-adoption/" data-title="Businesses must reinvent their processes and workforce to scale agentic AI adoption" data-summary="Follow ZDNET: Add us as a preferred source on Google. Most US-based companies are under pressure and working hard to shift from experimenting with AI agents to deploying them in production, according to the latest research from Deloitte . A survey of 501 senior business leaders involved in driving their companies&#x27; AI strategies or implementations revealed that most organizations struggle to develop an executable, integrated roadmap for agentic AI initiatives." data-source="ZDNet" data-published="2026-08-24T19:22:32+00:00" data-section="AI" data-paywalled="false">
           <a class="headline" href="https://www.zdnet.com/article/businesses-must-reinvent-their-processes-and-workforce-to-scale-agentic-ai-adoption/" target="_blank" rel="noopener">Businesses must reinvent their processes and workforce to scale agentic AI adoption</a>
           <p class="summary">Follow ZDNET: Add us as a preferred source on Google. Most US-based companies are under pressure and working hard to shift from experimenting with AI agents to deploying them in production, according to the latest research from Deloitte . A survey of 501 senior business leaders involved in driving their companies&#x27; AI strategies or implementations revealed that most organizations struggle to develop an executable, integrated roadmap for agentic AI initiatives.</p>
-          <span class="source"><a href="https://www.zdnet.com/article/businesses-must-reinvent-their-processes-and-workforce-to-scale-agentic-ai-adoption/" target="_blank" rel="noopener">ZDNet</a></span>
+          <span class="source"><a href="https://www.zdnet.com/article/businesses-must-reinvent-their-processes-and-workforce-to-scale-agentic-ai-adoption/" target="_blank" rel="noopener">ZDNet</a> &middot; <span class="pubdate">24 Aug, 20:22</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Businesses must reinvent their processes and workforce to scale agentic AI adoption" data-url="https://www.zdnet.com/article/businesses-must-reinvent-their-processes-and-workforce-to-scale-agentic-ai-adoption/">&#8599; Share</button>
-        </article>
-        <article class="story">
-          <a class="headline" href="https://arstechnica.com/tech-policy/2026/08/nvidia-senior-manager-linked-to-supermicro-scheme-smuggling-ai-servers-to-china/" target="_blank" rel="noopener">Nvidia senior manager linked to Supermicro scheme smuggling AI servers to China</a>
-          <p class="summary">Taiwan has indicted nine people— reportedly including an Nvidia senior manager and two Supermicro employees based in the country—who allegedly helped forge documents to cover up illegal exports of high-end AI servers to China in violation of US export controls.</p>
-          <span class="source"><a href="https://arstechnica.com/tech-policy/2026/08/nvidia-senior-manager-linked-to-supermicro-scheme-smuggling-ai-servers-to-china/" target="_blank" rel="noopener">Ars Technica</a></span>
-          
-          <button type="button" class="share-btn" hidden data-title="Nvidia senior manager linked to Supermicro scheme smuggling AI servers to China" data-url="https://arstechnica.com/tech-policy/2026/08/nvidia-senior-manager-linked-to-supermicro-scheme-smuggling-ai-servers-to-china/">&#8599; Share</button>
-        </article>
-        <article class="story">
-          <a class="headline" href="https://www.technologyreview.com/2026/08/24/1142630/ai-school-classroom-policies/" target="_blank" rel="noopener">How to encourage smarter AI use in the classroom</a>
-          <p class="summary">This article is from Making AI Work , MIT Technology Review’s limited-run newsletter examining how to apply LLMs across industries. To receive it in your inbox, sign up here . Chatbots took many schools by surprise upon their release a few years ago. Suddenly, students carried an app in their phones that could magically answer almost any homework question or spin up an essay in seconds.</p>
-          <span class="source"><a href="https://www.technologyreview.com/2026/08/24/1142630/ai-school-classroom-policies/" target="_blank" rel="noopener">MIT Technology Review</a></span>
-          <span class="paywall">🔒 May require a subscription</span>
-          <button type="button" class="share-btn" hidden data-title="How to encourage smarter AI use in the classroom" data-url="https://www.technologyreview.com/2026/08/24/1142630/ai-school-classroom-policies/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="politics_uk">
         <h2>Politics — UK</h2>
-        <article class="story">
+        <article class="story" data-id="https://www.theguardian.com/politics/live/2026/aug/25/housing-plans-andy-burnham-social-renting-pledge-ukraine-reform-tories-rupert-lowe-uk-politics-latest" data-title="Government lays out housing plans but Burnham backtracks on social renting pledge – UK politics live" data-summary="£10bn for housing with 60% social renting is at odds with PM’s previous call for programme to be spent entirely on social homesA housing minister has rejected suggestions that Andy Burnham has failed to his keep promises on council housing, as the government unveiled a nearly £10bn plan to boost “genuinely affordable homes”.The prime minister has pledged to carry out the biggest council housebuilding programme since the postwar period, with more than 70,000 homes, 60% allocated for social rent, to be delivered across England.No, I don’t." data-source="The Guardian" data-published="2026-08-25T09:01:28+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/live/2026/aug/25/housing-plans-andy-burnham-social-renting-pledge-ukraine-reform-tories-rupert-lowe-uk-politics-latest" target="_blank" rel="noopener">Government lays out housing plans but Burnham backtracks on social renting pledge – UK politics live</a>
+          <p class="summary">£10bn for housing with 60% social renting is at odds with PM’s previous call for programme to be spent entirely on social homesA housing minister has rejected suggestions that Andy Burnham has failed to his keep promises on council housing, as the government unveiled a nearly £10bn plan to boost “genuinely affordable homes”.The prime minister has pledged to carry out the biggest council housebuilding programme since the postwar period, with more than 70,000 homes, 60% allocated for social rent, to be delivered across England.No, I don’t.</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/live/2026/aug/25/housing-plans-andy-burnham-social-renting-pledge-ukraine-reform-tories-rupert-lowe-uk-politics-latest" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">25 Aug, 10:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Government lays out housing plans but Burnham backtracks on social renting pledge – UK politics live" data-url="https://www.theguardian.com/politics/live/2026/aug/25/housing-plans-andy-burnham-social-renting-pledge-ukraine-reform-tories-rupert-lowe-uk-politics-latest">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cnvly73jrrdo?at_medium=RSS&amp;at_campaign=rss" data-title="More than 70,000 social and affordable homes to be built across England over 10 years" data-summary="Ministers have announced where more than 70,000 social and affordable homes will be built in England over the next 10 years as part of an initial allocation of almost Â£10bn, in a bid to address the housing crisis. Funding has been granted to Greater Manchester, the West Midlands, West Yorkshire, South Yorkshire, North East England, and Liverpool. An additional Â£6bn was previously announced for London." data-source="BBC News" data-published="2026-08-25T08:25:36+00:00" data-section="Politics — UK" data-paywalled="false">
           <a class="headline" href="https://www.bbc.co.uk/news/articles/cnvly73jrrdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">More than 70,000 social and affordable homes to be built across England over 10 years</a>
           <p class="summary">Ministers have announced where more than 70,000 social and affordable homes will be built in England over the next 10 years as part of an initial allocation of almost Â£10bn, in a bid to address the housing crisis. Funding has been granted to Greater Manchester, the West Midlands, West Yorkshire, South Yorkshire, North East England, and Liverpool. An additional Â£6bn was previously announced for London.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cnvly73jrrdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cnvly73jrrdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 09:25</span></span>
           
           <button type="button" class="share-btn" hidden data-title="More than 70,000 social and affordable homes to be built across England over 10 years" data-url="https://www.bbc.co.uk/news/articles/cnvly73jrrdo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles" target="_blank" rel="noopener">Burnham plans trip to New York as Ukraine pleads for US-made missiles</a>
-          <p class="summary">UK prime minister ‘likely’ to travel to US in September, after meeting Zelenskyy and saying supply problem is ‘fixable’ Andy Burnham has said he plans to travel to the US next month to join European leaders lobbying Donald Trump to supply Ukraine with Patriot missiles. The UK prime minister told Bloomberg he was “looking forward to going to New York” in September, which is when the UN General Assembly will meet.</p>
-          <span class="source"><a href="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles" target="_blank" rel="noopener">The Guardian</a></span>
-          
-          <button type="button" class="share-btn" hidden data-title="Burnham plans trip to New York as Ukraine pleads for US-made missiles" data-url="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles">&#8599; Share</button>
-        </article>
-        <article class="story">
+        <article class="story" data-id="https://www.economist.com/britain/2026/08/24/trees-are-spreading-in-one-of-europes-least-forested-countries" data-title="Trees are spreading in one of Europe’s least forested countries" data-summary="Britain now needs to learn to cut them down" data-source="The Economist" data-published="2026-08-24T17:12:32+00:00" data-section="Politics — UK" data-paywalled="true">
           <a class="headline" href="https://www.economist.com/britain/2026/08/24/trees-are-spreading-in-one-of-europes-least-forested-countries" target="_blank" rel="noopener">Trees are spreading in one of Europe’s least forested countries</a>
           <p class="summary">Britain now needs to learn to cut them down</p>
-          <span class="source"><a href="https://www.economist.com/britain/2026/08/24/trees-are-spreading-in-one-of-europes-least-forested-countries" target="_blank" rel="noopener">The Economist</a></span>
+          <span class="source"><a href="https://www.economist.com/britain/2026/08/24/trees-are-spreading-in-one-of-europes-least-forested-countries" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">24 Aug, 18:12</span></span>
           <span class="paywall">🔒 May require a subscription</span>
           <button type="button" class="share-btn" hidden data-title="Trees are spreading in one of Europe’s least forested countries" data-url="https://www.economist.com/britain/2026/08/24/trees-are-spreading-in-one-of-europes-least-forested-countries">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/news/articles/cj06818jgzlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Burnham refuses to rule out tax rises in autumn Budget</a>
-          <p class="summary">Andy Burnham has refused to rule out tax rises in the upcoming autumn Budget, saying he &quot;won&#x27;t be unrealistic&quot; about the &quot;challenging&quot; state of public finances. The prime minister said he would take a &quot;careful approach&quot; to the economy, and defended his previously announced cost of living pledges as funded spending commitments.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cj06818jgzlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles" data-title="Burnham plans trip to New York as Ukraine pleads for US-made missiles" data-summary="UK prime minister ‘likely’ to attend UN general assembly, after meeting Zelenskyy and saying supply problem is fixableEurope live – latest updatesAndy Burnham has said he is likely to attend the UN general assembly in New York next month, a chance for the new prime minister to meet a host of world leaders.While Downing Street said the plans were not definite, the prime minister told Bloomberg in an interview: “I’m looking forward to going to New York in September.” Continue reading..." data-source="The Guardian" data-published="2026-08-25T08:27:08+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles" target="_blank" rel="noopener">Burnham plans trip to New York as Ukraine pleads for US-made missiles</a>
+          <p class="summary">UK prime minister ‘likely’ to attend UN general assembly, after meeting Zelenskyy and saying supply problem is fixableEurope live – latest updatesAndy Burnham has said he is likely to attend the UN general assembly in New York next month, a chance for the new prime minister to meet a host of world leaders.While Downing Street said the plans were not definite, the prime minister told Bloomberg in an interview: “I’m looking forward to going to New York in September.” Continue reading...</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">25 Aug, 09:27</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Burnham refuses to rule out tax rises in autumn Budget" data-url="https://www.bbc.co.uk/news/articles/cj06818jgzlo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Burnham plans trip to New York as Ukraine pleads for US-made missiles" data-url="https://www.theguardian.com/politics/2026/aug/25/andy-burnham-us-new-york-ukraine-patriot-missiles">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="politics_global">
         <h2>Politics — Global</h2>
-        <article class="story">
-          <a class="headline" href="https://www.aljazeera.com/sports/2026/8/25/federer-to-play-tennis-at-us-open-but-rules-out-williams-like-return?traffic_source=rss" target="_blank" rel="noopener">Federer to play tennis at US Open but rules out Williams-like return</a>
-          <p class="summary">Roger Federer is actually nervous about his tennis. The man who won five straight US Open championships during the height of his dominance of the sport is set to play again in Arthur Ashe Stadium on Tuesday night for the first time since 2019. And he’s not quite sure how the game that perhaps nobody ever made look more elegant will appear now.</p>
-          <span class="source"><a href="https://www.aljazeera.com/sports/2026/8/25/federer-to-play-tennis-at-us-open-but-rules-out-williams-like-return?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a></span>
+        <article class="story" data-id="https://www.theguardian.com/world/live/2026/aug/25/europe-ukraine-patriot-missiles-zelenskyy-trump-russia-drone-germany-latest-news-update" data-title="Burnham to take Zelenskyy’s pleas for Patriot missiles to Trump – Europe live" data-summary="UK PM to join delegation of leaders lobbying US president to step up suppliesBurnham plans trip to New York as Ukraine pleads for US-made missilesIn other news, at least 35,000 more people died during Europe’s record-breaking heatwaves this summer than would normally be expected, the Guardian’s Europe correspondent Jon Henley reports.According to provisional national figures, which cover barely half of the continent, excess mortality in three of the EU’s larger countries – Germany, France and Spain – has already exceeded 25,000, as experts warn the toll will rise significantly once August totals are consolidated.Warm and sincere Independence Day wishes from His Majesty King Charles III and Her Majesty The Queen are deeply moving and exceptionally meaningful.I am grateful for the emphasis on Ukraine’s history, rich culture, and unyielding national spirit, as well as the resilience of the Ukrainian people, who continue to defend their homeland and uphold the values that define our state." data-source="The Guardian" data-published="2026-08-25T09:11:59+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/world/live/2026/aug/25/europe-ukraine-patriot-missiles-zelenskyy-trump-russia-drone-germany-latest-news-update" target="_blank" rel="noopener">Burnham to take Zelenskyy’s pleas for Patriot missiles to Trump – Europe live</a>
+          <p class="summary">UK PM to join delegation of leaders lobbying US president to step up suppliesBurnham plans trip to New York as Ukraine pleads for US-made missilesIn other news, at least 35,000 more people died during Europe’s record-breaking heatwaves this summer than would normally be expected, the Guardian’s Europe correspondent Jon Henley reports.According to provisional national figures, which cover barely half of the continent, excess mortality in three of the EU’s larger countries – Germany, France and Spain – has already exceeded 25,000, as experts warn the toll will rise significantly once August totals are consolidated.Warm and sincere Independence Day wishes from His Majesty King Charles III and Her Majesty The Queen are deeply moving and exceptionally meaningful.I am grateful for the emphasis on Ukraine’s history, rich culture, and unyielding national spirit, as well as the resilience of the Ukrainian people, who continue to defend their homeland and uphold the values that define our state.</p>
+          <span class="source"><a href="https://www.theguardian.com/world/live/2026/aug/25/europe-ukraine-patriot-missiles-zelenskyy-trump-russia-drone-germany-latest-news-update" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">25 Aug, 10:11</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Federer to play tennis at US Open but rules out Williams-like return" data-url="https://www.aljazeera.com/sports/2026/8/25/federer-to-play-tennis-at-us-open-but-rules-out-williams-like-return?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Burnham to take Zelenskyy’s pleas for Patriot missiles to Trump – Europe live" data-url="https://www.theguardian.com/world/live/2026/aug/25/europe-ukraine-patriot-missiles-zelenskyy-trump-russia-drone-germany-latest-news-update">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.theguardian.com/australia-news/live/2026/aug/25/australia-news-live-sydney-trains-delays-cancellations-albanese-gst-wa-one-nation-coalition-secret-harbour-election-tax-reform-royal-commission-antisemitism-icac-victorian-rail-loop-alan-jones-trial-ntwnfb" target="_blank" rel="noopener">Australia news live: Man arrested after allegedly attacking woman and boy in Melbourne CBD; Richmond denies players ‘making light’ of Swans scandal in footage</a>
-          <p class="summary">A man has been arrested after a boy and a woman were allegedly attacked in Melbourne’s CBD. Victoria police said officers responded to reports of the attack at about 1pm after a 10-year-old boy from the Bass Coast region was allegedly punched in the upper body. It is alleged that a 30-year-old woman from Cowes intervened and was allegedly stabbed in the upper body with a pair of scissors. A 27-year-old man from Sunshine West was arrested at the scene, and police seized a pair of scissors.</p>
-          <span class="source"><a href="https://www.theguardian.com/australia-news/live/2026/aug/25/australia-news-live-sydney-trains-delays-cancellations-albanese-gst-wa-one-nation-coalition-secret-harbour-election-tax-reform-royal-commission-antisemitism-icac-victorian-rail-loop-alan-jones-trial-ntwnfb" target="_blank" rel="noopener">The Guardian</a></span>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cq63rmj1zl1o?at_medium=RSS&amp;at_campaign=rss" data-title="Lockerbie bombing trial postponed days before it was due to start" data-summary="The trial of a Libyan man over the Lockerbie bombing has been postponed for a third time, after new evidence on the 37-year-old case came to light three days ago. Jury selection was due to get under way in Washington DC on Wednesday but the BBC understands a new start date has been set for January next year. Lawyers acting for Abu Agila Mohammad Kheir Al-Marimi said &quot;newly discovered evidence&quot; previously unknown to the defence and prosecutors from the US government emerged on Friday 21 August." data-source="BBC News" data-published="2026-08-25T09:08:13+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cq63rmj1zl1o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lockerbie bombing trial postponed days before it was due to start</a>
+          <p class="summary">The trial of a Libyan man over the Lockerbie bombing has been postponed for a third time, after new evidence on the 37-year-old case came to light three days ago. Jury selection was due to get under way in Washington DC on Wednesday but the BBC understands a new start date has been set for January next year. Lawyers acting for Abu Agila Mohammad Kheir Al-Marimi said &quot;newly discovered evidence&quot; previously unknown to the defence and prosecutors from the US government emerged on Friday 21 August.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cq63rmj1zl1o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 10:08</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Australia news live: Man arrested after allegedly attacking woman and boy in Melbourne CBD; Richmond denies players ‘making light’ of Swans scandal in footage" data-url="https://www.theguardian.com/australia-news/live/2026/aug/25/australia-news-live-sydney-trains-delays-cancellations-albanese-gst-wa-one-nation-coalition-secret-harbour-election-tax-reform-royal-commission-antisemitism-icac-victorian-rail-loop-alan-jones-trial-ntwnfb">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Lockerbie bombing trial postponed days before it was due to start" data-url="https://www.bbc.co.uk/news/articles/cq63rmj1zl1o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/news/articles/c783lnz12vlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Kit Harington replaces Nicholas Hoult in HBO&#x27;s Harry Potter series</a>
-          <p class="summary">Kit Harington is joining the highly anticipated Harry Potter TV series as the wizarding world&#x27;s celebrity-turned-Hogwarts instructor Gilderoy Lockhart, HBO has confirmed to the BBC. X-Men star Nicholas Hoult was originally cast in the upcoming second series earlier this month but had to leave due to scheduling issues. Best known for playing Jon Snow for eight seasons in the award-winning series Game of Thrones, Harington also appears in the BBC and HBO financial drama Industry .</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c783lnz12vlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.aljazeera.com/video/newsfeed/2026/8/25/enough-is-enough-kenya-nurses-strike-over-pay-and-working-conditions?traffic_source=rss" data-title="‘Enough is enough’: Kenya nurses strike over pay and working conditions" data-summary="‘Enough is enough’: Kenya nurses strike over pay and working conditions Shiru Kihara, a nurse in Kenya, explains why she and thousands of other nurses are on strike, demanding fair pay and recognition of their profession. She says years of failed negotiations have left nurses with no choice but to walk out." data-source="Al Jazeera" data-published="2026-08-25T09:05:54+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/video/newsfeed/2026/8/25/enough-is-enough-kenya-nurses-strike-over-pay-and-working-conditions?traffic_source=rss" target="_blank" rel="noopener">‘Enough is enough’: Kenya nurses strike over pay and working conditions</a>
+          <p class="summary">‘Enough is enough’: Kenya nurses strike over pay and working conditions Shiru Kihara, a nurse in Kenya, explains why she and thousands of other nurses are on strike, demanding fair pay and recognition of their profession. She says years of failed negotiations have left nurses with no choice but to walk out.</p>
+          <span class="source"><a href="https://www.aljazeera.com/video/newsfeed/2026/8/25/enough-is-enough-kenya-nurses-strike-over-pay-and-working-conditions?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">25 Aug, 10:05</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Kit Harington replaces Nicholas Hoult in HBO&#x27;s Harry Potter series" data-url="https://www.bbc.co.uk/news/articles/c783lnz12vlo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="‘Enough is enough’: Kenya nurses strike over pay and working conditions" data-url="https://www.aljazeera.com/video/newsfeed/2026/8/25/enough-is-enough-kenya-nurses-strike-over-pay-and-working-conditions?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.aljazeera.com/opinions/2026/8/25/the-iran-war-is-bringing-cyberwarfare-into-critical-infrastructure?traffic_source=rss" target="_blank" rel="noopener">The Iran war is bringing cyberwarfare into critical infrastructure</a>
-          <p class="summary">Media reports about a cyberattack that forced a British power plant offline for four days should be taken seriously far beyond the United Kingdom. It gives us a glimpse of how the Iran conflict could develop and signals to governments and businesses around the world that they need to be ready for a new battlefield. The facility reportedly targeted by Iran-linked hackers was relatively small, and the British government has stressed that there was no risk to the wider energy system.</p>
-          <span class="source"><a href="https://www.aljazeera.com/opinions/2026/8/25/the-iran-war-is-bringing-cyberwarfare-into-critical-infrastructure?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a></span>
+        <article class="story" data-id="https://www.theguardian.com/world/2026/aug/24/the-whitewashing-of-the-green-indian-mission" data-title="The whitewashing of the Green India Mission forest expansion initiative" data-summary="The flagship environmental project has achieved ‘negligible’ results. Why so little progress, and what are the risks as the planet gets hotter? Plus, fusion dance pioneer Usha Jey Don’t get This is India delivered to your inbox? Sign up here I ndia set out to expand its forested areas a decade ago. Last week, however, we learned that the forest cover programme had barely taken root when the government’s auditors released their findings of the flagship Green India Mission." data-source="The Guardian" data-published="2026-08-25T09:03:12+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/world/2026/aug/24/the-whitewashing-of-the-green-indian-mission" target="_blank" rel="noopener">The whitewashing of the Green India Mission forest expansion initiative</a>
+          <p class="summary">The flagship environmental project has achieved ‘negligible’ results. Why so little progress, and what are the risks as the planet gets hotter? Plus, fusion dance pioneer Usha Jey Don’t get This is India delivered to your inbox? Sign up here I ndia set out to expand its forested areas a decade ago. Last week, however, we learned that the forest cover programme had barely taken root when the government’s auditors released their findings of the flagship Green India Mission.</p>
+          <span class="source"><a href="https://www.theguardian.com/world/2026/aug/24/the-whitewashing-of-the-green-indian-mission" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">25 Aug, 10:03</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="The Iran war is bringing cyberwarfare into critical infrastructure" data-url="https://www.aljazeera.com/opinions/2026/8/25/the-iran-war-is-bringing-cyberwarfare-into-critical-infrastructure?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="The whitewashing of the Green India Mission forest expansion initiative" data-url="https://www.theguardian.com/world/2026/aug/24/the-whitewashing-of-the-green-indian-mission">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="health">
         <h2>Health &amp; Fitness</h2>
-        <article class="story">
+        <article class="story" data-id="https://www.statnews.com/2026/08/25/russell-vought-omb-funding-comments-daughter-benefited-nih-research/?utm_campaign=rss" data-title="STAT+: Comments on OMB research rule mysteriously removed from federal website" data-summary="Some comments on a proposed OMB research rule have been mysteriously removed from a public-facing government webpage." data-source="STAT News" data-published="2026-08-25T08:30:00+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/08/25/russell-vought-omb-funding-comments-daughter-benefited-nih-research/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Comments on OMB research rule mysteriously removed from federal website</a>
+          <p class="summary">Some comments on a proposed OMB research rule have been mysteriously removed from a public-facing government webpage.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/08/25/russell-vought-omb-funding-comments-daughter-benefited-nih-research/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">25 Aug, 09:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: Comments on OMB research rule mysteriously removed from federal website" data-url="https://www.statnews.com/2026/08/25/russell-vought-omb-funding-comments-daughter-benefited-nih-research/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c9w4jgg4y55o?at_medium=RSS&amp;at_campaign=rss" data-title="HPV home-testing kits available for women in England who have missed cervical screening" data-summary="Women who have missed a cervical screening appointment in England are to be offered HPV self-testing kits by the NHS. Over the next year, nearly four million will receive invites on the NHS App or via text message, email or letter to order a free kit to use at home. Figures show around a third of women who are eligible cervical cancer screening have not taken up the offer recently." data-source="BBC News" data-published="2026-08-24T23:27:50+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
           <a class="headline" href="https://www.bbc.co.uk/news/articles/c9w4jgg4y55o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">HPV home-testing kits available for women in England who have missed cervical screening</a>
           <p class="summary">Women who have missed a cervical screening appointment in England are to be offered HPV self-testing kits by the NHS. Over the next year, nearly four million will receive invites on the NHS App or via text message, email or letter to order a free kit to use at home. Figures show around a third of women who are eligible cervical cancer screening have not taken up the offer recently.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c9w4jgg4y55o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c9w4jgg4y55o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 00:27</span></span>
           
           <button type="button" class="share-btn" hidden data-title="HPV home-testing kits available for women in England who have missed cervical screening" data-url="https://www.bbc.co.uk/news/articles/c9w4jgg4y55o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.statnews.com/2026/08/24/biotech-news-lady-gaga-and-her-fiance-launch-biotech-startup/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Lady Gaga and her fiancé launch a biotech startup</a>
-          <p class="summary">FTC challenges Amgen&#x27;s Enbrel patent strategy, the long, winding path for the Moderna-Merck cancer vaccine, and more biotech news</p>
-          <span class="source"><a href="https://www.statnews.com/2026/08/24/biotech-news-lady-gaga-and-her-fiance-launch-biotech-startup/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a></span>
-          
-          <button type="button" class="share-btn" hidden data-title="STAT+: Lady Gaga and her fiancé launch a biotech startup" data-url="https://www.statnews.com/2026/08/24/biotech-news-lady-gaga-and-her-fiance-launch-biotech-startup/?utm_campaign=rss">&#8599; Share</button>
-        </article>
-        <article class="story">
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/08/260824065605.htm" data-title="Common medications may change your gut for years" data-summary="Common medications may reshape the gut microbiome long after the last dose is taken. In a study of more than 2,500 people, researchers found lasting microbial changes linked not only to antibiotics, but also to antidepressants, beta-blockers, acid-reducing drugs, and benzodiazepines. Some effects were still detectable years later, suggesting past medication use may strongly influence the gut bacteria people carry today." data-source="ScienceDaily" data-published="2026-08-24T13:14:50+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
           <a class="headline" href="https://www.sciencedaily.com/releases/2026/08/260824065605.htm" target="_blank" rel="noopener">Common medications may change your gut for years</a>
           <p class="summary">Common medications may reshape the gut microbiome long after the last dose is taken. In a study of more than 2,500 people, researchers found lasting microbial changes linked not only to antibiotics, but also to antidepressants, beta-blockers, acid-reducing drugs, and benzodiazepines. Some effects were still detectable years later, suggesting past medication use may strongly influence the gut bacteria people carry today.</p>
-          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/08/260824065605.htm" target="_blank" rel="noopener">ScienceDaily</a></span>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/08/260824065605.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">24 Aug, 14:14</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Common medications may change your gut for years" data-url="https://www.sciencedaily.com/releases/2026/08/260824065605.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/news/videos/cyvzpjlv2ejo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Is school to blame for mum&#x27;s asbestos death?</a>
-          <p class="summary">Caroline Bryan died three months after being diagnosed of an incurable cancer linked to asbestos.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/videos/cyvzpjlv2ejo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.statnews.com/2026/08/25/ai-drug-diversion-software-human-oversight-controlcheck-sentri7/?utm_campaign=rss" data-title="STAT+: AI is good at catching drug theft at hospitals, but only when humans do their part" data-summary="New AI technology can help hospitals prevent the controlled substances from being stolen, or abused by staff, but those tools aren&#x27;t foolproof." data-source="STAT News" data-published="2026-08-25T08:30:00+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/08/25/ai-drug-diversion-software-human-oversight-controlcheck-sentri7/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: AI is good at catching drug theft at hospitals, but only when humans do their part</a>
+          <p class="summary">New AI technology can help hospitals prevent the controlled substances from being stolen, or abused by staff, but those tools aren&#x27;t foolproof.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/08/25/ai-drug-diversion-software-human-oversight-controlcheck-sentri7/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">25 Aug, 09:30</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Is school to blame for mum&#x27;s asbestos death?" data-url="https://www.bbc.co.uk/news/videos/cyvzpjlv2ejo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="STAT+: AI is good at catching drug theft at hospitals, but only when humans do their part" data-url="https://www.statnews.com/2026/08/25/ai-drug-diversion-software-human-oversight-controlcheck-sentri7/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="bcci">
@@ -415,98 +527,111 @@
       </section>
       <section class="section" data-topic="cricket">
         <h2>Cricket</h2>
-        <article class="story">
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1551381.html?ex_cid=OTC-RSS" data-title="Sri Lanka replace injured Vihanga with Meepage for Women&#x27;s T20 Asia Cup" data-summary="Vihanga picked up a right-knee injury during a practice game, and did not fly to the UAE" data-source="ESPNcricinfo" data-published="2026-08-25T06:17:45+00:00" data-section="Cricket" data-paywalled="false">
           <a class="headline" href="https://www.cricinfo.com/ci/content/story/1551381.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Sri Lanka replace injured Vihanga with Meepage for Women&#x27;s T20 Asia Cup</a>
           <p class="summary">Vihanga picked up a right-knee injury during a practice game, and did not fly to the UAE</p>
-          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551381.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a></span>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551381.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">25 Aug, 07:17</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Sri Lanka replace injured Vihanga with Meepage for Women&#x27;s T20 Asia Cup" data-url="https://www.cricinfo.com/ci/content/story/1551381.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1551371.html?ex_cid=OTC-RSS" data-title="Yorkshire&#x27;s Richard Pyrah named new Melbourne Stars WBBL coach" data-summary="Pyrah takes over from Andy Christie who moves into an assistant role" data-source="ESPNcricinfo" data-published="2026-08-25T04:17:50+00:00" data-section="Cricket" data-paywalled="false">
           <a class="headline" href="https://www.cricinfo.com/ci/content/story/1551371.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Yorkshire&#x27;s Richard Pyrah named new Melbourne Stars WBBL coach</a>
           <p class="summary">Pyrah takes over from Andy Christie who moves into an assistant role</p>
-          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551371.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a></span>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551371.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">25 Aug, 05:17</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Yorkshire&#x27;s Richard Pyrah named new Melbourne Stars WBBL coach" data-url="https://www.cricinfo.com/ci/content/story/1551371.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1551361.html?ex_cid=OTC-RSS" data-title="New normal dawning for England after Carse night out" data-summary="Players are under more scrutiny from general public than ever before - and they only have themselves to blame" data-source="ESPNcricinfo" data-published="2026-08-24T21:40:55+00:00" data-section="Cricket" data-paywalled="false">
           <a class="headline" href="https://www.cricinfo.com/ci/content/story/1551361.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">New normal dawning for England after Carse night out</a>
           <p class="summary">Players are under more scrutiny from general public than ever before - and they only have themselves to blame</p>
-          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551361.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a></span>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551361.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">24 Aug, 22:40</span></span>
           
           <button type="button" class="share-btn" hidden data-title="New normal dawning for England after Carse night out" data-url="https://www.cricinfo.com/ci/content/story/1551361.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1551364.html?ex_cid=OTC-RSS" data-title="Fatima Sana&#x27;s Pakistan prepare for Asia Cup with T20 matches against men" data-summary="&quot;These learnings will help us adapt to the challenges of the competition,&quot; Pakistan captain Fatima Sana said" data-source="ESPNcricinfo" data-published="2026-08-24T18:35:33+00:00" data-section="Cricket" data-paywalled="false">
           <a class="headline" href="https://www.cricinfo.com/ci/content/story/1551364.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Fatima Sana&#x27;s Pakistan prepare for Asia Cup with T20 matches against men</a>
           <p class="summary">&quot;These learnings will help us adapt to the challenges of the competition,&quot; Pakistan captain Fatima Sana said</p>
-          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551364.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a></span>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1551364.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">24 Aug, 19:35</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Fatima Sana&#x27;s Pakistan prepare for Asia Cup with T20 matches against men" data-url="https://www.cricinfo.com/ci/content/story/1551364.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="sport">
         <h2>Sport</h2>
-        <article class="story">
-          <a class="headline" href="https://www.skysports.com/football/news/12040/13569345/free-stream-the-transfer-show-on-sky-sports-news-latest-football-transfer-news-updates-and-rumours" target="_blank" rel="noopener">FREE STREAM: Good Morning Transfers on Sky Sports News</a>
-          <p class="summary">Please use Chrome browser for a more accessible video player Sky Sports News is the best place to follow all the latest transfer news - and you can watch it right here, right now! All you have to do it log-in with your free Sky ID above to catch up with all the latest incomings and outgoings from across the leagues. There&#x27;s no need to be a Sky subscriber to watch. Remember, you can follow the latest transfer news with the dedicated Sky Sports Transfer Centre .</p>
-          <span class="source"><a href="https://www.skysports.com/football/news/12040/13569345/free-stream-the-transfer-show-on-sky-sports-news-latest-football-transfer-news-updates-and-rumours" target="_blank" rel="noopener">Sky Sports</a></span>
+        <article class="story" data-id="https://www.skysports.com/football/news/12040/13575398/savio-transfer-news-tottenham-sign-winger-from-manchester-city-in-85m-deal" data-title="Spurs sign Savio from Man City in £85m deal" data-summary="Savio joins Tottenham from Man City in an £85m deal; Spurs will pay an initial £75m for the 22-year-old, with a further £10m available in add-ons; Savio had been a long-term Tottenham target; Brazilian&#x27;s arrival takes Spurs&#x27; summer spending past the £300m barrier Tottenham have confirmed the signing of winger Savio from Manchester City in an £85m deal. Sky Sports News understands Spurs will pay an initial £75m for the 22-year-old, with a further £10m available in add-ons." data-source="Sky Sports" data-published="2026-08-25T10:06:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/football/news/12040/13575398/savio-transfer-news-tottenham-sign-winger-from-manchester-city-in-85m-deal" target="_blank" rel="noopener">Spurs sign Savio from Man City in £85m deal</a>
+          <p class="summary">Savio joins Tottenham from Man City in an £85m deal; Spurs will pay an initial £75m for the 22-year-old, with a further £10m available in add-ons; Savio had been a long-term Tottenham target; Brazilian&#x27;s arrival takes Spurs&#x27; summer spending past the £300m barrier Tottenham have confirmed the signing of winger Savio from Manchester City in an £85m deal. Sky Sports News understands Spurs will pay an initial £75m for the 22-year-old, with a further £10m available in add-ons.</p>
+          <span class="source"><a href="https://www.skysports.com/football/news/12040/13575398/savio-transfer-news-tottenham-sign-winger-from-manchester-city-in-85m-deal" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">25 Aug, 11:06</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="FREE STREAM: Good Morning Transfers on Sky Sports News" data-url="https://www.skysports.com/football/news/12040/13569345/free-stream-the-transfer-show-on-sky-sports-news-latest-football-transfer-news-updates-and-rumours">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Spurs sign Savio from Man City in £85m deal" data-url="https://www.skysports.com/football/news/12040/13575398/savio-transfer-news-tottenham-sign-winger-from-manchester-city-in-85m-deal">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cr59zj42plvo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Ranking the best managers in Premier League history</a>
-          <p class="summary">When it comes to ranking managers, titles are a good place to start. Only four bosses have won more than one since the Premier League era began in 1992. So if you do some quick maths, you&#x27;ll probably not be surprised by the names that top this list. But there is a debate to be had around where they should rank, and who else makes it into the top 10. So let&#x27;s have it. You can rank your greatest managers of the Premier League era below too. Longevity deserves a mention here.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cr59zj42plvo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cy7z637nj8jo?at_medium=RSS&amp;at_campaign=rss" data-title="Tottenham sign Savinho from Man City for £75m" data-summary="Tottenham have signed Brazil winger Savinho from Manchester City for an initial Â£75m. The 22-year-old has joined Spurs on a long-term contract with Roberto de Zerbi&#x27;s side potentially paying a further Â£10m in add-ons. Latest Tottenham news, analysis and fan views Ask about Tottenham - what do you want to know?" data-source="BBC News" data-published="2026-08-25T09:14:39+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cy7z637nj8jo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Tottenham sign Savinho from Man City for £75m</a>
+          <p class="summary">Tottenham have signed Brazil winger Savinho from Manchester City for an initial Â£75m. The 22-year-old has joined Spurs on a long-term contract with Roberto de Zerbi&#x27;s side potentially paying a further Â£10m in add-ons. Latest Tottenham news, analysis and fan views Ask about Tottenham - what do you want to know?</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cy7z637nj8jo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 10:14</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Ranking the best managers in Premier League history" data-url="https://www.bbc.co.uk/sport/football/articles/cr59zj42plvo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Tottenham sign Savinho from Man City for £75m" data-url="https://www.bbc.co.uk/sport/football/articles/cy7z637nj8jo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.skysports.com/football/news/12040/13576531/aston-villa-unai-emerys-problems-mounting-ahead-of-arsenal-test-after-threadbare-squad-falls-apart-against-brighton" target="_blank" rel="noopener">Problems mounting for threadbare Villa and Emery ahead of Arsenal</a>
-          <p class="summary">Sky Sports analyses the problems mounting for Unai Emery at Aston Villa following their dismal defeat to Brighton in their season opener; Villa lost 4-0 at the Amex Stadium and Joao Gomes was sent off; Emery&#x27;s side host Arsenal next, live on Monday Night Football A threadbare Aston Villa squad fell apart against Brighton at the Amex Stadium - and champions Arsenal are on the horizon with problems mounting for Unai Emery.</p>
-          <span class="source"><a href="https://www.skysports.com/football/news/12040/13576531/aston-villa-unai-emerys-problems-mounting-ahead-of-arsenal-test-after-threadbare-squad-falls-apart-against-brighton" target="_blank" rel="noopener">Sky Sports</a></span>
+        <article class="story" data-id="https://www.skysports.com/football/news/12040/13568830/chelsea-women-sonia-bompastor-and-ellie-carpenter-on-blues-transitional-moment-as-they-target-wsl-and-champions-league-success" data-title="Chelsea 2.0: How transitional Blues are rebuilding for WSL and WCL success" data-summary="Chelsea are morphing into a new team under Sonia Bompastor; they are taking learning from a disappointing 2025/26 season, with a clear change in playing personnel; they want to return to WSL and domestic glory, as well as competing in the Champions League &quot;Chelsea are going through a transitional moment and it takes time for the club to rebuild.&quot; Not pundit analysis, but the thoughts of Chelsea head coach Sonia Bompastor to Sky Sports ahead of the new WSL season." data-source="Sky Sports" data-published="2026-08-25T10:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/football/news/12040/13568830/chelsea-women-sonia-bompastor-and-ellie-carpenter-on-blues-transitional-moment-as-they-target-wsl-and-champions-league-success" target="_blank" rel="noopener">Chelsea 2.0: How transitional Blues are rebuilding for WSL and WCL success</a>
+          <p class="summary">Chelsea are morphing into a new team under Sonia Bompastor; they are taking learning from a disappointing 2025/26 season, with a clear change in playing personnel; they want to return to WSL and domestic glory, as well as competing in the Champions League &quot;Chelsea are going through a transitional moment and it takes time for the club to rebuild.&quot; Not pundit analysis, but the thoughts of Chelsea head coach Sonia Bompastor to Sky Sports ahead of the new WSL season.</p>
+          <span class="source"><a href="https://www.skysports.com/football/news/12040/13568830/chelsea-women-sonia-bompastor-and-ellie-carpenter-on-blues-transitional-moment-as-they-target-wsl-and-champions-league-success" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">25 Aug, 11:00</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Problems mounting for threadbare Villa and Emery ahead of Arsenal" data-url="https://www.skysports.com/football/news/12040/13576531/aston-villa-unai-emerys-problems-mounting-ahead-of-arsenal-test-after-threadbare-squad-falls-apart-against-brighton">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Chelsea 2.0: How transitional Blues are rebuilding for WSL and WCL success" data-url="https://www.skysports.com/football/news/12040/13568830/chelsea-women-sonia-bompastor-and-ellie-carpenter-on-blues-transitional-moment-as-they-target-wsl-and-champions-league-success">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.bbc.co.uk/sport/american-football/articles/c17jg9q219po?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Smyth to have more competition for Saints role</a>
-          <p class="summary">The New Orleans Saints have signed two-time All-Pro kicker Daniel Carlson to compete with Charlie Smyth for the side&#x27;s starting kicker position. Smyth, a former Gaelic footballer from Mayobridge in Northern Ireland, was the incumbent coming into pre-season having assumed the role from Blake Grupe in November. The 25-year-old made 12 of 16 field goals and was successful on each of his 13 extra-point attempts as a starter last season.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/sport/american-football/articles/c17jg9q219po?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cddv72gj7qro?at_medium=RSS&amp;at_campaign=rss" data-title="Man City enter race for Gakpo - Tuesday&#x27;s gossip" data-summary="Manchester City emerge as surprise Cody Gakpo suitors, Newcastle agree to sign Nico Gonzalez, and Manchester United are confident of signing Arsenal &#x27;s Myles Lewis-Skelly. Manchester City have entered the race to sign Liverpool and Netherlands forward Cody Gakpo, 27, with Tottenham also still working on a deal. (Soccer News NL - in Dutch) , external Newcastle have reached a verbal agreement with Manchester City to sign Spain midfielder Nico Gonzalez, 24, for Â£47m plus Â£3m in add-ons." data-source="BBC News" data-published="2026-08-25T09:05:33+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cddv72gj7qro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Man City enter race for Gakpo - Tuesday&#x27;s gossip</a>
+          <p class="summary">Manchester City emerge as surprise Cody Gakpo suitors, Newcastle agree to sign Nico Gonzalez, and Manchester United are confident of signing Arsenal &#x27;s Myles Lewis-Skelly. Manchester City have entered the race to sign Liverpool and Netherlands forward Cody Gakpo, 27, with Tottenham also still working on a deal. (Soccer News NL - in Dutch) , external Newcastle have reached a verbal agreement with Manchester City to sign Spain midfielder Nico Gonzalez, 24, for Â£47m plus Â£3m in add-ons.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cddv72gj7qro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 10:05</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Smyth to have more competition for Saints role" data-url="https://www.bbc.co.uk/sport/american-football/articles/c17jg9q219po?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Man City enter race for Gakpo - Tuesday&#x27;s gossip" data-url="https://www.bbc.co.uk/sport/football/articles/cddv72gj7qro?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
       <section class="section" data-topic="india">
         <h2>India News</h2>
-        <article class="story">
-          <a class="headline" href="https://timesofindia.indiatimes.com/science/scientists-reidentify-irelands-famous-kerry-cow-bones-as-ancient-bear-and-wild-boar-remains-challenging-a-long-held-theory-about-how-farming-reached-the-island/articleshow/133497087.cms" target="_blank" rel="noopener">Scientists reidentify Ireland’s “Kerry Cow” bones as bear and wild boar, challenging farming theory</a>
-          <p class="summary">Ancient animal bones from Ferriters Cove are now identified as bear and wild boar. This reclassification challenges decades of evidence for early farming in Ireland. Previously thought to be cattle, these remains are now understood differently. Modern scientific techniques revealed the true identity of these ancient specimens. This discovery prompts a reconsideration of Ireland&#x27;s prehistoric transition to agriculture.</p>
-          <span class="source"><a href="https://timesofindia.indiatimes.com/science/scientists-reidentify-irelands-famous-kerry-cow-bones-as-ancient-bear-and-wild-boar-remains-challenging-a-long-held-theory-about-how-farming-reached-the-island/articleshow/133497087.cms" target="_blank" rel="noopener">Times of India</a></span>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/atiq-ahmed-son-mohammad-umar-denied-bail-by-allahabad-hc-in-extortion-case-101787636914908.html" data-title="Atiq Ahmed’s son Mohammad Umar denied bail in extortion case" data-summary="The Allahabad High Court on Monday rejected the bail application of Mohammad Umar, eldest son of slain gangster-turned-politician Atiq Ahmed, in a case involving demands for money, extortion and threats to life. Justice Avnish Saxena rejected the bail application. An FIR was lodged at Khuldabad police station on April 26, 2023, for the alleged offences by one Mohd Muslim and others." data-source="Hindustan Times" data-published="2026-08-25T09:01:00+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/atiq-ahmed-son-mohammad-umar-denied-bail-by-allahabad-hc-in-extortion-case-101787636914908.html" target="_blank" rel="noopener">Atiq Ahmed’s son Mohammad Umar denied bail in extortion case</a>
+          <p class="summary">The Allahabad High Court on Monday rejected the bail application of Mohammad Umar, eldest son of slain gangster-turned-politician Atiq Ahmed, in a case involving demands for money, extortion and threats to life. Justice Avnish Saxena rejected the bail application. An FIR was lodged at Khuldabad police station on April 26, 2023, for the alleged offences by one Mohd Muslim and others.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/atiq-ahmed-son-mohammad-umar-denied-bail-by-allahabad-hc-in-extortion-case-101787636914908.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">25 Aug, 10:01</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="Scientists reidentify Ireland’s “Kerry Cow” bones as bear and wild boar, challenging farming theory" data-url="https://timesofindia.indiatimes.com/science/scientists-reidentify-irelands-famous-kerry-cow-bones-as-ancient-bear-and-wild-boar-remains-challenging-a-long-held-theory-about-how-farming-reached-the-island/articleshow/133497087.cms">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="Atiq Ahmed’s son Mohammad Umar denied bail in extortion case" data-url="https://www.hindustantimes.com/india-news/atiq-ahmed-son-mohammad-umar-denied-bail-by-allahabad-hc-in-extortion-case-101787636914908.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://www.hindustantimes.com/india-news/china-president-xi-jinping-india-visit-brics-summit-2026-first-visit-in-seven-years-101787643336681.html" target="_blank" rel="noopener">China&#x27;s Xi Jinping likely to visit India for first time in 7 years, attend BRICS Summit in Delhi</a>
-          <p class="summary">Chinese President Xi Jinping is expected to visit India soon. If confirmed, this would mark the Chinese leader&#x27;s first visit in nearly seven years. Xi is expected to visit India with a large delegation in time for the BRICS Summit 2026 in New Delhi, people familiar with the matter told HT. The summit wil be held on September 12 and 13. This visit also comes as India and China work to renew their ties and diplomatic relations following a strain caused by the 2020 Galwan border clashes.</p>
-          <span class="source"><a href="https://www.hindustantimes.com/india-news/china-president-xi-jinping-india-visit-brics-summit-2026-first-visit-in-seven-years-101787643336681.html" target="_blank" rel="noopener">Hindustan Times</a></span>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/us/us-removes-syria-from-terrorism-list-after-46-years-what-it-means-for-the-middle-east-country/articleshow/133501139.cms" data-title="US removes Syria from terrorism list after 46 years - what it means for the Middle East country" data-summary="" data-source="Times of India" data-published="2026-08-25T08:52:41+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/us/us-removes-syria-from-terrorism-list-after-46-years-what-it-means-for-the-middle-east-country/articleshow/133501139.cms" target="_blank" rel="noopener">US removes Syria from terrorism list after 46 years - what it means for the Middle East country</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/us/us-removes-syria-from-terrorism-list-after-46-years-what-it-means-for-the-middle-east-country/articleshow/133501139.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">25 Aug, 09:52</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="China&#x27;s Xi Jinping likely to visit India for first time in 7 years, attend BRICS Summit in Delhi" data-url="https://www.hindustantimes.com/india-news/china-president-xi-jinping-india-visit-brics-summit-2026-first-visit-in-seven-years-101787643336681.html">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="US removes Syria from terrorism list after 46 years - what it means for the Middle East country" data-url="https://timesofindia.indiatimes.com/world/us/us-removes-syria-from-terrorism-list-after-46-years-what-it-means-for-the-middle-east-country/articleshow/133501139.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cyvlzp2zn67o?at_medium=RSS&amp;at_campaign=rss" data-title="Caste divide makes summer more scorching in dry Indian region" data-summary="A couple of months ago, just after sunrise, 40-year-old Mamta began the first of as many as 10 journeys she would make that day. Carrying three empty plastic buckets, she walked a few hundred metres to the nearest handpump in her village in Jalaun district, in the drought-prone Bundelkhand region of northern India. Temperatures in parts of the region were soaring above 40C." data-source="BBC News" data-published="2026-08-24T23:36:58+00:00" data-section="India News" data-paywalled="false">
           <a class="headline" href="https://www.bbc.co.uk/news/articles/cyvlzp2zn67o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Caste divide makes summer more scorching in dry Indian region</a>
           <p class="summary">A couple of months ago, just after sunrise, 40-year-old Mamta began the first of as many as 10 journeys she would make that day. Carrying three empty plastic buckets, she walked a few hundred metres to the nearest handpump in her village in Jalaun district, in the drought-prone Bundelkhand region of northern India. Temperatures in parts of the region were soaring above 40C.</p>
-          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cyvlzp2zn67o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a></span>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cyvlzp2zn67o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">25 Aug, 00:36</span></span>
           
           <button type="button" class="share-btn" hidden data-title="Caste divide makes summer more scorching in dry Indian region" data-url="https://www.bbc.co.uk/news/articles/cyvlzp2zn67o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
-        <article class="story">
-          <a class="headline" href="https://timesofindia.indiatimes.com/science/in-1926-a-10-ft-rocket-flew-41-ft-35-years-later-nasa-honored-its-creator-in-space/articleshow/133494356.cms" target="_blank" rel="noopener">In 1964, NASA bounced a laser off a satellite; today, it helps track melting ice</a>
-          <p class="summary"></p>
-          <span class="source"><a href="https://timesofindia.indiatimes.com/science/in-1926-a-10-ft-rocket-flew-41-ft-35-years-later-nasa-honored-its-creator-in-space/articleshow/133494356.cms" target="_blank" rel="noopener">Times of India</a></span>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/3-arrested-in-arunachal-for-trafficking-19-children-youngest-aged-three-cops-101787647496735.html" data-title="3 arrested in Arunachal for trafficking 19 children, youngest aged three: Cops" data-summary="Three persons have been arrested by Arunachal Pradesh police in connection with a suspected inter-district child trafficking and exploitation network, police said on Tuesday. Police arrested Gumnya Kochung, Marta Ete and Neha Gerory for their alleged roles as facilitators or brokers. “A majority of the recovered children are below eight years of age." data-source="Hindustan Times" data-published="2026-08-25T08:44:56+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/3-arrested-in-arunachal-for-trafficking-19-children-youngest-aged-three-cops-101787647496735.html" target="_blank" rel="noopener">3 arrested in Arunachal for trafficking 19 children, youngest aged three: Cops</a>
+          <p class="summary">Three persons have been arrested by Arunachal Pradesh police in connection with a suspected inter-district child trafficking and exploitation network, police said on Tuesday. Police arrested Gumnya Kochung, Marta Ete and Neha Gerory for their alleged roles as facilitators or brokers. “A majority of the recovered children are below eight years of age.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/3-arrested-in-arunachal-for-trafficking-19-children-youngest-aged-three-cops-101787647496735.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">25 Aug, 09:44</span></span>
           
-          <button type="button" class="share-btn" hidden data-title="In 1964, NASA bounced a laser off a satellite; today, it helps track melting ice" data-url="https://timesofindia.indiatimes.com/science/in-1926-a-10-ft-rocket-flew-41-ft-35-years-later-nasa-honored-its-creator-in-space/articleshow/133494356.cms">&#8599; Share</button>
+          <button type="button" class="share-btn" hidden data-title="3 arrested in Arunachal for trafficking 19 children, youngest aged three: Cops" data-url="https://www.hindustantimes.com/india-news/3-arrested-in-arunachal-for-trafficking-19-children-youngest-aged-three-cops-101787647496735.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
         </article>
       </section>
   </main>
+  <div id="bookmarks-view" hidden></div>
   <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
   <script>
     (function () {
@@ -534,6 +659,146 @@
           });
         });
       }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Refresh - re-fetches whichever edition is currently published.
+      // There's no live news search behind this: the page rebuilds a few
+      // times a day on its own schedule, so this just guarantees you're
+      // seeing that latest build rather than a cached older copy.
+      document.getElementById('refresh-btn').addEventListener('click', function () {
+        window.location.href = window.location.pathname + '?_r=' + Date.now();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
     })();
   </script>
 </body>
