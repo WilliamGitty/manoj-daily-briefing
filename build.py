@@ -198,6 +198,18 @@ def entry_published(entry):
 
 
 def source_name(entry, feed_url):
+    # Google News search results are all links through news.google.com
+    # (by design - see GOOGLE_NEWS_RAJASTHAN_ROYALS), so deriving the name
+    # from the link's own host would show "news.google.com" for every
+    # single item regardless of who actually published it. Google News RSS
+    # entries carry the real publisher separately in <source>, so prefer
+    # that when it's present.
+    source_field = entry.get("source")
+    if source_field:
+        title = source_field.get("title") if hasattr(source_field, "get") else None
+        if title:
+            return title
+
     host = urlparse(entry.get("link", feed_url)).netloc
     host = host.replace("www.", "")
     known = {
