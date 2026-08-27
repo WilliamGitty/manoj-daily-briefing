@@ -85,6 +85,15 @@ ESPN_CRICKET = "https://www.espncricinfo.com/rss/content/story/feeds/0.xml"
 # regardless of which outlet actually publishes it - verified live,
 # including the specific missed story, before adding.
 GOOGLE_NEWS_RAJASTHAN_ROYALS = "https://news.google.com/rss/search?q=%22Rajasthan+Royals%22&hl=en-GB&gl=GB&ceid=GB:en"
+# Same problem, same fix, for BCCI: the existing keyword filter on ESPN's
+# single general cricket feed was checking 100 recent entries against the
+# literal word "bcci" and finding zero matches - the feed's own headlines
+# rarely spell it out even when a story is genuinely about the board. A
+# dedicated Google News search catches real BCCI stories (sponsorship,
+# committee appointments, board statements) across many more outlets -
+# verified live, including a specific story flagged as missing, before
+# adding.
+GOOGLE_NEWS_BCCI = "https://news.google.com/rss/search?q=BCCI&hl=en-GB&gl=GB&ceid=GB:en"
 
 BBC_SPORT = "http://feeds.bbci.co.uk/sport/rss.xml"
 SKY_SPORTS_NEWS = "https://www.skysports.com/rss/12040"
@@ -113,7 +122,7 @@ SECTIONS = [
         "feeds": [BBC_WORLD, GUARDIAN_WORLD, AL_JAZEERA, ECONOMIST_INTERNATIONAL],
     },
     {"key": "health", "title": "Health & Fitness", "feeds": [BBC_HEALTH, SCIENCEDAILY_HEALTH, STATNEWS]},
-    {"key": "bcci", "title": "BCCI", "feeds": [ESPN_CRICKET], "keyword": "bcci"},
+    {"key": "bcci", "title": "BCCI", "feeds": [GOOGLE_NEWS_BCCI, ESPN_CRICKET], "keyword": "bcci"},
     {
         "key": "rajasthan_royals",
         "title": "Rajasthan Royals",
