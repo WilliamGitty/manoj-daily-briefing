@@ -77,6 +77,14 @@ SCIENCEDAILY_HEALTH = "https://www.sciencedaily.com/rss/top/health.xml"
 STATNEWS = "https://www.statnews.com/feed/"
 
 ESPN_CRICKET = "https://www.espncricinfo.com/rss/content/story/feeds/0.xml"
+# A specific story Manoj expected to see never appeared - traced to its
+# real source (The Economic Times) not being fetched at all, and no
+# Rajasthan Royals-specific section existing to guarantee coverage even
+# when ESPN's general cricket feed is crowded out by other stories.
+# Google News search catches it (and everything else about the club)
+# regardless of which outlet actually publishes it - verified live,
+# including the specific missed story, before adding.
+GOOGLE_NEWS_RAJASTHAN_ROYALS = "https://news.google.com/rss/search?q=%22Rajasthan+Royals%22&hl=en-GB&gl=GB&ceid=GB:en"
 
 BBC_SPORT = "http://feeds.bbci.co.uk/sport/rss.xml"
 SKY_SPORTS_NEWS = "https://www.skysports.com/rss/12040"
@@ -106,6 +114,12 @@ SECTIONS = [
     },
     {"key": "health", "title": "Health & Fitness", "feeds": [BBC_HEALTH, SCIENCEDAILY_HEALTH, STATNEWS]},
     {"key": "bcci", "title": "BCCI", "feeds": [ESPN_CRICKET], "keyword": "bcci"},
+    {
+        "key": "rajasthan_royals",
+        "title": "Rajasthan Royals",
+        "feeds": [GOOGLE_NEWS_RAJASTHAN_ROYALS, ESPN_CRICKET],
+        "keyword": "rajasthan royals",
+    },
     {"key": "cricket", "title": "Cricket", "feeds": [ESPN_CRICKET]},
     {"key": "sport", "title": "Sport", "feeds": [BBC_SPORT, SKY_SPORTS_NEWS]},
     {
