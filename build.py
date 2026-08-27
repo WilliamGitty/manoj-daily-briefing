@@ -469,7 +469,12 @@ def pick_top_picks(sections, n=3):
     possible - a pure top-n-by-timestamp pick tends to land on whichever
     single topic happened to break most recently (e.g. three Politics
     stories in a row), which isn't a useful cross-section snapshot for a
-    10-second glance. Deterministic recency ranking only, no AI judgment."""
+    10-second glance. Deterministic recency ranking only, no AI judgment.
+
+    Rajasthan Royals news always claims the first slot when there is any
+    - Manoj remains a part-owner of the club, so it isn't left to compete
+    on pure recency against everything else the way other topics are.
+    """
     all_items = []
     for section in sections:
         for item in section["items"]:
@@ -478,13 +483,20 @@ def pick_top_picks(sections, n=3):
 
     picks = []
     used_titles = set()
+
+    royals_section = next((s for s in sections if s["key"] == "rajasthan_royals"), None)
+    if royals_section and royals_section["items"]:
+        top_royals_item = max(royals_section["items"], key=lambda i: i["published"])
+        picks.append((top_royals_item, royals_section["title"]))
+        used_titles.add(royals_section["title"])
+
     for item, section_title in all_items:
+        if len(picks) >= n:
+            break
         if section_title in used_titles:
             continue
         picks.append((item, section_title))
         used_titles.add(section_title)
-        if len(picks) >= n:
-            break
     return picks
 
 
