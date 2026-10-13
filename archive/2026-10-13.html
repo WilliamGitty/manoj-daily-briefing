@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Tuesday, 13 October 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Tuesday, 13 October 2026, Updated as of 06:30 BST</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-13.html" selected>Tuesday, 13 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-12.html">Monday, 12 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-11.html">Sunday, 11 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-10.html">Saturday, 10 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-09.html">Friday, 09 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-08.html">Thursday, 08 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-07.html">Wednesday, 07 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-06.html">Tuesday, 06 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-05.html">Monday, 05 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-04.html">Sunday, 04 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-03.html">Saturday, 03 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-02.html">Friday, 02 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-01.html">Thursday, 01 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-09-30.html">Wednesday, 30 September 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-09-29.html">Tuesday, 29 September 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMiswFBVV95cUxPelhWNGtjdkVOMjZpdmlQX1RMUllHOWJ1bGFaSEJCMEhQY0lzRTBhWFhvRFBrLXh6VVAwYi1sMWt1akF0c2otX2tWYVU0OWdUc183R2hvTmJqS0JlRHBtNU5DbkkwSGRCMmxWWEstaWxndk5TdGpUY3dYU2gybWJRRGJ0WXpUdkI0dUR2R2VLbUc0aUhvMl9pbEp0cVdDSGpLMms3MGx6SUJWMG1mdFl0QWVtcw?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Jofra Archer handed two-year England cricket central contract extension till 2028 - Rajasthan Royals</span>
+      </a>
+      <a class="pick" href="https://www.skysports.com/tennis/scores-schedule" target="_blank" rel="noopener">
+        <span class="pick-topic">Sport</span>
+        <span class="pick-headline">Tennis scores: Boulter playing in Wuhan with Zverev vs Bublik in Shanghai</span>
+      </a>
+      <a class="pick" href="https://www.theguardian.com/australia-news/live/2026/oct/13/labor-anthony-albanese-charity-boost-greens-ukraine-coalition-one-nation-ntwnfb" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — Global</span>
+        <span class="pick-headline">Australian politics live: Climate protester restrained after interrupting NSW parliament; Liberal says PM should be ‘stoned in the square’ over ATO credit card ban</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cm9qzwjgnjxlo?at_medium=RSS&amp;at_campaign=rss" data-title="Bumble shares soar after report dating firm in $1bn takeover talks" data-summary="Shares in dating app company Bumble soared by almost 50% on Monday after a report that it is in advanced talks to be bought for around $1bn (Â£757m). Technology holding company Ithaca could announce a deal to buy the Texas-based firm as early as this week, according to the Wall Street Journal. The jump in Bumble&#x27;s shares pushed its stock market valuation to over $580m but that is still far below a peak of more than $14bn it reached after listing on the Nasdaq in 2021 ." data-source="BBC News" data-published="2026-10-13T01:50:47+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cm9qzwjgnjxlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Bumble shares soar after report dating firm in $1bn takeover talks</a>
+          <p class="summary">Shares in dating app company Bumble soared by almost 50% on Monday after a report that it is in advanced talks to be bought for around $1bn (Â£757m). Technology holding company Ithaca could announce a deal to buy the Texas-based firm as early as this week, according to the Wall Street Journal. The jump in Bumble&#x27;s shares pushed its stock market valuation to over $580m but that is still far below a peak of more than $14bn it reached after listing on the Nasdaq in 2021 .</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cm9qzwjgnjxlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 02:50</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Bumble shares soar after report dating firm in $1bn takeover talks" data-url="https://www.bbc.co.uk/news/articles/cm9qzwjgnjxlo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/health/2026/10/39-year-old-unvaccinated-woman-becomes-6th-measles-death-in-pennsylvania/" data-title="39-year-old unvaccinated woman becomes 6th measles death in Pennsylvania" data-summary="A 39-year-old unvaccinated woman in Franklin County, Pennsylvania, has become the sixth person to die of the highly infectious virus amid a state outbreak that has stricken over a thousand people since it began in April. The woman died on Saturday, October 10. She had several underlying health conditions and had recently tested positive for measles, according to an advisory posted on social media by Franklin County Coroner Jordan Conner." data-source="Ars Technica" data-published="2026-10-12T21:54:35+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/health/2026/10/39-year-old-unvaccinated-woman-becomes-6th-measles-death-in-pennsylvania/" target="_blank" rel="noopener">39-year-old unvaccinated woman becomes 6th measles death in Pennsylvania</a>
+          <p class="summary">A 39-year-old unvaccinated woman in Franklin County, Pennsylvania, has become the sixth person to die of the highly infectious virus amid a state outbreak that has stricken over a thousand people since it began in April. The woman died on Saturday, October 10. She had several underlying health conditions and had recently tested positive for measles, according to an advisory posted on social media by Franklin County Coroner Jordan Conner.</p>
+          <span class="source"><a href="https://arstechnica.com/health/2026/10/39-year-old-unvaccinated-woman-becomes-6th-measles-death-in-pennsylvania/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">12 Oct, 22:54</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="39-year-old unvaccinated woman becomes 6th measles death in Pennsylvania" data-url="https://arstechnica.com/health/2026/10/39-year-old-unvaccinated-woman-becomes-6th-measles-death-in-pennsylvania/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/entertainment/1009630/social-reckoning-box-office-other-mommy" data-title="The Social Reckoning is flopping at the box office" data-summary="Meanwhile, Other Mommy is having an unexpected moment.﻿ As important as some of the messages in The Social Reckoning are, the movie has been drastically underperforming at the box office. Per Variety , Aaron’s Sorkin’s follow up to The Social Network only grossed a measly $5.5 million this past weekend against a budget that’s somewhere within the $30–42 million range." data-source="The Verge" data-published="2026-10-12T21:20:57+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/entertainment/1009630/social-reckoning-box-office-other-mommy" target="_blank" rel="noopener">The Social Reckoning is flopping at the box office</a>
+          <p class="summary">Meanwhile, Other Mommy is having an unexpected moment.﻿ As important as some of the messages in The Social Reckoning are, the movie has been drastically underperforming at the box office. Per Variety , Aaron’s Sorkin’s follow up to The Social Network only grossed a measly $5.5 million this past weekend against a budget that’s somewhere within the $30–42 million range.</p>
+          <span class="source"><a href="https://www.theverge.com/entertainment/1009630/social-reckoning-box-office-other-mommy" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">12 Oct, 22:20</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="The Social Reckoning is flopping at the box office" data-url="https://www.theverge.com/entertainment/1009630/social-reckoning-box-office-other-mommy">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cr78pe09y05xo?at_medium=RSS&amp;at_campaign=rss" data-title="AI minister warns &#x27;likely&#x27; UK&#x27;s cyber defences will be breached" data-summary="The UK&#x27;s AI minister has warned it is &quot;likely, if not inevitable&quot; the country&#x27;s cyber defences will at some point be breached. Speaking at a press conference, Kanishka Narayan pointed to an incident of a rogue OpenAI agent hacking an Australian government website in June. He said while no medical records are known to have been accessed in the attack, the incident should still &quot;concern us&quot;." data-source="BBC News" data-published="2026-10-12T15:03:42+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cr78pe09y05xo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">AI minister warns &#x27;likely&#x27; UK&#x27;s cyber defences will be breached</a>
+          <p class="summary">The UK&#x27;s AI minister has warned it is &quot;likely, if not inevitable&quot; the country&#x27;s cyber defences will at some point be breached. Speaking at a press conference, Kanishka Narayan pointed to an incident of a rogue OpenAI agent hacking an Australian government website in June. He said while no medical records are known to have been accessed in the attack, the incident should still &quot;concern us&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cr78pe09y05xo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">12 Oct, 16:03</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="AI minister warns &#x27;likely&#x27; UK&#x27;s cyber defences will be breached" data-url="https://www.bbc.co.uk/news/articles/cr78pe09y05xo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://arstechnica.com/gaming/2026/10/report-epic-games-goes-all-in-on-ai-for-disney-collaboration/" data-title="Epic Games reportedly pivoting to &quot;AI first&quot; game development model" data-summary="Epic Games is shifting to an “AI first” development strategy for its collaboration with the Walt Disney Company, letting AI models write all the code and guide all the artwork for an upcoming shooter. That’s according to a Bloomberg report , which cites unnamed people familiar with the project who commented on the significant pivot in internal development at the Unreal Engine maker." data-source="Ars Technica" data-published="2026-10-12T20:59:50+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/gaming/2026/10/report-epic-games-goes-all-in-on-ai-for-disney-collaboration/" target="_blank" rel="noopener">Epic Games reportedly pivoting to &quot;AI first&quot; game development model</a>
+          <p class="summary">Epic Games is shifting to an “AI first” development strategy for its collaboration with the Walt Disney Company, letting AI models write all the code and guide all the artwork for an upcoming shooter. That’s according to a Bloomberg report , which cites unnamed people familiar with the project who commented on the significant pivot in internal development at the Unreal Engine maker.</p>
+          <span class="source"><a href="https://arstechnica.com/gaming/2026/10/report-epic-games-goes-all-in-on-ai-for-disney-collaboration/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">12 Oct, 21:59</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Epic Games reportedly pivoting to &quot;AI first&quot; game development model" data-url="https://arstechnica.com/gaming/2026/10/report-epic-games-goes-all-in-on-ai-for-disney-collaboration/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/" data-title="Meta releases its first frontier model, Muse Wonder" data-summary="Last day to exhibit your breakthrough to 10,000+ tech leaders at Disrupt is on Oct 2 . Book Exhibit Table Now. Disrupt doors open Oct. 13. Get your pass and bring someone with you at 50% off. REGISTER NOW. Meta’s Superintelligence Lab released a pair of new state-of-the-art models on Monday, Muse Wonder and Muse Wonder Full, representing the company’s first attempt at a frontier model." data-source="TechCrunch" data-published="2026-10-12T17:56:56+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/" target="_blank" rel="noopener">Meta releases its first frontier model, Muse Wonder</a>
+          <p class="summary">Last day to exhibit your breakthrough to 10,000+ tech leaders at Disrupt is on Oct 2 . Book Exhibit Table Now. Disrupt doors open Oct. 13. Get your pass and bring someone with you at 50% off. REGISTER NOW. Meta’s Superintelligence Lab released a pair of new state-of-the-art models on Monday, Muse Wonder and Muse Wonder Full, representing the company’s first attempt at a frontier model.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">12 Oct, 18:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Meta releases its first frontier model, Muse Wonder" data-url="https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.zdnet.com/innovation/claude-false-homicide-tip/" data-title="Claude sent a false homicide tip to police – and it’s part of a troubling AI pattern" data-summary="Anthropic has released new reporting on Claude’s behavior in testing and other internal evaluations — and the findings indicate a concerning pattern. Also: Rogue AI incidents hit ‘tens of thousands’ On Friday, the company detailed several “unintended” actions its models had taken recently while completing certain benchmarks." data-source="ZDNet" data-published="2026-10-12T17:45:44+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.zdnet.com/innovation/claude-false-homicide-tip/" target="_blank" rel="noopener">Claude sent a false homicide tip to police – and it’s part of a troubling AI pattern</a>
+          <p class="summary">Anthropic has released new reporting on Claude’s behavior in testing and other internal evaluations — and the findings indicate a concerning pattern. Also: Rogue AI incidents hit ‘tens of thousands’ On Friday, the company detailed several “unintended” actions its models had taken recently while completing certain benchmarks.</p>
+          <span class="source"><a href="https://www.zdnet.com/innovation/claude-false-homicide-tip/" target="_blank" rel="noopener">ZDNet</a> &middot; <span class="pubdate">12 Oct, 18:45</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Claude sent a false homicide tip to police – and it’s part of a troubling AI pattern" data-url="https://www.zdnet.com/innovation/claude-false-homicide-tip/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/ai-artificial-intelligence/1009479/meta-muse-wonder-full-ai-model" data-title="Meta has some Wonder Full new AI models" data-summary="Meta says the models compete with the industry’s best and will soon power its Muse agent. Meta is making up for lost time in the AI race. After launching Muse Spark , the first model from its revamped Superintelligence Labs division, and buzzy AI agent Muse , it’s now launching two new models it claims can go toe-to-toe with the industry’s best. The new models, Muse Wonder and Muse Wonder Full, are available for Muse Code subscribers starting today." data-source="The Verge" data-published="2026-10-12T17:00:00+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/ai-artificial-intelligence/1009479/meta-muse-wonder-full-ai-model" target="_blank" rel="noopener">Meta has some Wonder Full new AI models</a>
+          <p class="summary">Meta says the models compete with the industry’s best and will soon power its Muse agent. Meta is making up for lost time in the AI race. After launching Muse Spark , the first model from its revamped Superintelligence Labs division, and buzzy AI agent Muse , it’s now launching two new models it claims can go toe-to-toe with the industry’s best. The new models, Muse Wonder and Muse Wonder Full, are available for Muse Code subscribers starting today.</p>
+          <span class="source"><a href="https://www.theverge.com/ai-artificial-intelligence/1009479/meta-muse-wonder-full-ai-model" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">12 Oct, 18:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Meta has some Wonder Full new AI models" data-url="https://www.theverge.com/ai-artificial-intelligence/1009479/meta-muse-wonder-full-ai-model">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cxvgdql2y7zqo?at_medium=RSS&amp;at_campaign=rss" data-title="Why the prime minister wants to talk about Brexit again" data-summary="For years, it felt like the only thing Westminster talked about. I have had a ringside seat at it all, from the Conservative election victory in 2015, with the party&#x27;s promise in its manifesto that year to offer &quot;a straight in-out referendum on our membership of the European Union by the end of 2017.&quot; Then there was the then Prime Minister David Cameron&#x27;s negotiation with the European Union to try to secure what he saw as a better deal and then the referendum itself on Thursday, 23 June 2016." data-source="BBC News" data-published="2026-10-13T01:27:59+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cxvgdql2y7zqo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Why the prime minister wants to talk about Brexit again</a>
+          <p class="summary">For years, it felt like the only thing Westminster talked about. I have had a ringside seat at it all, from the Conservative election victory in 2015, with the party&#x27;s promise in its manifesto that year to offer &quot;a straight in-out referendum on our membership of the European Union by the end of 2017.&quot; Then there was the then Prime Minister David Cameron&#x27;s negotiation with the European Union to try to secure what he saw as a better deal and then the referendum itself on Thursday, 23 June 2016.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cxvgdql2y7zqo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 02:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Why the prime minister wants to talk about Brexit again" data-url="https://www.bbc.co.uk/news/articles/cxvgdql2y7zqo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/education/2026/oct/13/english-councils-catastrophic-send-debts-forecast-2028" data-title="English councils warn of ‘catastrophic’ Send debts forecast to hit £10bn by 2028" data-summary="Surge in EHCP applications poses risk to public finances and may lead to deteriorating levels of supportCouncils are warning of potentially “catastrophic” debts, which are forecast to reach a record £10bn over the next 18 months, as a result of rapid growth in demand for special educational needs and disability (Send) support in English schools.Although the government recently cleared more than £5bn in historic council Send debts, a surge in requests has led to authorities predicting they will have re-accrued that debt figure by April, and doubled it by 2028." data-source="The Guardian" data-published="2026-10-12T23:01:07+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/education/2026/oct/13/english-councils-catastrophic-send-debts-forecast-2028" target="_blank" rel="noopener">English councils warn of ‘catastrophic’ Send debts forecast to hit £10bn by 2028</a>
+          <p class="summary">Surge in EHCP applications poses risk to public finances and may lead to deteriorating levels of supportCouncils are warning of potentially “catastrophic” debts, which are forecast to reach a record £10bn over the next 18 months, as a result of rapid growth in demand for special educational needs and disability (Send) support in English schools.Although the government recently cleared more than £5bn in historic council Send debts, a surge in requests has led to authorities predicting they will have re-accrued that debt figure by April, and doubled it by 2028.</p>
+          <span class="source"><a href="https://www.theguardian.com/education/2026/oct/13/english-councils-catastrophic-send-debts-forecast-2028" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">13 Oct, 00:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="English councils warn of ‘catastrophic’ Send debts forecast to hit £10bn by 2028" data-url="https://www.theguardian.com/education/2026/oct/13/english-councils-catastrophic-send-debts-forecast-2028">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.economist.com/britain/2026/10/12/in-britain-european-doesnt-mean-white" data-title="In Britain, “European” doesn’t mean white" data-summary="The country’s EU citizens are astonishingly diverse" data-source="The Economist" data-published="2026-10-12T17:50:58+00:00" data-section="Politics — UK" data-paywalled="true">
+          <a class="headline" href="https://www.economist.com/britain/2026/10/12/in-britain-european-doesnt-mean-white" target="_blank" rel="noopener">In Britain, “European” doesn’t mean white</a>
+          <p class="summary">The country’s EU citizens are astonishingly diverse</p>
+          <span class="source"><a href="https://www.economist.com/britain/2026/10/12/in-britain-european-doesnt-mean-white" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">12 Oct, 18:50</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="In Britain, “European” doesn’t mean white" data-url="https://www.economist.com/britain/2026/10/12/in-britain-european-doesnt-mean-white">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c68jz0282re9o?at_medium=RSS&amp;at_campaign=rss" data-title="Votes of no confidence in Sinn Féin ministers fail" data-summary="Votes of no confidence in First Minister Michelle O&#x27;Neill and three other Sinn FÃ©in ministers have fallen after failing to secure enough support in Stormont. The Northern Ireland Assembly debated the no-confidence motions over the ministers&#x27; handling of the Drumcree dispute, after they received the backing of unionist parties last week . However, the attempt to oust them failed as it required cross-community support from a majority of both unionists and nationalists in the assembly." data-source="BBC News" data-published="2026-10-12T19:53:16+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c68jz0282re9o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Votes of no confidence in Sinn Féin ministers fail</a>
+          <p class="summary">Votes of no confidence in First Minister Michelle O&#x27;Neill and three other Sinn FÃ©in ministers have fallen after failing to secure enough support in Stormont. The Northern Ireland Assembly debated the no-confidence motions over the ministers&#x27; handling of the Drumcree dispute, after they received the backing of unionist parties last week . However, the attempt to oust them failed as it required cross-community support from a majority of both unionists and nationalists in the assembly.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c68jz0282re9o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">12 Oct, 20:53</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Votes of no confidence in Sinn Féin ministers fail" data-url="https://www.bbc.co.uk/news/articles/c68jz0282re9o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.theguardian.com/australia-news/live/2026/oct/13/labor-anthony-albanese-charity-boost-greens-ukraine-coalition-one-nation-ntwnfb" data-title="Australian politics live: Climate protester restrained after interrupting NSW parliament; Liberal says PM should be ‘stoned in the square’ over ATO credit card ban" data-summary="Follow the day’s news liveGet our breaking news email, free app or daily news podcastRobert Pether has stressed his innocence and recalled his brush with death in his first comments since the Australian engineer departed Iraq after serving more than five years in jail.Pether and his Egyptian colleague Khalid Radwan were detained in Baghdad in 2021 after flying in for a meeting with bank officials to resolve a dispute with his engineering firm, CME Consulting.We were innocent when we were taken on the 7th of April 2021, and we remain innocent today.I was released from prison hours away from death." data-source="The Guardian" data-published="2026-10-13T05:24:49+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/australia-news/live/2026/oct/13/labor-anthony-albanese-charity-boost-greens-ukraine-coalition-one-nation-ntwnfb" target="_blank" rel="noopener">Australian politics live: Climate protester restrained after interrupting NSW parliament; Liberal says PM should be ‘stoned in the square’ over ATO credit card ban</a>
+          <p class="summary">Follow the day’s news liveGet our breaking news email, free app or daily news podcastRobert Pether has stressed his innocence and recalled his brush with death in his first comments since the Australian engineer departed Iraq after serving more than five years in jail.Pether and his Egyptian colleague Khalid Radwan were detained in Baghdad in 2021 after flying in for a meeting with bank officials to resolve a dispute with his engineering firm, CME Consulting.We were innocent when we were taken on the 7th of April 2021, and we remain innocent today.I was released from prison hours away from death.</p>
+          <span class="source"><a href="https://www.theguardian.com/australia-news/live/2026/oct/13/labor-anthony-albanese-charity-boost-greens-ukraine-coalition-one-nation-ntwnfb" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">13 Oct, 06:24</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Australian politics live: Climate protester restrained after interrupting NSW parliament; Liberal says PM should be ‘stoned in the square’ over ATO credit card ban" data-url="https://www.theguardian.com/australia-news/live/2026/oct/13/labor-anthony-albanese-charity-boost-greens-ukraine-coalition-one-nation-ntwnfb">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cqd089r55vp3o?at_medium=RSS&amp;at_campaign=rss" data-title="Death threats and isolation - the cost of fighting sexual violence in Iraq" data-summary="This story contains details of sexual violence which some readers may find upsetting &quot;Get out of the car!&quot; screams a woman, accusing a driver of exposing himself and making obscene comments as she walked by. She is filming the scene in a busy Baghdad street on her phone, and the camera captures him resisting her attempts to open the door as she confronts him . The video can be seen, with others like it, on the Instagram page of Iraqi women&#x27;s rights activist Sarah Jassim." data-source="BBC News" data-published="2026-10-13T05:02:57+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cqd089r55vp3o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Death threats and isolation - the cost of fighting sexual violence in Iraq</a>
+          <p class="summary">This story contains details of sexual violence which some readers may find upsetting &quot;Get out of the car!&quot; screams a woman, accusing a driver of exposing himself and making obscene comments as she walked by. She is filming the scene in a busy Baghdad street on her phone, and the camera captures him resisting her attempts to open the door as she confronts him . The video can be seen, with others like it, on the Instagram page of Iraqi women&#x27;s rights activist Sarah Jassim.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cqd089r55vp3o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 06:02</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Death threats and isolation - the cost of fighting sexual violence in Iraq" data-url="https://www.bbc.co.uk/news/articles/cqd089r55vp3o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/news/2026/10/13/more-than-100-foreign-trekkers-stranded-by-floods-in-nepals-gorkha-region?traffic_source=rss" data-title="More than 100 foreign trekkers stranded by floods in Nepal’s Gorkha region" data-summary="More than 100 foreign trekkers have been stranded in central Nepal, according to a local official, a day after flash floods in the Gorkha district washed away bridges, hiking trails and hundreds of homes. Bhuwan Raj Ojha, an official of the Manaslu Conservation Area Project, told the Reuters news agency on Monday that the trekkers were stranded in different areas of the popular Manaslu trekking trail because part of the route had been swept away." data-source="Al Jazeera" data-published="2026-10-13T05:01:14+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/news/2026/10/13/more-than-100-foreign-trekkers-stranded-by-floods-in-nepals-gorkha-region?traffic_source=rss" target="_blank" rel="noopener">More than 100 foreign trekkers stranded by floods in Nepal’s Gorkha region</a>
+          <p class="summary">More than 100 foreign trekkers have been stranded in central Nepal, according to a local official, a day after flash floods in the Gorkha district washed away bridges, hiking trails and hundreds of homes. Bhuwan Raj Ojha, an official of the Manaslu Conservation Area Project, told the Reuters news agency on Monday that the trekkers were stranded in different areas of the popular Manaslu trekking trail because part of the route had been swept away.</p>
+          <span class="source"><a href="https://www.aljazeera.com/news/2026/10/13/more-than-100-foreign-trekkers-stranded-by-floods-in-nepals-gorkha-region?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">13 Oct, 06:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="More than 100 foreign trekkers stranded by floods in Nepal’s Gorkha region" data-url="https://www.aljazeera.com/news/2026/10/13/more-than-100-foreign-trekkers-stranded-by-floods-in-nepals-gorkha-region?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/australia-news/2026/oct/13/australia-surcharge-ban-credit-card-price-increases-business" data-title="Card surcharge ban used as ‘cover’ for larger price increases by Australian businesses, experts say" data-summary="‘Round-up’ pricing in items such as coffee suggests increases are exceeding the typical 1.5% surcharge feeFollow our Australia politics live blog for latest updatesGet our breaking news email, free app or daily news podcastBusinesses are using the recent ban on credit card surcharges as “cover” to pass along much larger price increases to customers, experts say, as cafes and restaurants struggle to cope with climbing costs and rising interest rates.Credit card surcharges, typically worth about 1.5% of the transaction, were banned from 1 October, as part of a Reserve Bank-led reform aimed at improving transparency for customers and, ultimately, lowering bank fees." data-source="The Guardian" data-published="2026-10-13T05:13:19+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/australia-news/2026/oct/13/australia-surcharge-ban-credit-card-price-increases-business" target="_blank" rel="noopener">Card surcharge ban used as ‘cover’ for larger price increases by Australian businesses, experts say</a>
+          <p class="summary">‘Round-up’ pricing in items such as coffee suggests increases are exceeding the typical 1.5% surcharge feeFollow our Australia politics live blog for latest updatesGet our breaking news email, free app or daily news podcastBusinesses are using the recent ban on credit card surcharges as “cover” to pass along much larger price increases to customers, experts say, as cafes and restaurants struggle to cope with climbing costs and rising interest rates.Credit card surcharges, typically worth about 1.5% of the transaction, were banned from 1 October, as part of a Reserve Bank-led reform aimed at improving transparency for customers and, ultimately, lowering bank fees.</p>
+          <span class="source"><a href="https://www.theguardian.com/australia-news/2026/oct/13/australia-surcharge-ban-credit-card-price-increases-business" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">13 Oct, 06:13</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Card surcharge ban used as ‘cover’ for larger price increases by Australian businesses, experts say" data-url="https://www.theguardian.com/australia-news/2026/oct/13/australia-surcharge-ban-credit-card-price-increases-business">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c6r7yny29e51o?at_medium=RSS&amp;at_campaign=rss" data-title="&#x27;I was dead for 10 minutes, but lived to tell the tale&#x27;" data-summary="On New Year&#x27;s Eve of 2019 Sandra McCartney was clinically dead for 10 minutes. She was 59 when she collapsed during a Christmas holiday in Spain, lost consciousness, stopped breathing and had no pulse or heartbeat after suffering a cardiac arrest. Sandra&#x27;s life was saved when medics managed to restore a normal heart rhythm during a frantic race against time when paramedics gave her &quot;six defibrillator shocks and five shots of adrenaline to save my life&quot;." data-source="BBC News" data-published="2026-10-13T05:09:13+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c6r7yny29e51o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">&#x27;I was dead for 10 minutes, but lived to tell the tale&#x27;</a>
+          <p class="summary">On New Year&#x27;s Eve of 2019 Sandra McCartney was clinically dead for 10 minutes. She was 59 when she collapsed during a Christmas holiday in Spain, lost consciousness, stopped breathing and had no pulse or heartbeat after suffering a cardiac arrest. Sandra&#x27;s life was saved when medics managed to restore a normal heart rhythm during a frantic race against time when paramedics gave her &quot;six defibrillator shocks and five shots of adrenaline to save my life&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c6r7yny29e51o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 06:09</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&#x27;I was dead for 10 minutes, but lived to tell the tale&#x27;" data-url="https://www.bbc.co.uk/news/articles/c6r7yny29e51o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/10/261011211604.htm" data-title="Popular weight loss drugs linked to a surprising fingernail problem" data-summary="Popular GLP-1 medications used for weight loss and type 2 diabetes (such as Ozempic, Wegovy, Mounjaro, Zepbound, Victoza, and Trulicity) have been linked to an unexpected problem involving fingernails. A multinational study found that people taking these drugs were more than four times as likely to report nail detachment, a condition in which the nail separates from the skin underneath it." data-source="ScienceDaily" data-published="2026-10-12T09:34:48+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/10/261011211604.htm" target="_blank" rel="noopener">Popular weight loss drugs linked to a surprising fingernail problem</a>
+          <p class="summary">Popular GLP-1 medications used for weight loss and type 2 diabetes (such as Ozempic, Wegovy, Mounjaro, Zepbound, Victoza, and Trulicity) have been linked to an unexpected problem involving fingernails. A multinational study found that people taking these drugs were more than four times as likely to report nail detachment, a condition in which the nail separates from the skin underneath it.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/10/261011211604.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">12 Oct, 10:34</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Popular weight loss drugs linked to a surprising fingernail problem" data-url="https://www.sciencedaily.com/releases/2026/10/261011211604.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cq99znm9j7plo?at_medium=RSS&amp;at_campaign=rss" data-title="I&#x27;ve woken from operations to find the surgery hasn&#x27;t been done - women&#x27;s health is broken" data-summary="Kelly O&#x27;Shea says she has woken from more than one operation to be told adequate resources were not available to do the procedure she needed. The 32-year-old, who lives with chronic pain, felt there was no alternative but to pay Â£20,000 for the endometriosis treatment she needed, out of frustration and desperation. It comes as gynaecologists warn specialist centres in Wales dealing with complex cases of endometriosis are in jeopardy and a national service must be commissioned." data-source="BBC News" data-published="2026-10-13T04:56:04+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cq99znm9j7plo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">I&#x27;ve woken from operations to find the surgery hasn&#x27;t been done - women&#x27;s health is broken</a>
+          <p class="summary">Kelly O&#x27;Shea says she has woken from more than one operation to be told adequate resources were not available to do the procedure she needed. The 32-year-old, who lives with chronic pain, felt there was no alternative but to pay Â£20,000 for the endometriosis treatment she needed, out of frustration and desperation. It comes as gynaecologists warn specialist centres in Wales dealing with complex cases of endometriosis are in jeopardy and a national service must be commissioned.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cq99znm9j7plo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 05:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="I&#x27;ve woken from operations to find the surgery hasn&#x27;t been done - women&#x27;s health is broken" data-url="https://www.bbc.co.uk/news/articles/cq99znm9j7plo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/10/261009025708.htm" data-title="Scientists find hidden driver of aging and a simple amino acid that fights memory loss in mice" data-summary="What if some of the changes we associate with aging begin with the loss of a single protein deep inside the brain? Scientists investigating that possibility found that restoring a protein called Menin in older mice improved memory, balance, bone mass, and skin thickness in just 30 days. Even more surprisingly, supplementing the animals with a naturally occurring amino acid improved their learning and memory in only three weeks." data-source="ScienceDaily" data-published="2026-10-12T09:23:55+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/10/261009025708.htm" target="_blank" rel="noopener">Scientists find hidden driver of aging and a simple amino acid that fights memory loss in mice</a>
+          <p class="summary">What if some of the changes we associate with aging begin with the loss of a single protein deep inside the brain? Scientists investigating that possibility found that restoring a protein called Menin in older mice improved memory, balance, bone mass, and skin thickness in just 30 days. Even more surprisingly, supplementing the animals with a naturally occurring amino acid improved their learning and memory in only three weeks.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/10/261009025708.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">12 Oct, 10:23</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Scientists find hidden driver of aging and a simple amino acid that fights memory loss in mice" data-url="https://www.sciencedaily.com/releases/2026/10/261009025708.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMirAFBVV95cUxOZmFzbTVBZWNFa1dpQl9vVWcwVG0wVjlILWRhSjNOM0lIUXhCSjhjVGxiUXNud0t1NDUtZGNING16TWdNbFRReC0zMlhJTkhSMVhNWGhGSzVmbXVUOEU4cms0Mi1FejQ2ekZqb3p6WkRQcHlpU0xoeWc1cm9QWEd3b1RIWEFubTZPeTdRVkVCZEJBRDlXSjZCR1BQckNUWWgydlNsS2RKdG8wdUVk?oc=5" data-title="Ranji Trophy 2026-27, PCA vs ACA: Umesh Yadav stars with the ball with 5/70 - BCCI" data-summary="Ranji Trophy 2026-27, PCA vs ACA: Umesh Yadav stars with the ball with 5/70 BCCI" data-source="BCCI" data-published="2026-10-13T04:27:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMirAFBVV95cUxOZmFzbTVBZWNFa1dpQl9vVWcwVG0wVjlILWRhSjNOM0lIUXhCSjhjVGxiUXNud0t1NDUtZGNING16TWdNbFRReC0zMlhJTkhSMVhNWGhGSzVmbXVUOEU4cms0Mi1FejQ2ekZqb3p6WkRQcHlpU0xoeWc1cm9QWEd3b1RIWEFubTZPeTdRVkVCZEJBRDlXSjZCR1BQckNUWWgydlNsS2RKdG8wdUVk?oc=5" target="_blank" rel="noopener">Ranji Trophy 2026-27, PCA vs ACA: Umesh Yadav stars with the ball with 5/70 - BCCI</a>
+          <p class="summary">Ranji Trophy 2026-27, PCA vs ACA: Umesh Yadav stars with the ball with 5/70 BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxOZmFzbTVBZWNFa1dpQl9vVWcwVG0wVjlILWRhSjNOM0lIUXhCSjhjVGxiUXNud0t1NDUtZGNING16TWdNbFRReC0zMlhJTkhSMVhNWGhGSzVmbXVUOEU4cms0Mi1FejQ2ekZqb3p6WkRQcHlpU0xoeWc1cm9QWEd3b1RIWEFubTZPeTdRVkVCZEJBRDlXSjZCR1BQckNUWWgydlNsS2RKdG8wdUVk?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">13 Oct, 05:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ranji Trophy 2026-27, PCA vs ACA: Umesh Yadav stars with the ball with 5/70 - BCCI" data-url="https://news.google.com/rss/articles/CBMirAFBVV95cUxOZmFzbTVBZWNFa1dpQl9vVWcwVG0wVjlILWRhSjNOM0lIUXhCSjhjVGxiUXNud0t1NDUtZGNING16TWdNbFRReC0zMlhJTkhSMVhNWGhGSzVmbXVUOEU4cms0Mi1FejQ2ekZqb3p6WkRQcHlpU0xoeWc1cm9QWEd3b1RIWEFubTZPeTdRVkVCZEJBRDlXSjZCR1BQckNUWWgydlNsS2RKdG8wdUVk?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMi4wFBVV95cUxNWGlJSTJZckZLRmJqV21QRXZFUkFpUDdaRWNLQkZBeWhnXy1JUmU0RjVxZElHVTZ0NmdvcTNVVHRWeEx5RDRWWTFURnZxSTNBemYwNHZNUW05NjVoVzNDbUdMT2RWaGFMMUU4cm1vb08ydTNUakxHS2pzb0MyYWRpVDN0d2NicWpQM2huRXlHYXpXZFBuS1lMRmNGY2w2VEU0YkpWTTQ2ZzM3T0RySm1MT2kzUmFENjlUX2hWX0FNbTBJVXRCT05aQnYyYk1ITEk2SC1sWmt6ajdQNmhfRGctT2xQRQ?oc=5" data-title="&quot;Leave The Team Or Retire&quot;: Ex-BCCI Selector Reveals Why Yuvraj Singh, Gautam Gambhir&#x27;s India Careers Ended Early - NDTV Sports" data-summary="&quot;Leave The Team Or Retire&quot;: Ex-BCCI Selector Reveals Why Yuvraj Singh, Gautam Gambhir&#x27;s India Careers Ended Early NDTV Sports" data-source="NDTV Sports" data-published="2026-10-13T00:53:45+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMi4wFBVV95cUxNWGlJSTJZckZLRmJqV21QRXZFUkFpUDdaRWNLQkZBeWhnXy1JUmU0RjVxZElHVTZ0NmdvcTNVVHRWeEx5RDRWWTFURnZxSTNBemYwNHZNUW05NjVoVzNDbUdMT2RWaGFMMUU4cm1vb08ydTNUakxHS2pzb0MyYWRpVDN0d2NicWpQM2huRXlHYXpXZFBuS1lMRmNGY2w2VEU0YkpWTTQ2ZzM3T0RySm1MT2kzUmFENjlUX2hWX0FNbTBJVXRCT05aQnYyYk1ITEk2SC1sWmt6ajdQNmhfRGctT2xQRQ?oc=5" target="_blank" rel="noopener">&quot;Leave The Team Or Retire&quot;: Ex-BCCI Selector Reveals Why Yuvraj Singh, Gautam Gambhir&#x27;s India Careers Ended Early - NDTV Sports</a>
+          <p class="summary">&quot;Leave The Team Or Retire&quot;: Ex-BCCI Selector Reveals Why Yuvraj Singh, Gautam Gambhir&#x27;s India Careers Ended Early NDTV Sports</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMi4wFBVV95cUxNWGlJSTJZckZLRmJqV21QRXZFUkFpUDdaRWNLQkZBeWhnXy1JUmU0RjVxZElHVTZ0NmdvcTNVVHRWeEx5RDRWWTFURnZxSTNBemYwNHZNUW05NjVoVzNDbUdMT2RWaGFMMUU4cm1vb08ydTNUakxHS2pzb0MyYWRpVDN0d2NicWpQM2huRXlHYXpXZFBuS1lMRmNGY2w2VEU0YkpWTTQ2ZzM3T0RySm1MT2kzUmFENjlUX2hWX0FNbTBJVXRCT05aQnYyYk1ITEk2SC1sWmt6ajdQNmhfRGctT2xQRQ?oc=5" target="_blank" rel="noopener">NDTV Sports</a> &middot; <span class="pubdate">13 Oct, 01:53</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&quot;Leave The Team Or Retire&quot;: Ex-BCCI Selector Reveals Why Yuvraj Singh, Gautam Gambhir&#x27;s India Careers Ended Early - NDTV Sports" data-url="https://news.google.com/rss/articles/CBMi4wFBVV95cUxNWGlJSTJZckZLRmJqV21QRXZFUkFpUDdaRWNLQkZBeWhnXy1JUmU0RjVxZElHVTZ0NmdvcTNVVHRWeEx5RDRWWTFURnZxSTNBemYwNHZNUW05NjVoVzNDbUdMT2RWaGFMMUU4cm1vb08ydTNUakxHS2pzb0MyYWRpVDN0d2NicWpQM2huRXlHYXpXZFBuS1lMRmNGY2w2VEU0YkpWTTQ2ZzM3T0RySm1MT2kzUmFENjlUX2hWX0FNbTBJVXRCT05aQnYyYk1ITEk2SC1sWmt6ajdQNmhfRGctT2xQRQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMinAFBVV95cUxOMVdVc1VfYzZaODRCWGxPalVrZWRrNklJNXA4Z1JySWdPX1AwUldzRmFfMjlaTzlxVm00OFk0MEtIcS03LXpFZ3ZQYm9hZ1hHU0hMcmFJMi14V2ozUDd4c1dFTERzRjk0a29sSzAwUTN5ZTNkeVZvY0xCb2RtWWwwa1JMelRUSldPaU93YzhabGdfUmE3UHlTRmxMdGE?oc=5" data-title="TCA demands scrapping of Hyderabad Ranji squad, threatens BCCI protest - Telangana Today" data-summary="TCA demands scrapping of Hyderabad Ranji squad, threatens BCCI protest Telangana Today" data-source="Telangana Today" data-published="2026-10-12T18:49:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMinAFBVV95cUxOMVdVc1VfYzZaODRCWGxPalVrZWRrNklJNXA4Z1JySWdPX1AwUldzRmFfMjlaTzlxVm00OFk0MEtIcS03LXpFZ3ZQYm9hZ1hHU0hMcmFJMi14V2ozUDd4c1dFTERzRjk0a29sSzAwUTN5ZTNkeVZvY0xCb2RtWWwwa1JMelRUSldPaU93YzhabGdfUmE3UHlTRmxMdGE?oc=5" target="_blank" rel="noopener">TCA demands scrapping of Hyderabad Ranji squad, threatens BCCI protest - Telangana Today</a>
+          <p class="summary">TCA demands scrapping of Hyderabad Ranji squad, threatens BCCI protest Telangana Today</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMinAFBVV95cUxOMVdVc1VfYzZaODRCWGxPalVrZWRrNklJNXA4Z1JySWdPX1AwUldzRmFfMjlaTzlxVm00OFk0MEtIcS03LXpFZ3ZQYm9hZ1hHU0hMcmFJMi14V2ozUDd4c1dFTERzRjk0a29sSzAwUTN5ZTNkeVZvY0xCb2RtWWwwa1JMelRUSldPaU93YzhabGdfUmE3UHlTRmxMdGE?oc=5" target="_blank" rel="noopener">Telangana Today</a> &middot; <span class="pubdate">12 Oct, 19:49</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="TCA demands scrapping of Hyderabad Ranji squad, threatens BCCI protest - Telangana Today" data-url="https://news.google.com/rss/articles/CBMinAFBVV95cUxOMVdVc1VfYzZaODRCWGxPalVrZWRrNklJNXA4Z1JySWdPX1AwUldzRmFfMjlaTzlxVm00OFk0MEtIcS03LXpFZ3ZQYm9hZ1hHU0hMcmFJMi14V2ozUDd4c1dFTERzRjk0a29sSzAwUTN5ZTNkeVZvY0xCb2RtWWwwa1JMelRUSldPaU93YzhabGdfUmE3UHlTRmxMdGE?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiwAFBVV95cUxOMVA2N0d1Y2p4RTRseWEzX0VDNHRhYi1rdWdPTkJweVFQUlVsa2c4MURMT3dIdUpRZTZlV3NKS3Nac3NiZ2JhMkZXc3FGTTVYX21jaGgyWmJWT3QtcHdiN3RBLWZXcTdTRkFwUi1PSkMycEdsU3JHZHBQbTV5bmRKd2p0TFhaTmJYMzJGMUlTR3dCV3N4UmhzYkIyTVRlckxfeWFzam1DT0I2YTRoMzM5REt0QlFFa01YNExpS1JlQVHSAcYBQVVfeXFMTjdSUTJQTDNYMW9ZMnpPLVFJUVNTRU52WGxYYXRNNTBHT09jQnBrSi1xVVVzTzU5bVotOWtJVUowUV9vYnJnOUFUVEN4dnVPMU14UFFvcmNDX0FndEFCSU05cF93bVJTbGFJVkJMQlcxLUJybmFvY0tQNHFyS2pZNXF1MHEyVGtpRGhYWkZOengyNFd5OEg3VmdfOHYzMDdUb3BROVNRRVhiTGpvNXdMWW9VMDBDYV9kMk1HQU5pbnVUYkZtbE9n?oc=5" data-title="BCCI rejects venue shift reports, India vs Sri Lanka 1st ODI to remain in Delhi - WION" data-summary="BCCI rejects venue shift reports, India vs Sri Lanka 1st ODI to remain in Delhi WION" data-source="WION" data-published="2026-10-12T13:37:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiwAFBVV95cUxOMVA2N0d1Y2p4RTRseWEzX0VDNHRhYi1rdWdPTkJweVFQUlVsa2c4MURMT3dIdUpRZTZlV3NKS3Nac3NiZ2JhMkZXc3FGTTVYX21jaGgyWmJWT3QtcHdiN3RBLWZXcTdTRkFwUi1PSkMycEdsU3JHZHBQbTV5bmRKd2p0TFhaTmJYMzJGMUlTR3dCV3N4UmhzYkIyTVRlckxfeWFzam1DT0I2YTRoMzM5REt0QlFFa01YNExpS1JlQVHSAcYBQVVfeXFMTjdSUTJQTDNYMW9ZMnpPLVFJUVNTRU52WGxYYXRNNTBHT09jQnBrSi1xVVVzTzU5bVotOWtJVUowUV9vYnJnOUFUVEN4dnVPMU14UFFvcmNDX0FndEFCSU05cF93bVJTbGFJVkJMQlcxLUJybmFvY0tQNHFyS2pZNXF1MHEyVGtpRGhYWkZOengyNFd5OEg3VmdfOHYzMDdUb3BROVNRRVhiTGpvNXdMWW9VMDBDYV9kMk1HQU5pbnVUYkZtbE9n?oc=5" target="_blank" rel="noopener">BCCI rejects venue shift reports, India vs Sri Lanka 1st ODI to remain in Delhi - WION</a>
+          <p class="summary">BCCI rejects venue shift reports, India vs Sri Lanka 1st ODI to remain in Delhi WION</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiwAFBVV95cUxOMVA2N0d1Y2p4RTRseWEzX0VDNHRhYi1rdWdPTkJweVFQUlVsa2c4MURMT3dIdUpRZTZlV3NKS3Nac3NiZ2JhMkZXc3FGTTVYX21jaGgyWmJWT3QtcHdiN3RBLWZXcTdTRkFwUi1PSkMycEdsU3JHZHBQbTV5bmRKd2p0TFhaTmJYMzJGMUlTR3dCV3N4UmhzYkIyTVRlckxfeWFzam1DT0I2YTRoMzM5REt0QlFFa01YNExpS1JlQVHSAcYBQVVfeXFMTjdSUTJQTDNYMW9ZMnpPLVFJUVNTRU52WGxYYXRNNTBHT09jQnBrSi1xVVVzTzU5bVotOWtJVUowUV9vYnJnOUFUVEN4dnVPMU14UFFvcmNDX0FndEFCSU05cF93bVJTbGFJVkJMQlcxLUJybmFvY0tQNHFyS2pZNXF1MHEyVGtpRGhYWkZOengyNFd5OEg3VmdfOHYzMDdUb3BROVNRRVhiTGpvNXdMWW9VMDBDYV9kMk1HQU5pbnVUYkZtbE9n?oc=5" target="_blank" rel="noopener">WION</a> &middot; <span class="pubdate">12 Oct, 14:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="BCCI rejects venue shift reports, India vs Sri Lanka 1st ODI to remain in Delhi - WION" data-url="https://news.google.com/rss/articles/CBMiwAFBVV95cUxOMVA2N0d1Y2p4RTRseWEzX0VDNHRhYi1rdWdPTkJweVFQUlVsa2c4MURMT3dIdUpRZTZlV3NKS3Nac3NiZ2JhMkZXc3FGTTVYX21jaGgyWmJWT3QtcHdiN3RBLWZXcTdTRkFwUi1PSkMycEdsU3JHZHBQbTV5bmRKd2p0TFhaTmJYMzJGMUlTR3dCV3N4UmhzYkIyTVRlckxfeWFzam1DT0I2YTRoMzM5REt0QlFFa01YNExpS1JlQVHSAcYBQVVfeXFMTjdSUTJQTDNYMW9ZMnpPLVFJUVNTRU52WGxYYXRNNTBHT09jQnBrSi1xVVVzTzU5bVotOWtJVUowUV9vYnJnOUFUVEN4dnVPMU14UFFvcmNDX0FndEFCSU05cF93bVJTbGFJVkJMQlcxLUJybmFvY0tQNHFyS2pZNXF1MHEyVGtpRGhYWkZOengyNFd5OEg3VmdfOHYzMDdUb3BROVNRRVhiTGpvNXdMWW9VMDBDYV9kMk1HQU5pbnVUYkZtbE9n?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiswFBVV95cUxPelhWNGtjdkVOMjZpdmlQX1RMUllHOWJ1bGFaSEJCMEhQY0lzRTBhWFhvRFBrLXh6VVAwYi1sMWt1akF0c2otX2tWYVU0OWdUc183R2hvTmJqS0JlRHBtNU5DbkkwSGRCMmxWWEstaWxndk5TdGpUY3dYU2gybWJRRGJ0WXpUdkI0dUR2R2VLbUc0aUhvMl9pbEp0cVdDSGpLMms3MGx6SUJWMG1mdFl0QWVtcw?oc=5" data-title="Jofra Archer handed two-year England cricket central contract extension till 2028 - Rajasthan Royals" data-summary="Jofra Archer handed two-year England cricket central contract extension till 2028 Rajasthan Royals" data-source="Rajasthan Royals" data-published="2026-10-12T14:37:02+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiswFBVV95cUxPelhWNGtjdkVOMjZpdmlQX1RMUllHOWJ1bGFaSEJCMEhQY0lzRTBhWFhvRFBrLXh6VVAwYi1sMWt1akF0c2otX2tWYVU0OWdUc183R2hvTmJqS0JlRHBtNU5DbkkwSGRCMmxWWEstaWxndk5TdGpUY3dYU2gybWJRRGJ0WXpUdkI0dUR2R2VLbUc0aUhvMl9pbEp0cVdDSGpLMms3MGx6SUJWMG1mdFl0QWVtcw?oc=5" target="_blank" rel="noopener">Jofra Archer handed two-year England cricket central contract extension till 2028 - Rajasthan Royals</a>
+          <p class="summary">Jofra Archer handed two-year England cricket central contract extension till 2028 Rajasthan Royals</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiswFBVV95cUxPelhWNGtjdkVOMjZpdmlQX1RMUllHOWJ1bGFaSEJCMEhQY0lzRTBhWFhvRFBrLXh6VVAwYi1sMWt1akF0c2otX2tWYVU0OWdUc183R2hvTmJqS0JlRHBtNU5DbkkwSGRCMmxWWEstaWxndk5TdGpUY3dYU2gybWJRRGJ0WXpUdkI0dUR2R2VLbUc0aUhvMl9pbEp0cVdDSGpLMms3MGx6SUJWMG1mdFl0QWVtcw?oc=5" target="_blank" rel="noopener">Rajasthan Royals</a> &middot; <span class="pubdate">12 Oct, 15:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Jofra Archer handed two-year England cricket central contract extension till 2028 - Rajasthan Royals" data-url="https://news.google.com/rss/articles/CBMiswFBVV95cUxPelhWNGtjdkVOMjZpdmlQX1RMUllHOWJ1bGFaSEJCMEhQY0lzRTBhWFhvRFBrLXh6VVAwYi1sMWt1akF0c2otX2tWYVU0OWdUc183R2hvTmJqS0JlRHBtNU5DbkkwSGRCMmxWWEstaWxndk5TdGpUY3dYU2gybWJRRGJ0WXpUdkI0dUR2R2VLbUc0aUhvMl9pbEp0cVdDSGpLMms3MGx6SUJWMG1mdFl0QWVtcw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMirwFBVV95cUxQRlNUWXVCOWlvazZKTU11M1NMTFE0U1BCd2thbzQzQmdEa1UyeTRfQTZPREF1Y2VIQnA4QU5uM1hIeGtvNjI2dktBZlNNUHJMTkUzYWFzTUVWNGIySC1HZWFKTDFkZHIwaE1fVlZ5MWEwU0VHWl94TzhpVWV1S1RRYUNxSDJuNjJEaXNHMjhUNE1paWdNbzFrQllZRzBrQ2h6dG1WeVBqb3R1bDQzY25Z?oc=5" data-title="Ravindra Jadeja&#x27;s Ranji Trophy 2026-27 season kicks off with a century - Rajasthan Royals" data-summary="Ravindra Jadeja&#x27;s Ranji Trophy 2026-27 season kicks off with a century Rajasthan Royals" data-source="Rajasthan Royals" data-published="2026-10-12T07:35:40+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMirwFBVV95cUxQRlNUWXVCOWlvazZKTU11M1NMTFE0U1BCd2thbzQzQmdEa1UyeTRfQTZPREF1Y2VIQnA4QU5uM1hIeGtvNjI2dktBZlNNUHJMTkUzYWFzTUVWNGIySC1HZWFKTDFkZHIwaE1fVlZ5MWEwU0VHWl94TzhpVWV1S1RRYUNxSDJuNjJEaXNHMjhUNE1paWdNbzFrQllZRzBrQ2h6dG1WeVBqb3R1bDQzY25Z?oc=5" target="_blank" rel="noopener">Ravindra Jadeja&#x27;s Ranji Trophy 2026-27 season kicks off with a century - Rajasthan Royals</a>
+          <p class="summary">Ravindra Jadeja&#x27;s Ranji Trophy 2026-27 season kicks off with a century Rajasthan Royals</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMirwFBVV95cUxQRlNUWXVCOWlvazZKTU11M1NMTFE0U1BCd2thbzQzQmdEa1UyeTRfQTZPREF1Y2VIQnA4QU5uM1hIeGtvNjI2dktBZlNNUHJMTkUzYWFzTUVWNGIySC1HZWFKTDFkZHIwaE1fVlZ5MWEwU0VHWl94TzhpVWV1S1RRYUNxSDJuNjJEaXNHMjhUNE1paWdNbzFrQllZRzBrQ2h6dG1WeVBqb3R1bDQzY25Z?oc=5" target="_blank" rel="noopener">Rajasthan Royals</a> &middot; <span class="pubdate">12 Oct, 08:35</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ravindra Jadeja&#x27;s Ranji Trophy 2026-27 season kicks off with a century - Rajasthan Royals" data-url="https://news.google.com/rss/articles/CBMirwFBVV95cUxQRlNUWXVCOWlvazZKTU11M1NMTFE0U1BCd2thbzQzQmdEa1UyeTRfQTZPREF1Y2VIQnA4QU5uM1hIeGtvNjI2dktBZlNNUHJMTkUzYWFzTUVWNGIySC1HZWFKTDFkZHIwaE1fVlZ5MWEwU0VHWl94TzhpVWV1S1RRYUNxSDJuNjJEaXNHMjhUNE1paWdNbzFrQllZRzBrQ2h6dG1WeVBqb3R1bDQzY25Z?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1558183.html?ex_cid=OTC-RSS" data-title="Former Zimbabwe player and umpire Sarah Dambanevana dies aged 36" data-summary="Dambanevana represented Zimbabwe as a player between 2009 and 2014, including at the World Cup Qualifier in 2011" data-source="ESPNcricinfo" data-published="2026-10-13T04:00:21+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1558183.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Former Zimbabwe player and umpire Sarah Dambanevana dies aged 36</a>
+          <p class="summary">Dambanevana represented Zimbabwe as a player between 2009 and 2014, including at the World Cup Qualifier in 2011</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1558183.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">13 Oct, 05:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Former Zimbabwe player and umpire Sarah Dambanevana dies aged 36" data-url="https://www.cricinfo.com/ci/content/story/1558183.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1558211.html?ex_cid=OTC-RSS" data-title="Saracens sack player whose punch sparked Stokes crisis" data-summary="Totoa Auvaa leaves club following a swift internal investigation into a separate incident." data-source="ESPNcricinfo" data-published="2026-10-12T19:42:31+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1558211.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Saracens sack player whose punch sparked Stokes crisis</a>
+          <p class="summary">Totoa Auvaa leaves club following a swift internal investigation into a separate incident.</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1558211.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">12 Oct, 20:42</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Saracens sack player whose punch sparked Stokes crisis" data-url="https://www.cricinfo.com/ci/content/story/1558211.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1557996.html?ex_cid=OTC-RSS" data-title="West Indies bowl; India bring in Reddy and Prince" data-summary="West Indies were forced to leave out Romario Shepherd and brought in Quentin Sampson and Keemo Paul for him and Akeal Hosein" data-source="ESPNcricinfo" data-published="2026-10-12T18:20:50+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1557996.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">West Indies bowl; India bring in Reddy and Prince</a>
+          <p class="summary">West Indies were forced to leave out Romario Shepherd and brought in Quentin Sampson and Keemo Paul for him and Akeal Hosein</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1557996.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">12 Oct, 19:20</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="West Indies bowl; India bring in Reddy and Prince" data-url="https://www.cricinfo.com/ci/content/story/1557996.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1558191.html?ex_cid=OTC-RSS" data-title="Jos Buttler faces lengthy lay-off after surgery on injured hamstring" data-summary="Former captain &quot;more motivated than ever&quot; to return to fitness after injury sustained during Sri Lanka series" data-source="ESPNcricinfo" data-published="2026-10-12T17:31:27+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1558191.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Jos Buttler faces lengthy lay-off after surgery on injured hamstring</a>
+          <p class="summary">Former captain &quot;more motivated than ever&quot; to return to fitness after injury sustained during Sri Lanka series</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1558191.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">12 Oct, 18:31</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Jos Buttler faces lengthy lay-off after surgery on injured hamstring" data-url="https://www.cricinfo.com/ci/content/story/1558191.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.skysports.com/tennis/scores-schedule" data-title="Tennis scores: Boulter playing in Wuhan with Zverev vs Bublik in Shanghai" data-summary="" data-source="Sky Sports" data-published="2026-10-13T06:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/tennis/scores-schedule" target="_blank" rel="noopener">Tennis scores: Boulter playing in Wuhan with Zverev vs Bublik in Shanghai</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://www.skysports.com/tennis/scores-schedule" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">13 Oct, 07:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Tennis scores: Boulter playing in Wuhan with Zverev vs Bublik in Shanghai" data-url="https://www.skysports.com/tennis/scores-schedule">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/rugby-league/articles/cmq8n00zxj49o?at_medium=RSS&amp;at_campaign=rss" data-title="Lewis left out for England&#x27;s Rugby League World Cup opener" data-summary="Harry Smith has been named alongside captain George Williams in the England&#x27;s half-back roles for their Rugby League World Cup opening match against Tonga - with Mikey Lewis left out. Lewis, who pipped 2025 Super League Man Of Steel Jake Connor to a place in England&#x27;s squad, has not even made the bench for Saturday&#x27;s fixture." data-source="BBC News" data-published="2026-10-13T05:15:50+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/rugby-league/articles/cmq8n00zxj49o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lewis left out for England&#x27;s Rugby League World Cup opener</a>
+          <p class="summary">Harry Smith has been named alongside captain George Williams in the England&#x27;s half-back roles for their Rugby League World Cup opening match against Tonga - with Mikey Lewis left out. Lewis, who pipped 2025 Super League Man Of Steel Jake Connor to a place in England&#x27;s squad, has not even made the bench for Saturday&#x27;s fixture.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/rugby-league/articles/cmq8n00zxj49o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 06:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Lewis left out for England&#x27;s Rugby League World Cup opener" data-url="https://www.bbc.co.uk/sport/rugby-league/articles/cmq8n00zxj49o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/racing/news/12040/13597717/today-on-sky-sports-racing-southwell-hereford-and-wolverhampton-feature-live-on-tuesday" data-title="Today on Sky Sports Racing: Southwell, Hereford and Wolverhampton feature" data-summary="We&#x27;re all set for a busy Tuesday on Sky Sports Racing, with all-weather action from Wolverhampton following up National Hunt cards at Hereford and Southwell; Bella Angelina takes on Soft Landing in the feature from Dunstall Park at 6pm The Sky Sports Racing cameras head to Southwell, Hereford and Wolverhampton on Tuesday, with every race LIVE from 1.45pm. Unexposed duo Bella Angelina and Soft Landing clash in the Sky Sports Racing Sky 415 Novice Stakes ." data-source="Sky Sports" data-published="2026-10-13T06:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/racing/news/12040/13597717/today-on-sky-sports-racing-southwell-hereford-and-wolverhampton-feature-live-on-tuesday" target="_blank" rel="noopener">Today on Sky Sports Racing: Southwell, Hereford and Wolverhampton feature</a>
+          <p class="summary">We&#x27;re all set for a busy Tuesday on Sky Sports Racing, with all-weather action from Wolverhampton following up National Hunt cards at Hereford and Southwell; Bella Angelina takes on Soft Landing in the feature from Dunstall Park at 6pm The Sky Sports Racing cameras head to Southwell, Hereford and Wolverhampton on Tuesday, with every race LIVE from 1.45pm. Unexposed duo Bella Angelina and Soft Landing clash in the Sky Sports Racing Sky 415 Novice Stakes .</p>
+          <span class="source"><a href="https://www.skysports.com/racing/news/12040/13597717/today-on-sky-sports-racing-southwell-hereford-and-wolverhampton-feature-live-on-tuesday" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">13 Oct, 07:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Today on Sky Sports Racing: Southwell, Hereford and Wolverhampton feature" data-url="https://www.skysports.com/racing/news/12040/13597717/today-on-sky-sports-racing-southwell-hereford-and-wolverhampton-feature-live-on-tuesday">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/netball/articles/cv98zl9579ggo?at_medium=RSS&amp;at_campaign=rss" data-title="An insurance policy with no guarantee - the complex issue of egg-freezing in sport" data-summary="&quot;I remember waking up in the morning and I couldn&#x27;t stand. I was bent over in two. I could barely walk.&quot; For Geva Mentor - England netball&#x27;s most decorated player - this was the reality of going through the process of having her eggs frozen in 2019. &quot;I had just played in my fourth World Cup and I was at a bit of a loss in terms of where my life was going personally, as I always wanted a family,&quot; Mentor tells BBC Sport." data-source="BBC News" data-published="2026-10-13T05:12:56+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/netball/articles/cv98zl9579ggo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">An insurance policy with no guarantee - the complex issue of egg-freezing in sport</a>
+          <p class="summary">&quot;I remember waking up in the morning and I couldn&#x27;t stand. I was bent over in two. I could barely walk.&quot; For Geva Mentor - England netball&#x27;s most decorated player - this was the reality of going through the process of having her eggs frozen in 2019. &quot;I had just played in my fourth World Cup and I was at a bit of a loss in terms of where my life was going personally, as I always wanted a family,&quot; Mentor tells BBC Sport.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/netball/articles/cv98zl9579ggo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 06:12</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="An insurance policy with no guarantee - the complex issue of egg-freezing in sport" data-url="https://www.bbc.co.uk/sport/netball/articles/cv98zl9579ggo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/29yearold-techie-falls-from-30th-floor-of-apartment-dies-in-hyderabad-police-101791867940237.html" data-title="29-year-old techie falls from 30th floor of apartment, dies in Hyderabad: Police" data-summary="A 29-year-old software engineer was found dead in the parking lot of a gated community in Hyderabad’s Nanakramguda late on Monday night, just two days after moving into the complex, police said. Investigators said the techie appeared to have died after falling from his 30th-floor rented apartment, but underlined that the circumstances surrounding the fatal fall remain under investigation." data-source="Hindustan Times" data-published="2026-10-13T05:05:39+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/29yearold-techie-falls-from-30th-floor-of-apartment-dies-in-hyderabad-police-101791867940237.html" target="_blank" rel="noopener">29-year-old techie falls from 30th floor of apartment, dies in Hyderabad: Police</a>
+          <p class="summary">A 29-year-old software engineer was found dead in the parking lot of a gated community in Hyderabad’s Nanakramguda late on Monday night, just two days after moving into the complex, police said. Investigators said the techie appeared to have died after falling from his 30th-floor rented apartment, but underlined that the circumstances surrounding the fatal fall remain under investigation.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/29yearold-techie-falls-from-30th-floor-of-apartment-dies-in-hyderabad-police-101791867940237.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">13 Oct, 06:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="29-year-old techie falls from 30th floor of apartment, dies in Hyderabad: Police" data-url="https://www.hindustantimes.com/india-news/29yearold-techie-falls-from-30th-floor-of-apartment-dies-in-hyderabad-police-101791867940237.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/pakistan/5-killed-several-injured-as-passenger-train-derails-in-pakistans-punjab/articleshow/134908548.cms" data-title="5 killed, several injured as passenger train derails in Pakistan&#x27;s Punjab" data-summary="" data-source="Times of India" data-published="2026-10-13T04:57:18+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/pakistan/5-killed-several-injured-as-passenger-train-derails-in-pakistans-punjab/articleshow/134908548.cms" target="_blank" rel="noopener">5 killed, several injured as passenger train derails in Pakistan&#x27;s Punjab</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/pakistan/5-killed-several-injured-as-passenger-train-derails-in-pakistans-punjab/articleshow/134908548.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">13 Oct, 05:57</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="5 killed, several injured as passenger train derails in Pakistan&#x27;s Punjab" data-url="https://timesofindia.indiatimes.com/world/pakistan/5-killed-several-injured-as-passenger-train-derails-in-pakistans-punjab/articleshow/134908548.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c54g1mp7lz7zo?at_medium=RSS&amp;at_campaign=rss" data-title="Boardroom feud tests trusted Indian business empire" data-summary="Before dawn breaks over Mumbai, Mansi Kadam begins preparing vada pav, a savoury snack synonymous with the western Indian city, for the day&#x27;s customers. One ingredient is non-negotiable: Tata salt." data-source="BBC News" data-published="2026-10-12T23:10:32+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c54g1mp7lz7zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Boardroom feud tests trusted Indian business empire</a>
+          <p class="summary">Before dawn breaks over Mumbai, Mansi Kadam begins preparing vada pav, a savoury snack synonymous with the western Indian city, for the day&#x27;s customers. One ingredient is non-negotiable: Tata salt.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c54g1mp7lz7zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">13 Oct, 00:10</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Boardroom feud tests trusted Indian business empire" data-url="https://www.bbc.co.uk/news/articles/c54g1mp7lz7zo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/bihar-set-to-track-every-stillbirth-online-to-record-why-each-baby-was-lost-101791866902809.html" data-title="Bihar set to track every stillbirth online, to record why each baby was lost" data-summary="Bihar is preparing to roll out the Centre&#x27;s new guidelines on stillbirth surveillance and response and will implement them through portal-based reporting across its health facilities. Under the guidelines, a stillbirth is a baby born with no signs of life at 28 weeks or more of gestation. Where gestational age is missing, a birth weight of 1,000 grams or more, or a body length of 35 cm or more, applies." data-source="Hindustan Times" data-published="2026-10-13T05:05:25+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/bihar-set-to-track-every-stillbirth-online-to-record-why-each-baby-was-lost-101791866902809.html" target="_blank" rel="noopener">Bihar set to track every stillbirth online, to record why each baby was lost</a>
+          <p class="summary">Bihar is preparing to roll out the Centre&#x27;s new guidelines on stillbirth surveillance and response and will implement them through portal-based reporting across its health facilities. Under the guidelines, a stillbirth is a baby born with no signs of life at 28 weeks or more of gestation. Where gestational age is missing, a birth weight of 1,000 grams or more, or a body length of 35 cm or more, applies.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/bihar-set-to-track-every-stillbirth-online-to-record-why-each-baby-was-lost-101791866902809.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">13 Oct, 06:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Bihar set to track every stillbirth online, to record why each baby was lost" data-url="https://www.hindustantimes.com/india-news/bihar-set-to-track-every-stillbirth-online-to-record-why-each-baby-was-lost-101791866902809.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
