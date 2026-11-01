@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Sunday, 01 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Sunday, 01 November 2026, Updated as of 06:30 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-01.html" selected>Sunday, 01 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-31.html">Saturday, 31 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-30.html">Friday, 30 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-29.html">Thursday, 29 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-28.html">Wednesday, 28 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-27.html">Tuesday, 27 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-26.html">Monday, 26 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-25.html">Sunday, 25 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-24.html">Saturday, 24 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-23.html">Friday, 23 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-22.html">Thursday, 22 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-21.html">Wednesday, 21 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-20.html">Tuesday, 20 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-19.html">Monday, 19 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-18.html">Sunday, 18 October 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNQm1EbjZ0c2s0V19MSHktVlBZWU1NNHBuSUgxMjh4TURjZmd6aTdvaEh0T3Bzdko2bzdjWVpwalZsaEZUb1FkS01kV1hlWmZ1MDg0WG9sT01TY25JaEptTG9ZdklzMXE0RHNqUzV1cUNFYVZlS3h4ZnFjTVF1ak1nOXpmVGpZUlFEQ21F?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI - Yahoo Sports</span>
+      </a>
+      <a class="pick" href="https://www.cricinfo.com/ci/content/story/1560923.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">
+        <span class="pick-topic">Cricket</span>
+        <span class="pick-headline">Boyle and Foxcroft make it a long, hard day for India A bowlers</span>
+      </a>
+      <a class="pick" href="https://www.aljazeera.com/sports/2026/11/1/canelo-alvarez-defeats-christian-mbilli-to-reclaim-wbc-title-in-riyadh?traffic_source=rss" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — Global</span>
+        <span class="pick-headline">Canelo Alvarez defeats Christian Mbilli to reclaim WBC title in Riyadh</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cje36degrgv5o?at_medium=RSS&amp;at_campaign=rss" data-title="These firms you&#x27;ve never heard of are feeding fears the AI bubble could burst" data-summary="A once-obscure corner of the AI ecosystem finds itself in the spotlight â and investors don&#x27;t all like what they see. Names like CoreWeave and Nebius are familiar to the tech set in San Francisco and Silicon Valley. These data centre companies, known as neocloud firms, run large warehouses packed with expensive computers, which they lease to major AI developers like Anthropic, OpenAI and Meta. They&#x27;re now the subject of one of Silicon Valley&#x27;s most heated debates." data-source="BBC News" data-published="2026-11-01T01:37:26+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cje36degrgv5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">These firms you&#x27;ve never heard of are feeding fears the AI bubble could burst</a>
+          <p class="summary">A once-obscure corner of the AI ecosystem finds itself in the spotlight â and investors don&#x27;t all like what they see. Names like CoreWeave and Nebius are familiar to the tech set in San Francisco and Silicon Valley. These data centre companies, known as neocloud firms, run large warehouses packed with expensive computers, which they lease to major AI developers like Anthropic, OpenAI and Meta. They&#x27;re now the subject of one of Silicon Valley&#x27;s most heated debates.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cje36degrgv5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 01:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="These firms you&#x27;ve never heard of are feeding fears the AI bubble could burst" data-url="https://www.bbc.co.uk/news/articles/cje36degrgv5o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/gadgets/1017979/keyboards-of-the-verge-staff-picks" data-title="Keyboards of The Verge" data-summary="From the strictly utilitarian to the ergonomic to the obsessive, these are the keyboards we use every day. If you buy something from a link, The Verge may earn a commission. See our ethics statement. What is a keyboard if not the original brain-computer interface? You can tap on a touchscreen or talk to the computer, but if your work involves getting information out of your head and into the computer, you’re probably spending a lot of time using a keyboard." data-source="The Verge" data-published="2026-10-31T19:30:00+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/gadgets/1017979/keyboards-of-the-verge-staff-picks" target="_blank" rel="noopener">Keyboards of The Verge</a>
+          <p class="summary">From the strictly utilitarian to the ergonomic to the obsessive, these are the keyboards we use every day. If you buy something from a link, The Verge may earn a commission. See our ethics statement. What is a keyboard if not the original brain-computer interface? You can tap on a touchscreen or talk to the computer, but if your work involves getting information out of your head and into the computer, you’re probably spending a lot of time using a keyboard.</p>
+          <span class="source"><a href="https://www.theverge.com/gadgets/1017979/keyboards-of-the-verge-staff-picks" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">31 Oct, 19:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Keyboards of The Verge" data-url="https://www.theverge.com/gadgets/1017979/keyboards-of-the-verge-staff-picks">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/science/2026/10/seabirds-racing-home-over-the-ocean-can-get-jet-lagged/" data-title="Seabirds racing home over the ocean can get jet-lagged" data-summary="Flying across several time zones often causes jet lag, a feeling when the body insists it’s the middle of the night while the clock says it’s lunchtime. Now it turns out this nuisance is not exclusive to humans. A new Science study on Manx shearwaters, seabirds that can fly hundreds of kilometers a day over the North Atlantic, shows they jet-lag themselves during their excursions. And because these birds navigate by the Sun, that jet lag leaves a measurable mark—it skews their compass." data-source="Ars Technica" data-published="2026-10-31T11:15:26+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/science/2026/10/seabirds-racing-home-over-the-ocean-can-get-jet-lagged/" target="_blank" rel="noopener">Seabirds racing home over the ocean can get jet-lagged</a>
+          <p class="summary">Flying across several time zones often causes jet lag, a feeling when the body insists it’s the middle of the night while the clock says it’s lunchtime. Now it turns out this nuisance is not exclusive to humans. A new Science study on Manx shearwaters, seabirds that can fly hundreds of kilometers a day over the North Atlantic, shows they jet-lag themselves during their excursions. And because these birds navigate by the Sun, that jet lag leaves a measurable mark—it skews their compass.</p>
+          <span class="source"><a href="https://arstechnica.com/science/2026/10/seabirds-racing-home-over-the-ocean-can-get-jet-lagged/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">31 Oct, 11:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Seabirds racing home over the ocean can get jet-lagged" data-url="https://arstechnica.com/science/2026/10/seabirds-racing-home-over-the-ocean-can-get-jet-lagged/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1024091/binance-ceo-90-percent-stolen-crypto" data-title="Binance CEO says 90 percent of stolen assets have been ‘replenished’" data-summary="Most of the $6.3 billion in crypto stolen from Binance users has been restored. After hackers stole a shocking $6.3 billion from Binance customers in a record-breaking crypto heist, the company’s CEO says that 90 percent of the funds have been replaced , and the company plans to cover the remaining 10 percent as well. Binance is covering the stolen funds directly, and the remaining 10 percent consists of “less liquid” tokens, which the company says may take longer to acquire." data-source="The Verge" data-published="2026-10-31T18:40:32+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1024091/binance-ceo-90-percent-stolen-crypto" target="_blank" rel="noopener">Binance CEO says 90 percent of stolen assets have been ‘replenished’</a>
+          <p class="summary">Most of the $6.3 billion in crypto stolen from Binance users has been restored. After hackers stole a shocking $6.3 billion from Binance customers in a record-breaking crypto heist, the company’s CEO says that 90 percent of the funds have been replaced , and the company plans to cover the remaining 10 percent as well. Binance is covering the stolen funds directly, and the remaining 10 percent consists of “less liquid” tokens, which the company says may take longer to acquire.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1024091/binance-ceo-90-percent-stolen-crypto" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">31 Oct, 18:40</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Binance CEO says 90 percent of stolen assets have been ‘replenished’" data-url="https://www.theverge.com/tech/1024091/binance-ceo-90-percent-stolen-crypto">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://techcrunch.com/2026/10/31/apple-ceo-says-the-company-doesnt-want-to-ship-ai-for-ais-sake/" data-title="Apple CEO says the company doesn’t ‘want to ship AI for AI’s sake’" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. During a recent interview with Wired’s Steven Levy , Apple CEO John Ternus defended the company’s current position in the AI landscape. Over the past couple years, Apple has often been described as behind on AI, especially as it delayed the release of a more powerful version of Siri, which finally launched this summer ." data-source="TechCrunch" data-published="2026-10-31T21:41:00+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/10/31/apple-ceo-says-the-company-doesnt-want-to-ship-ai-for-ais-sake/" target="_blank" rel="noopener">Apple CEO says the company doesn’t ‘want to ship AI for AI’s sake’</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. During a recent interview with Wired’s Steven Levy , Apple CEO John Ternus defended the company’s current position in the AI landscape. Over the past couple years, Apple has often been described as behind on AI, especially as it delayed the release of a more powerful version of Siri, which finally launched this summer .</p>
+          <span class="source"><a href="https://techcrunch.com/2026/10/31/apple-ceo-says-the-company-doesnt-want-to-ship-ai-for-ais-sake/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">31 Oct, 21:41</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Apple CEO says the company doesn’t ‘want to ship AI for AI’s sake’" data-url="https://techcrunch.com/2026/10/31/apple-ceo-says-the-company-doesnt-want-to-ship-ai-for-ais-sake/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/gadgets/1013375/muse-charm-gadgets-preview-waveshare-esp32-claude-vibe-code" data-title="I built an AI Tamagotchi before Meta could" data-summary="Mark Zuckerberg’s Meta made AI look so stinking cute by giving it a squishy little face — and this holiday season, he wants to sell you a Muse Charm so you can carry your jolly AI helper around like a Tamagotchi. But I won’t be buying one, because we have Muse Charm at home . It cost just $50, and I’ve decided the learning experience was worth it. My version doesn’t sport cameras or a 5G cellular radio , but it really talks to Muse and has cute avatars, too!" data-source="The Verge" data-published="2026-10-31T16:05:00+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/gadgets/1013375/muse-charm-gadgets-preview-waveshare-esp32-claude-vibe-code" target="_blank" rel="noopener">I built an AI Tamagotchi before Meta could</a>
+          <p class="summary">Mark Zuckerberg’s Meta made AI look so stinking cute by giving it a squishy little face — and this holiday season, he wants to sell you a Muse Charm so you can carry your jolly AI helper around like a Tamagotchi. But I won’t be buying one, because we have Muse Charm at home . It cost just $50, and I’ve decided the learning experience was worth it. My version doesn’t sport cameras or a 5G cellular radio , but it really talks to Muse and has cute avatars, too!</p>
+          <span class="source"><a href="https://www.theverge.com/gadgets/1013375/muse-charm-gadgets-preview-waveshare-esp32-claude-vibe-code" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">31 Oct, 16:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="I built an AI Tamagotchi before Meta could" data-url="https://www.theverge.com/gadgets/1013375/muse-charm-gadgets-preview-waveshare-esp32-claude-vibe-code">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/10/31/4-days-left-how-techcrunch-founder-summit-helps-you-make-more-useful-connections-to-scale/" data-title="4 days left: How TechCrunch Founder Summit helps you make more useful connections to scale" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Networking shouldn’t mean walking into a crowded room and hoping you happen to meet the right person. At TechCrunch Founder Summi t, presented by Fidelity Private Shares, founders and VCs have several ways to make the connections they build beyond the sessions more intentional." data-source="TechCrunch" data-published="2026-10-31T21:36:07+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/10/31/4-days-left-how-techcrunch-founder-summit-helps-you-make-more-useful-connections-to-scale/" target="_blank" rel="noopener">4 days left: How TechCrunch Founder Summit helps you make more useful connections to scale</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Networking shouldn’t mean walking into a crowded room and hoping you happen to meet the right person. At TechCrunch Founder Summi t, presented by Fidelity Private Shares, founders and VCs have several ways to make the connections they build beyond the sessions more intentional.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/10/31/4-days-left-how-techcrunch-founder-summit-helps-you-make-more-useful-connections-to-scale/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">31 Oct, 21:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="4 days left: How TechCrunch Founder Summit helps you make more useful connections to scale" data-url="https://techcrunch.com/2026/10/31/4-days-left-how-techcrunch-founder-summit-helps-you-make-more-useful-connections-to-scale/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/" data-title="Judge allows NAACP lawsuit over xAI data center pollution to move forward" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. A federal judge denied a motion by xAI seeking to dismiss an NAACP lawsuit accusing the SpaceX-owned company of failing to obtain permits needed to operate the gas turbines powering its Colossus data center outside Memphis." data-source="TechCrunch" data-published="2026-10-31T21:17:03+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/" target="_blank" rel="noopener">Judge allows NAACP lawsuit over xAI data center pollution to move forward</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. A federal judge denied a motion by xAI seeking to dismiss an NAACP lawsuit accusing the SpaceX-owned company of failing to obtain permits needed to operate the gas turbines powering its Colossus data center outside Memphis.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">31 Oct, 21:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Judge allows NAACP lawsuit over xAI data center pollution to move forward" data-url="https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c62l4yz0eexpo?at_medium=RSS&amp;at_campaign=rss" data-title="Reeves says UK&#x27;s future should be inside the EU" data-summary="Former Chancellor Rachel Reeves has argued the UK&#x27;s future should be inside the EU, and that Brexit has made the country &quot;poorer, weaker and less secure&quot;. In her first major intervention since leaving the Treasury, Reeves said she welcomed debate around the UK&#x27;s relationship with Europe. At the last election, Labour&#x27;s manifesto said a Labour government would stay outside the EU and make Brexit work." data-source="BBC News" data-published="2026-11-01T02:57:34+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c62l4yz0eexpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Reeves says UK&#x27;s future should be inside the EU</a>
+          <p class="summary">Former Chancellor Rachel Reeves has argued the UK&#x27;s future should be inside the EU, and that Brexit has made the country &quot;poorer, weaker and less secure&quot;. In her first major intervention since leaving the Treasury, Reeves said she welcomed debate around the UK&#x27;s relationship with Europe. At the last election, Labour&#x27;s manifesto said a Labour government would stay outside the EU and make Brexit work.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c62l4yz0eexpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 02:57</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Reeves says UK&#x27;s future should be inside the EU" data-url="https://www.bbc.co.uk/news/articles/c62l4yz0eexpo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/business/2026/oct/31/housing-crisis-fix-britain-tax-landscape" data-title="Britain’s housing crisis won’t be fixed without a new tax landscape" data-summary="We need policies that stop treating property as a store of wealth and that allow people to move home cheaplyJohn Healey’s critics on the right and left accused him of dodging the big questions in his first budget. The chancellor failed to announce reforms that might tackle some of Britain’s chronic problems, they say.Healey’s scatter-gun budget, as the Resolution Foundation called it, was more about politics than economics, and unapologetically so. Continue reading..." data-source="The Guardian" data-published="2026-10-31T16:00:46+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/business/2026/oct/31/housing-crisis-fix-britain-tax-landscape" target="_blank" rel="noopener">Britain’s housing crisis won’t be fixed without a new tax landscape</a>
+          <p class="summary">We need policies that stop treating property as a store of wealth and that allow people to move home cheaplyJohn Healey’s critics on the right and left accused him of dodging the big questions in his first budget. The chancellor failed to announce reforms that might tackle some of Britain’s chronic problems, they say.Healey’s scatter-gun budget, as the Resolution Foundation called it, was more about politics than economics, and unapologetically so. Continue reading...</p>
+          <span class="source"><a href="https://www.theguardian.com/business/2026/oct/31/housing-crisis-fix-britain-tax-landscape" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">31 Oct, 16:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Britain’s housing crisis won’t be fixed without a new tax landscape" data-url="https://www.theguardian.com/business/2026/oct/31/housing-crisis-fix-britain-tax-landscape">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cv369266644lo?at_medium=RSS&amp;at_campaign=rss" data-title="Laura Kuenssberg: Healey risks breaking minimum wage promise for younger workers" data-summary="The Chancellor, John Healey, has suggested that younger workers might not receive the same minimum wage as others before the next election, potentially breaking a Labour manifesto promise. In 2024, Labour said it would remove &quot;discriminatory age bands&quot;, vowing to end the gap between the adult minimum wage and pay for 18 to 20-year-olds. But in last week&#x27;s Budget, Healey said that younger workers would see the same increase as older workers, leaving a gap between the two rates this year." data-source="BBC News" data-published="2026-10-31T17:26:29+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cv369266644lo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Laura Kuenssberg: Healey risks breaking minimum wage promise for younger workers</a>
+          <p class="summary">The Chancellor, John Healey, has suggested that younger workers might not receive the same minimum wage as others before the next election, potentially breaking a Labour manifesto promise. In 2024, Labour said it would remove &quot;discriminatory age bands&quot;, vowing to end the gap between the adult minimum wage and pay for 18 to 20-year-olds. But in last week&#x27;s Budget, Healey said that younger workers would see the same increase as older workers, leaving a gap between the two rates this year.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cv369266644lo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">31 Oct, 17:26</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Laura Kuenssberg: Healey risks breaking minimum wage promise for younger workers" data-url="https://www.bbc.co.uk/news/articles/cv369266644lo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/politics/2026/oct/31/spending-plan-long-term-focus-uk-government" data-title="A world-first focus on long-term outcomes could transform UK government – or create new spending fights" data-summary="Tucked away in John Healey’s budget is decision to ringfence preventative projects where future savings outweigh initial cost It merited the briefest of mentions in John Healey’s speech and just one paragraph in the 166-page budget document , but some believe it could revolutionise not just public spending but the very process of government itself: a new focus on long-term outcomes. The idea in the broad sense is very simple." data-source="The Guardian" data-published="2026-10-31T15:00:46+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/2026/oct/31/spending-plan-long-term-focus-uk-government" target="_blank" rel="noopener">A world-first focus on long-term outcomes could transform UK government – or create new spending fights</a>
+          <p class="summary">Tucked away in John Healey’s budget is decision to ringfence preventative projects where future savings outweigh initial cost It merited the briefest of mentions in John Healey’s speech and just one paragraph in the 166-page budget document , but some believe it could revolutionise not just public spending but the very process of government itself: a new focus on long-term outcomes. The idea in the broad sense is very simple.</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/2026/oct/31/spending-plan-long-term-focus-uk-government" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">31 Oct, 15:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="A world-first focus on long-term outcomes could transform UK government – or create new spending fights" data-url="https://www.theguardian.com/politics/2026/oct/31/spending-plan-long-term-focus-uk-government">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.aljazeera.com/sports/2026/11/1/canelo-alvarez-defeats-christian-mbilli-to-reclaim-wbc-title-in-riyadh?traffic_source=rss" data-title="Canelo Alvarez defeats Christian Mbilli to reclaim WBC title in Riyadh" data-summary="Mexican veteran Saul “Canelo” Alvarez has delivered a commanding performance to defeat French fighter Christian Mbilli and regain his WBC super middleweight title in an emotional victory in Saudi Arabia. Alvarez won a 12-round decision on Sunday in Riyadh after exerting his influence in the second half of a fight that went ahead despite the escalating conflict between Saudi Arabia and Yemen’s Houthis." data-source="Al Jazeera" data-published="2026-11-01T06:19:52+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/sports/2026/11/1/canelo-alvarez-defeats-christian-mbilli-to-reclaim-wbc-title-in-riyadh?traffic_source=rss" target="_blank" rel="noopener">Canelo Alvarez defeats Christian Mbilli to reclaim WBC title in Riyadh</a>
+          <p class="summary">Mexican veteran Saul “Canelo” Alvarez has delivered a commanding performance to defeat French fighter Christian Mbilli and regain his WBC super middleweight title in an emotional victory in Saudi Arabia. Alvarez won a 12-round decision on Sunday in Riyadh after exerting his influence in the second half of a fight that went ahead despite the escalating conflict between Saudi Arabia and Yemen’s Houthis.</p>
+          <span class="source"><a href="https://www.aljazeera.com/sports/2026/11/1/canelo-alvarez-defeats-christian-mbilli-to-reclaim-wbc-title-in-riyadh?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">1 Nov, 06:19</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Canelo Alvarez defeats Christian Mbilli to reclaim WBC title in Riyadh" data-url="https://www.aljazeera.com/sports/2026/11/1/canelo-alvarez-defeats-christian-mbilli-to-reclaim-wbc-title-in-riyadh?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmy0r2y6zeddo?at_medium=RSS&amp;at_campaign=rss" data-title="Democrats are used to heartbreak in Texas - could Talarico turn the tide?" data-summary="The race for a US Senate seat in Texas may prove crucial in determining which party controls Congress next year â a significant prize in its own right - but for both parties it represents so much more than that. For the Democrats, their losing streak in statewide elections now stretches back more than three decades. In the second most populous state in America, liberals have been in the wilderness for a generation." data-source="BBC News" data-published="2026-11-01T06:03:57+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmy0r2y6zeddo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Democrats are used to heartbreak in Texas - could Talarico turn the tide?</a>
+          <p class="summary">The race for a US Senate seat in Texas may prove crucial in determining which party controls Congress next year â a significant prize in its own right - but for both parties it represents so much more than that. For the Democrats, their losing streak in statewide elections now stretches back more than three decades. In the second most populous state in America, liberals have been in the wilderness for a generation.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmy0r2y6zeddo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 06:03</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Democrats are used to heartbreak in Texas - could Talarico turn the tide?" data-url="https://www.bbc.co.uk/news/articles/cmy0r2y6zeddo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/society/2026/nov/01/high-street-slot-farms-budget-tax-rise-business-rates-bingo-licence-loophole" data-title="High street ‘slot farms’ could evade budget tax rise through bingo hall loophole" data-summary="Hundreds of adult gaming centres in England have bingo licences that still qualify them for discounted business ratesHundreds of high street “slot farms” could continue claiming a discount on their business rates, unless the government closes a loophole that allows them to pose as bingo halls.John Healey singled out adult gaming centres (AGCs) in his first budget this week, in which he increased duty on slot machine takings from 20% to 25%, claiming he was “raising taxes on gambling to support good growth on every high street”." data-source="The Guardian" data-published="2026-11-01T06:00:03+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/society/2026/nov/01/high-street-slot-farms-budget-tax-rise-business-rates-bingo-licence-loophole" target="_blank" rel="noopener">High street ‘slot farms’ could evade budget tax rise through bingo hall loophole</a>
+          <p class="summary">Hundreds of adult gaming centres in England have bingo licences that still qualify them for discounted business ratesHundreds of high street “slot farms” could continue claiming a discount on their business rates, unless the government closes a loophole that allows them to pose as bingo halls.John Healey singled out adult gaming centres (AGCs) in his first budget this week, in which he increased duty on slot machine takings from 20% to 25%, claiming he was “raising taxes on gambling to support good growth on every high street”.</p>
+          <span class="source"><a href="https://www.theguardian.com/society/2026/nov/01/high-street-slot-farms-budget-tax-rise-business-rates-bingo-licence-loophole" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">1 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="High street ‘slot farms’ could evade budget tax rise through bingo hall loophole" data-url="https://www.theguardian.com/society/2026/nov/01/high-street-slot-farms-budget-tax-rise-business-rates-bingo-licence-loophole">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/sports/2026/11/1/golden-state-valkyries-defeat-atlanta-dream-to-capture-first-wnba-crown?traffic_source=rss" data-title="Golden State Valkyries defeat Atlanta Dream to capture first WNBA crown" data-summary="In a near single-handed performance, Gabby Williams helped the Golden ⁠⁠State Valkyries defeat the Atlanta Dream 68-63 in Game 7 of the WNBA Finals to give the West Coast franchise a championship title in the second year of its existence. Williams scored 28 of her game-high 30 ‌‌points in the second half to force a turnaround and bag the Finals Most Valuable Player (MVP) award in San Francisco on Saturday." data-source="Al Jazeera" data-published="2026-11-01T06:17:45+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/sports/2026/11/1/golden-state-valkyries-defeat-atlanta-dream-to-capture-first-wnba-crown?traffic_source=rss" target="_blank" rel="noopener">Golden State Valkyries defeat Atlanta Dream to capture first WNBA crown</a>
+          <p class="summary">In a near single-handed performance, Gabby Williams helped the Golden ⁠⁠State Valkyries defeat the Atlanta Dream 68-63 in Game 7 of the WNBA Finals to give the West Coast franchise a championship title in the second year of its existence. Williams scored 28 of her game-high 30 ‌‌points in the second half to force a turnaround and bag the Finals Most Valuable Player (MVP) award in San Francisco on Saturday.</p>
+          <span class="source"><a href="https://www.aljazeera.com/sports/2026/11/1/golden-state-valkyries-defeat-atlanta-dream-to-capture-first-wnba-crown?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">1 Nov, 06:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Golden State Valkyries defeat Atlanta Dream to capture first WNBA crown" data-url="https://www.aljazeera.com/sports/2026/11/1/golden-state-valkyries-defeat-atlanta-dream-to-capture-first-wnba-crown?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/10/261030003003.htm" data-title="Scientists discover a hidden driver of high cholesterol and a way to stop it" data-summary="Scientists have uncovered a hidden mechanism that allows high-cholesterol diets to undermine the body&#x27;s natural cholesterol defenses, and blocking it dramatically lowered harmful LDL cholesterol in mice. Even more promising, an experimental drug targeting this pathway has already passed an early human safety trial, potentially speeding the development of a new treatment for high cholesterol." data-source="ScienceDaily" data-published="2026-11-01T01:57:50+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/10/261030003003.htm" target="_blank" rel="noopener">Scientists discover a hidden driver of high cholesterol and a way to stop it</a>
+          <p class="summary">Scientists have uncovered a hidden mechanism that allows high-cholesterol diets to undermine the body&#x27;s natural cholesterol defenses, and blocking it dramatically lowered harmful LDL cholesterol in mice. Even more promising, an experimental drug targeting this pathway has already passed an early human safety trial, potentially speeding the development of a new treatment for high cholesterol.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/10/261030003003.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">1 Nov, 01:57</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Scientists discover a hidden driver of high cholesterol and a way to stop it" data-url="https://www.sciencedaily.com/releases/2026/10/261030003003.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmn06eldj9rwo?at_medium=RSS&amp;at_campaign=rss" data-title="Hospital admits full responsibility for 24 failures that led to toddler&#x27;s death" data-summary="A hospital trust has taken full responsibility for 24 failures that led to the death of a 21-month-old. Eleanor Hazel Aldred-Owen died at Liverpool&#x27;s Alder Hey Hospital on 2 October 2023 - a coroner concluded she died as a result of misadventure, contributed to by neglect. She had routine surgery for craniosynostosis , external , a birth defect affecting the skull, but an abnormal chest X-ray was not flagged." data-source="BBC News" data-published="2026-10-31T22:04:45+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmn06eldj9rwo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Hospital admits full responsibility for 24 failures that led to toddler&#x27;s death</a>
+          <p class="summary">A hospital trust has taken full responsibility for 24 failures that led to the death of a 21-month-old. Eleanor Hazel Aldred-Owen died at Liverpool&#x27;s Alder Hey Hospital on 2 October 2023 - a coroner concluded she died as a result of misadventure, contributed to by neglect. She had routine surgery for craniosynostosis , external , a birth defect affecting the skull, but an abnormal chest X-ray was not flagged.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmn06eldj9rwo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">31 Oct, 22:04</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hospital admits full responsibility for 24 failures that led to toddler&#x27;s death" data-url="https://www.bbc.co.uk/news/articles/cmn06eldj9rwo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/2026/10/31/midterm-election-tipping-point-healthcare-policy/?utm_campaign=rss" data-title="STAT+: The 4 biggest ways the midterms could change health policy, according to policymakers, lobbyists, and experts" data-summary="No matter what happens on Election Day, the midterms will have sweeping implications for American health care. More than two dozen experts on what could come next." data-source="STAT News" data-published="2026-10-31T11:00:00+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/10/31/midterm-election-tipping-point-healthcare-policy/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: The 4 biggest ways the midterms could change health policy, according to policymakers, lobbyists, and experts</a>
+          <p class="summary">No matter what happens on Election Day, the midterms will have sweeping implications for American health care. More than two dozen experts on what could come next.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/10/31/midterm-election-tipping-point-healthcare-policy/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">31 Oct, 11:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: The 4 biggest ways the midterms could change health policy, according to policymakers, lobbyists, and experts" data-url="https://www.statnews.com/2026/10/31/midterm-election-tipping-point-healthcare-policy/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/10/261031012912.htm" data-title="Scientists finally discover how a common gut bacterium can trigger colon cancer" data-summary="For nearly two decades, scientists have known that a common gut bacterium can produce a toxin that damages the colon and helps drive the formation of tumors. What they could not explain was how the toxin first attaches to intestinal cells and begins its attack. Now, researchers have uncovered that missing step, revealing a surprising vulnerability that could lead to new ways of protecting the colon." data-source="ScienceDaily" data-published="2026-10-31T13:49:23+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/10/261031012912.htm" target="_blank" rel="noopener">Scientists finally discover how a common gut bacterium can trigger colon cancer</a>
+          <p class="summary">For nearly two decades, scientists have known that a common gut bacterium can produce a toxin that damages the colon and helps drive the formation of tumors. What they could not explain was how the toxin first attaches to intestinal cells and begins its attack. Now, researchers have uncovered that missing step, revealing a surprising vulnerability that could lead to new ways of protecting the colon.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/10/261031012912.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">31 Oct, 13:49</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Scientists finally discover how a common gut bacterium can trigger colon cancer" data-url="https://www.sciencedaily.com/releases/2026/10/261031012912.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiiwFBVV95cUxOaGFUSmhMUkREN2lfOGRmS1RPSFJNMEtzb0NzVXNjdWJVOFlDd3ExNVY4RUstUjlNaGM0SUZYaXB4SUhxSVJUZ2t6NHZ1cHpFbmNMTTJ0bVhtMkpQMHUxazVObEtyRllRQkIyM0tpb1h1RWhkMGM4Um1GenpldVU1YlNZVUhEeExRaVo0?oc=5" data-title="Ready for Action one last time in NZ v IND T20Is - BCCI" data-summary="Ready for Action one last time in NZ v IND T20Is BCCI" data-source="BCCI" data-published="2026-11-01T04:00:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxOaGFUSmhMUkREN2lfOGRmS1RPSFJNMEtzb0NzVXNjdWJVOFlDd3ExNVY4RUstUjlNaGM0SUZYaXB4SUhxSVJUZ2t6NHZ1cHpFbmNMTTJ0bVhtMkpQMHUxazVObEtyRllRQkIyM0tpb1h1RWhkMGM4Um1GenpldVU1YlNZVUhEeExRaVo0?oc=5" target="_blank" rel="noopener">Ready for Action one last time in NZ v IND T20Is - BCCI</a>
+          <p class="summary">Ready for Action one last time in NZ v IND T20Is BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxOaGFUSmhMUkREN2lfOGRmS1RPSFJNMEtzb0NzVXNjdWJVOFlDd3ExNVY4RUstUjlNaGM0SUZYaXB4SUhxSVJUZ2t6NHZ1cHpFbmNMTTJ0bVhtMkpQMHUxazVObEtyRllRQkIyM0tpb1h1RWhkMGM4Um1GenpldVU1YlNZVUhEeExRaVo0?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">1 Nov, 04:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ready for Action one last time in NZ v IND T20Is - BCCI" data-url="https://news.google.com/rss/articles/CBMiiwFBVV95cUxOaGFUSmhMUkREN2lfOGRmS1RPSFJNMEtzb0NzVXNjdWJVOFlDd3ExNVY4RUstUjlNaGM0SUZYaXB4SUhxSVJUZ2t6NHZ1cHpFbmNMTTJ0bVhtMkpQMHUxazVObEtyRllRQkIyM0tpb1h1RWhkMGM4Um1GenpldVU1YlNZVUhEeExRaVo0?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdElsbmNWUkJrQlVjbkMzaDU3MEVXRVprYjBRTzRTTmRLaU1ucWZUdEZsZnZqMkxwWmVGUDl1YUZwSWoyYTk0ZmpIUW9rWjk3bFVNdU83dzN3VWRCcG9TT2Q2VjZYV0VKWnlnTl9lQUxXVlNHTXFkMnNWZ3pOUnFXX3FUTE4xMDVM?oc=5" data-title="TA vs TC: Team A vs Team C, Match 1, 30 Oct 2026 | Women&#x27;s U19 T20 Challenger Trophy 2026/27 | Match Centre - BCCI" data-summary="TA vs TC: Team A vs Team C, Match 1, 30 Oct 2026 | Women&#x27;s U19 T20 Challenger Trophy 2026/27 | Match Centre BCCI" data-source="BCCI" data-published="2026-10-31T08:10:26+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdElsbmNWUkJrQlVjbkMzaDU3MEVXRVprYjBRTzRTTmRLaU1ucWZUdEZsZnZqMkxwWmVGUDl1YUZwSWoyYTk0ZmpIUW9rWjk3bFVNdU83dzN3VWRCcG9TT2Q2VjZYV0VKWnlnTl9lQUxXVlNHTXFkMnNWZ3pOUnFXX3FUTE4xMDVM?oc=5" target="_blank" rel="noopener">TA vs TC: Team A vs Team C, Match 1, 30 Oct 2026 | Women&#x27;s U19 T20 Challenger Trophy 2026/27 | Match Centre - BCCI</a>
+          <p class="summary">TA vs TC: Team A vs Team C, Match 1, 30 Oct 2026 | Women&#x27;s U19 T20 Challenger Trophy 2026/27 | Match Centre BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdElsbmNWUkJrQlVjbkMzaDU3MEVXRVprYjBRTzRTTmRLaU1ucWZUdEZsZnZqMkxwWmVGUDl1YUZwSWoyYTk0ZmpIUW9rWjk3bFVNdU83dzN3VWRCcG9TT2Q2VjZYV0VKWnlnTl9lQUxXVlNHTXFkMnNWZ3pOUnFXX3FUTE4xMDVM?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">31 Oct, 08:10</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="TA vs TC: Team A vs Team C, Match 1, 30 Oct 2026 | Women&#x27;s U19 T20 Challenger Trophy 2026/27 | Match Centre - BCCI" data-url="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdElsbmNWUkJrQlVjbkMzaDU3MEVXRVprYjBRTzRTTmRLaU1ucWZUdEZsZnZqMkxwWmVGUDl1YUZwSWoyYTk0ZmpIUW9rWjk3bFVNdU83dzN3VWRCcG9TT2Q2VjZYV0VKWnlnTl9lQUxXVlNHTXFkMnNWZ3pOUnFXX3FUTE4xMDVM?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiowFBVV95cUxNOUYwQlFpdU9PMlFSSHBOc1JpdEpTZE1STUE1a1UtQlcwa2p1ckFZdlU0dlNiVFJPTW5HU05vbVIzVHR4SmhtTUZ5WFFpLWJlNVBmLXBxa0JSOFlPdy0yZkRaLTdsZW5zY013aXFkWUU0SU40VFJjeGwyTFd3UW5Ibkl6aFdTMkZDYXR6T2k1YTlEei0yMkE1bThqQTQ5anN5ajQ0?oc=5" data-title="Jammu &amp; Kashmir U23 vs Delhi Under-23s at Jammu, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI" data-summary="Jammu &amp; Kashmir U23 vs Delhi Under-23s at Jammu, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 BCCI" data-source="BCCI" data-published="2026-10-31T08:10:26+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiowFBVV95cUxNOUYwQlFpdU9PMlFSSHBOc1JpdEpTZE1STUE1a1UtQlcwa2p1ckFZdlU0dlNiVFJPTW5HU05vbVIzVHR4SmhtTUZ5WFFpLWJlNVBmLXBxa0JSOFlPdy0yZkRaLTdsZW5zY013aXFkWUU0SU40VFJjeGwyTFd3UW5Ibkl6aFdTMkZDYXR6T2k1YTlEei0yMkE1bThqQTQ5anN5ajQ0?oc=5" target="_blank" rel="noopener">Jammu &amp; Kashmir U23 vs Delhi Under-23s at Jammu, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI</a>
+          <p class="summary">Jammu &amp; Kashmir U23 vs Delhi Under-23s at Jammu, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiowFBVV95cUxNOUYwQlFpdU9PMlFSSHBOc1JpdEpTZE1STUE1a1UtQlcwa2p1ckFZdlU0dlNiVFJPTW5HU05vbVIzVHR4SmhtTUZ5WFFpLWJlNVBmLXBxa0JSOFlPdy0yZkRaLTdsZW5zY013aXFkWUU0SU40VFJjeGwyTFd3UW5Ibkl6aFdTMkZDYXR6T2k1YTlEei0yMkE1bThqQTQ5anN5ajQ0?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">31 Oct, 08:10</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Jammu &amp; Kashmir U23 vs Delhi Under-23s at Jammu, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI" data-url="https://news.google.com/rss/articles/CBMiowFBVV95cUxNOUYwQlFpdU9PMlFSSHBOc1JpdEpTZE1STUE1a1UtQlcwa2p1ckFZdlU0dlNiVFJPTW5HU05vbVIzVHR4SmhtTUZ5WFFpLWJlNVBmLXBxa0JSOFlPdy0yZkRaLTdsZW5zY013aXFkWUU0SU40VFJjeGwyTFd3UW5Ibkl6aFdTMkZDYXR6T2k1YTlEei0yMkE1bThqQTQ5anN5ajQ0?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMirwFBVV95cUxNRDVDVDVPLVN5Zk55WnhMcDYxMDdsRFZQSTdHYzZPaUJ0dkhrNHhWcExGMUpUOFRmeVZ4MmRrQlE0WWx0LWhlUlVDVHEyUzZmRzZpeVU4MThnNlp3d1R2a1hfQ0Y5VXpqQTNtcXZLdG5Ibktnc3VBeTZYNUdKbEYyU2U3clgtSk81OFVPcE5SaTZzXzQ4R2wxZm5BVU9GN0x2WlhiU3J4dWpnYXVEX1Bv?oc=5" data-title="Saurashtra Under-23s vs Pondicherry Under-23s at Rajkot, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI" data-summary="Saurashtra Under-23s vs Pondicherry Under-23s at Rajkot, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 BCCI" data-source="BCCI" data-published="2026-10-31T08:10:25+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMirwFBVV95cUxNRDVDVDVPLVN5Zk55WnhMcDYxMDdsRFZQSTdHYzZPaUJ0dkhrNHhWcExGMUpUOFRmeVZ4MmRrQlE0WWx0LWhlUlVDVHEyUzZmRzZpeVU4MThnNlp3d1R2a1hfQ0Y5VXpqQTNtcXZLdG5Ibktnc3VBeTZYNUdKbEYyU2U3clgtSk81OFVPcE5SaTZzXzQ4R2wxZm5BVU9GN0x2WlhiU3J4dWpnYXVEX1Bv?oc=5" target="_blank" rel="noopener">Saurashtra Under-23s vs Pondicherry Under-23s at Rajkot, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI</a>
+          <p class="summary">Saurashtra Under-23s vs Pondicherry Under-23s at Rajkot, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMirwFBVV95cUxNRDVDVDVPLVN5Zk55WnhMcDYxMDdsRFZQSTdHYzZPaUJ0dkhrNHhWcExGMUpUOFRmeVZ4MmRrQlE0WWx0LWhlUlVDVHEyUzZmRzZpeVU4MThnNlp3d1R2a1hfQ0Y5VXpqQTNtcXZLdG5Ibktnc3VBeTZYNUdKbEYyU2U3clgtSk81OFVPcE5SaTZzXzQ4R2wxZm5BVU9GN0x2WlhiU3J4dWpnYXVEX1Bv?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">31 Oct, 08:10</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Saurashtra Under-23s vs Pondicherry Under-23s at Rajkot, Col C K Nayudu Trophy Elite, 3-6 Nov 2026 - BCCI" data-url="https://news.google.com/rss/articles/CBMirwFBVV95cUxNRDVDVDVPLVN5Zk55WnhMcDYxMDdsRFZQSTdHYzZPaUJ0dkhrNHhWcExGMUpUOFRmeVZ4MmRrQlE0WWx0LWhlUlVDVHEyUzZmRzZpeVU4MThnNlp3d1R2a1hfQ0Y5VXpqQTNtcXZLdG5Ibktnc3VBeTZYNUdKbEYyU2U3clgtSk81OFVPcE5SaTZzXzQ4R2wxZm5BVU9GN0x2WlhiU3J4dWpnYXVEX1Bv?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNQm1EbjZ0c2s0V19MSHktVlBZWU1NNHBuSUgxMjh4TURjZmd6aTdvaEh0T3Bzdko2bzdjWVpwalZsaEZUb1FkS01kV1hlWmZ1MDg0WG9sT01TY25JaEptTG9ZdklzMXE0RHNqUzV1cUNFYVZlS3h4ZnFjTVF1ak1nOXpmVGpZUlFEQ21F?oc=5" data-title="Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI - Yahoo Sports" data-summary="Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI Yahoo Sports" data-source="Yahoo Sports" data-published="2026-10-31T13:14:31+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNQm1EbjZ0c2s0V19MSHktVlBZWU1NNHBuSUgxMjh4TURjZmd6aTdvaEh0T3Bzdko2bzdjWVpwalZsaEZUb1FkS01kV1hlWmZ1MDg0WG9sT01TY25JaEptTG9ZdklzMXE0RHNqUzV1cUNFYVZlS3h4ZnFjTVF1ak1nOXpmVGpZUlFEQ21F?oc=5" target="_blank" rel="noopener">Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI - Yahoo Sports</a>
+          <p class="summary">Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI Yahoo Sports</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNQm1EbjZ0c2s0V19MSHktVlBZWU1NNHBuSUgxMjh4TURjZmd6aTdvaEh0T3Bzdko2bzdjWVpwalZsaEZUb1FkS01kV1hlWmZ1MDg0WG9sT01TY25JaEptTG9ZdklzMXE0RHNqUzV1cUNFYVZlS3h4ZnFjTVF1ak1nOXpmVGpZUlFEQ21F?oc=5" target="_blank" rel="noopener">Yahoo Sports</a> &middot; <span class="pubdate">31 Oct, 13:14</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hardik Pandya to Rajasthan Royals? RR&#x27;s mysterious Halloween post convinces fans of possible trade deal with MI - Yahoo Sports" data-url="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNQm1EbjZ0c2s0V19MSHktVlBZWU1NNHBuSUgxMjh4TURjZmd6aTdvaEh0T3Bzdko2bzdjWVpwalZsaEZUb1FkS01kV1hlWmZ1MDg0WG9sT01TY25JaEptTG9ZdklzMXE0RHNqUzV1cUNFYVZlS3h4ZnFjTVF1ak1nOXpmVGpZUlFEQ21F?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiwgFBVV95cUxOM3BwZWRFNDFsZ1lObDFBaWZ3WWRjX2MwSWJPZWJYWVlabWYxTExCcF9sWWlFQi1yOVFoVTlaUFVmb1BEa2Q4UTJQMkw3aUpiZzA0dS01Ny1FSnc2NV9JN2pwVHlBaXBJRDc2ejROdmx0WVdpbjB6RWpYNTc5d0hleUh5aGxPVWhXdmxVbmZwYURlb2E4VU1RNE5WTWtjaWJOMFFDYktyTGZyZ3Y5dEN6eXBZdHR4QVp1N2RuSEpYdS1adw?oc=5" data-title="Hardik Pandya to Rajasthan Royals? Speculation Swirls After Cryptic Social Media Post - Sportscape Magazine" data-summary="Hardik Pandya to Rajasthan Royals? Speculation Swirls After Cryptic Social Media Post Sportscape Magazine" data-source="Sportscape Magazine" data-published="2026-10-31T11:40:42+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiwgFBVV95cUxOM3BwZWRFNDFsZ1lObDFBaWZ3WWRjX2MwSWJPZWJYWVlabWYxTExCcF9sWWlFQi1yOVFoVTlaUFVmb1BEa2Q4UTJQMkw3aUpiZzA0dS01Ny1FSnc2NV9JN2pwVHlBaXBJRDc2ejROdmx0WVdpbjB6RWpYNTc5d0hleUh5aGxPVWhXdmxVbmZwYURlb2E4VU1RNE5WTWtjaWJOMFFDYktyTGZyZ3Y5dEN6eXBZdHR4QVp1N2RuSEpYdS1adw?oc=5" target="_blank" rel="noopener">Hardik Pandya to Rajasthan Royals? Speculation Swirls After Cryptic Social Media Post - Sportscape Magazine</a>
+          <p class="summary">Hardik Pandya to Rajasthan Royals? Speculation Swirls After Cryptic Social Media Post Sportscape Magazine</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiwgFBVV95cUxOM3BwZWRFNDFsZ1lObDFBaWZ3WWRjX2MwSWJPZWJYWVlabWYxTExCcF9sWWlFQi1yOVFoVTlaUFVmb1BEa2Q4UTJQMkw3aUpiZzA0dS01Ny1FSnc2NV9JN2pwVHlBaXBJRDc2ejROdmx0WVdpbjB6RWpYNTc5d0hleUh5aGxPVWhXdmxVbmZwYURlb2E4VU1RNE5WTWtjaWJOMFFDYktyTGZyZ3Y5dEN6eXBZdHR4QVp1N2RuSEpYdS1adw?oc=5" target="_blank" rel="noopener">Sportscape Magazine</a> &middot; <span class="pubdate">31 Oct, 11:40</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hardik Pandya to Rajasthan Royals? Speculation Swirls After Cryptic Social Media Post - Sportscape Magazine" data-url="https://news.google.com/rss/articles/CBMiwgFBVV95cUxOM3BwZWRFNDFsZ1lObDFBaWZ3WWRjX2MwSWJPZWJYWVlabWYxTExCcF9sWWlFQi1yOVFoVTlaUFVmb1BEa2Q4UTJQMkw3aUpiZzA0dS01Ny1FSnc2NV9JN2pwVHlBaXBJRDc2ejROdmx0WVdpbjB6RWpYNTc5d0hleUh5aGxPVWhXdmxVbmZwYURlb2E4VU1RNE5WTWtjaWJOMFFDYktyTGZyZ3Y5dEN6eXBZdHR4QVp1N2RuSEpYdS1adw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1560923.html?ex_cid=OTC-RSS" data-title="Boyle and Foxcroft make it a long, hard day for India A bowlers" data-summary="Matthew Boyle and Dean Foxcroft have so far added 205 runs for the fourth wicket, having come together with New Zealand at 13 for 3 in the eighth over" data-source="ESPNcricinfo" data-published="2026-11-01T06:25:51+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1560923.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Boyle and Foxcroft make it a long, hard day for India A bowlers</a>
+          <p class="summary">Matthew Boyle and Dean Foxcroft have so far added 205 runs for the fourth wicket, having come together with New Zealand at 13 for 3 in the eighth over</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1560923.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">1 Nov, 06:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Boyle and Foxcroft make it a long, hard day for India A bowlers" data-url="https://www.cricinfo.com/ci/content/story/1560923.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1560918.html?ex_cid=OTC-RSS" data-title="Duffy: Will be &#x27;awesome&#x27; to play against RCB team-mate Kohli" data-summary="&quot;We actually spent a lot of time facing each other in the nets, so that&#x27;s quite cool,&quot; Duffy said of the IPL days" data-source="ESPNcricinfo" data-published="2026-11-01T04:43:13+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1560918.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Duffy: Will be &#x27;awesome&#x27; to play against RCB team-mate Kohli</a>
+          <p class="summary">&quot;We actually spent a lot of time facing each other in the nets, so that&#x27;s quite cool,&quot; Duffy said of the IPL days</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1560918.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">1 Nov, 04:43</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Duffy: Will be &#x27;awesome&#x27; to play against RCB team-mate Kohli" data-url="https://www.cricinfo.com/ci/content/story/1560918.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1560883.html?ex_cid=OTC-RSS" data-title="Temba Bavuma toasts South Africa&#x27;s &#x27;No. 1 Test win&#x27;" data-summary="After their heavy defeat in Durban, South Africa bounced back against Australia to claim the series and the No.1 ranking" data-source="ESPNcricinfo" data-published="2026-11-01T02:31:52+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1560883.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Temba Bavuma toasts South Africa&#x27;s &#x27;No. 1 Test win&#x27;</a>
+          <p class="summary">After their heavy defeat in Durban, South Africa bounced back against Australia to claim the series and the No.1 ranking</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1560883.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">1 Nov, 02:31</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Temba Bavuma toasts South Africa&#x27;s &#x27;No. 1 Test win&#x27;" data-url="https://www.cricinfo.com/ci/content/story/1560883.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1560822.html?ex_cid=OTC-RSS" data-title="King 81*, Chase five-for guide West Indies to victory on tricky pitch" data-summary="King headlined a quick chase of 170 on the fourth day, negating spin-friendly conditions in Mirpur" data-source="ESPNcricinfo" data-published="2026-10-31T19:17:32+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1560822.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">King 81*, Chase five-for guide West Indies to victory on tricky pitch</a>
+          <p class="summary">King headlined a quick chase of 170 on the fourth day, negating spin-friendly conditions in Mirpur</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1560822.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">31 Oct, 19:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="King 81*, Chase five-for guide West Indies to victory on tricky pitch" data-url="https://www.cricinfo.com/ci/content/story/1560822.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/rugby-union/articles/c8vgx0yn4kv0o?at_medium=RSS&amp;at_campaign=rss" data-title="Centre Hawkins determined to make World Cup" data-summary="Wales centre Joe Hawkins says missing the previous World Cup has made him more determined to make the next global tournament in Australia in 12 months. Following his move from Ospreys to Exeter in 2023, Hawkins was deemed ineligible to play for Wales by Welsh rugby&#x27;s Professional Rugby Board (PRB) because of the 25-cap rule. The rule says players who have fewer than 25 caps are unavailable to play for Wales if they are not involved with a Welsh club." data-source="BBC News" data-published="2026-11-01T04:56:18+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/rugby-union/articles/c8vgx0yn4kv0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Centre Hawkins determined to make World Cup</a>
+          <p class="summary">Wales centre Joe Hawkins says missing the previous World Cup has made him more determined to make the next global tournament in Australia in 12 months. Following his move from Ospreys to Exeter in 2023, Hawkins was deemed ineligible to play for Wales by Welsh rugby&#x27;s Professional Rugby Board (PRB) because of the 25-cap rule. The rule says players who have fewer than 25 caps are unavailable to play for Wales if they are not involved with a Welsh club.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/rugby-union/articles/c8vgx0yn4kv0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 04:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Centre Hawkins determined to make World Cup" data-url="https://www.bbc.co.uk/sport/rugby-union/articles/c8vgx0yn4kv0o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/f1/news/12040/13606017/kimi-antonelli-mercedes-driver-admits-to-feeling-tense-amid-effort-to-seal-f1-title-at-mexico-city-grand-prix" data-title="Antonelli feeling &#x27;tense&#x27; amid effort to seal F1 title" data-summary="Kimi Antonelli needs top-nine finish to become world champion at Mexico City Grand Prix; he only qualified fifth and was off the pace compared to Mercedes team-mate George Russell; watch Sunday&#x27;s race at 8pm (build-up from 6.30pm), live on Sky Sports F1 Please use Chrome browser for a more accessible video player Kimi Antonelli has admitted to feeling &quot;more tense than usual&quot; ahead of attempting to seal the Formula 1 world championship at Sunday&#x27;s Mexico City Grand Prix." data-source="Sky Sports" data-published="2026-11-01T00:45:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/news/12040/13606017/kimi-antonelli-mercedes-driver-admits-to-feeling-tense-amid-effort-to-seal-f1-title-at-mexico-city-grand-prix" target="_blank" rel="noopener">Antonelli feeling &#x27;tense&#x27; amid effort to seal F1 title</a>
+          <p class="summary">Kimi Antonelli needs top-nine finish to become world champion at Mexico City Grand Prix; he only qualified fifth and was off the pace compared to Mercedes team-mate George Russell; watch Sunday&#x27;s race at 8pm (build-up from 6.30pm), live on Sky Sports F1 Please use Chrome browser for a more accessible video player Kimi Antonelli has admitted to feeling &quot;more tense than usual&quot; ahead of attempting to seal the Formula 1 world championship at Sunday&#x27;s Mexico City Grand Prix.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/news/12040/13606017/kimi-antonelli-mercedes-driver-admits-to-feeling-tense-amid-effort-to-seal-f1-title-at-mexico-city-grand-prix" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">1 Nov, 00:45</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Antonelli feeling &#x27;tense&#x27; amid effort to seal F1 title" data-url="https://www.skysports.com/f1/news/12040/13606017/kimi-antonelli-mercedes-driver-admits-to-feeling-tense-amid-effort-to-seal-f1-title-at-mexico-city-grand-prix">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/formula1/articles/cje36e0gze4ko?at_medium=RSS&amp;at_campaign=rss" data-title="On &#x27;tense&#x27; Antonelli&#x27;s big weekend, this was Hamilton&#x27;s day" data-summary="So far, Kimi Antonelli has been a wallflower at his own party at the Mexico City Grand Prix. Fourth place on the grid is low-key for the Mercedes driver in the context of his season as a whole - and the gargantuan achievement of which he stands on the brink. It still puts the 20-year-old Italian in a strong position to seal the maiden title that will make him the youngest champion in history." data-source="BBC News" data-published="2026-11-01T00:35:28+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/formula1/articles/cje36e0gze4ko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">On &#x27;tense&#x27; Antonelli&#x27;s big weekend, this was Hamilton&#x27;s day</a>
+          <p class="summary">So far, Kimi Antonelli has been a wallflower at his own party at the Mexico City Grand Prix. Fourth place on the grid is low-key for the Mercedes driver in the context of his season as a whole - and the gargantuan achievement of which he stands on the brink. It still puts the 20-year-old Italian in a strong position to seal the maiden title that will make him the youngest champion in history.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/formula1/articles/cje36e0gze4ko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 00:35</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="On &#x27;tense&#x27; Antonelli&#x27;s big weekend, this was Hamilton&#x27;s day" data-url="https://www.bbc.co.uk/sport/formula1/articles/cje36e0gze4ko?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/f1/news/12040/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp" data-title="Hamilton: A &#x27;dream&#x27; to emulate Schumacher with first Ferrari pole" data-summary="Lewis Hamilton became F1&#x27;s oldest pole-sitter in 44 years after claiming his first Ferrari pole at the Mexico City Grand Prix; the result secured a record-extending 105th career pole for the Brit; watch Sunday&#x27;s race at 8pm (build-up from 6.30pm), live on Sky Sports F1 Please use Chrome browser for a more accessible video player Lewis Hamilton said he had achieved his &quot;dream&quot; of emulating Michael Schumacher after claiming his first pole position for Ferrari at the Mexico City Grand Prix." data-source="Sky Sports" data-published="2026-11-01T00:40:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/news/12040/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp" target="_blank" rel="noopener">Hamilton: A &#x27;dream&#x27; to emulate Schumacher with first Ferrari pole</a>
+          <p class="summary">Lewis Hamilton became F1&#x27;s oldest pole-sitter in 44 years after claiming his first Ferrari pole at the Mexico City Grand Prix; the result secured a record-extending 105th career pole for the Brit; watch Sunday&#x27;s race at 8pm (build-up from 6.30pm), live on Sky Sports F1 Please use Chrome browser for a more accessible video player Lewis Hamilton said he had achieved his &quot;dream&quot; of emulating Michael Schumacher after claiming his first pole position for Ferrari at the Mexico City Grand Prix.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/news/12040/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">1 Nov, 00:40</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hamilton: A &#x27;dream&#x27; to emulate Schumacher with first Ferrari pole" data-url="https://www.skysports.com/f1/news/12040/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/in-its-fourth-letter-to-rahul-gandhi-traders-body-flag-concerns-over-india-bloc-ramlila-maidan-cec-gyanesh-kumar-rally-80-of-shops-may-be-shut-101793511057484.html" data-title="In its fourth letter to Rahul Gandhi, traders body flag concerns over INDIA bloc rally: ‘80% of shops may be shut’" data-summary="As Opposition leaders are gathering to hold a protest rally on Sunday at Delhi&#x27;s Ramlila Maidan against Chief Election Commissioner Gyanesh Kumar, the traders body has once again written to Congress leader Rahul Gandhi, claiming that the rally could affect 80% of business across 20 markets." data-source="Hindustan Times" data-published="2026-11-01T06:11:08+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/in-its-fourth-letter-to-rahul-gandhi-traders-body-flag-concerns-over-india-bloc-ramlila-maidan-cec-gyanesh-kumar-rally-80-of-shops-may-be-shut-101793511057484.html" target="_blank" rel="noopener">In its fourth letter to Rahul Gandhi, traders body flag concerns over INDIA bloc rally: ‘80% of shops may be shut’</a>
+          <p class="summary">As Opposition leaders are gathering to hold a protest rally on Sunday at Delhi&#x27;s Ramlila Maidan against Chief Election Commissioner Gyanesh Kumar, the traders body has once again written to Congress leader Rahul Gandhi, claiming that the rally could affect 80% of business across 20 markets.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/in-its-fourth-letter-to-rahul-gandhi-traders-body-flag-concerns-over-india-bloc-ramlila-maidan-cec-gyanesh-kumar-rally-80-of-shops-may-be-shut-101793511057484.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">1 Nov, 06:11</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="In its fourth letter to Rahul Gandhi, traders body flag concerns over INDIA bloc rally: ‘80% of shops may be shut’" data-url="https://www.hindustantimes.com/india-news/in-its-fourth-letter-to-rahul-gandhi-traders-body-flag-concerns-over-india-bloc-ramlila-maidan-cec-gyanesh-kumar-rally-80-of-shops-may-be-shut-101793511057484.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/rest-of-world/north-korea-tests-new-cluster-bomb-warhead-under-kim-jong-uns-military-push/articleshow/135418798.cms" data-title="North Korea tests new cluster-bomb warhead under Kim Jong-un&#x27;s military push" data-summary="" data-source="Times of India" data-published="2026-11-01T05:30:10+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/rest-of-world/north-korea-tests-new-cluster-bomb-warhead-under-kim-jong-uns-military-push/articleshow/135418798.cms" target="_blank" rel="noopener">North Korea tests new cluster-bomb warhead under Kim Jong-un&#x27;s military push</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/rest-of-world/north-korea-tests-new-cluster-bomb-warhead-under-kim-jong-uns-military-push/articleshow/135418798.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">1 Nov, 05:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="North Korea tests new cluster-bomb warhead under Kim Jong-un&#x27;s military push" data-url="https://timesofindia.indiatimes.com/world/rest-of-world/north-korea-tests-new-cluster-bomb-warhead-under-kim-jong-uns-military-push/articleshow/135418798.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c60qk92dvlwgo?at_medium=RSS&amp;at_campaign=rss" data-title="India&#x27;s opposition set to hold mega rally seeking election chief&#x27;s resignation" data-summary="Tens of thousands of people are expected to gather in the Indian capital, Delhi, for a mega opposition rally, seeking the resignation of chief election commissioner and electoral reforms. The rally, called by the main opposition Congress party, will begin around noon at the famous Ramlila Maidan grounds, with leaders claiming a million people could attend." data-source="BBC News" data-published="2026-11-01T00:12:07+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c60qk92dvlwgo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">India&#x27;s opposition set to hold mega rally seeking election chief&#x27;s resignation</a>
+          <p class="summary">Tens of thousands of people are expected to gather in the Indian capital, Delhi, for a mega opposition rally, seeking the resignation of chief election commissioner and electoral reforms. The rally, called by the main opposition Congress party, will begin around noon at the famous Ramlila Maidan grounds, with leaders claiming a million people could attend.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c60qk92dvlwgo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">1 Nov, 00:12</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="India&#x27;s opposition set to hold mega rally seeking election chief&#x27;s resignation" data-url="https://www.bbc.co.uk/news/articles/c60qk92dvlwgo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/drones-ai-and-more-new-iaf-chief-ashutosh-dixit-says-new-technologies-reshaping-nature-of-war-101793511539675.html" data-title="In his first address, new Air Force chief Ashutosh Dixit outlines ‘VAYU’ vision" data-summary="Air Chief Marshal Ashutosh Dixit , who on Saturday took charge as the 29th Chief of the Air Staff , on Sunday outlined his priorities for the Indian Air Force ( IAF ) under the ‘VAYU’ vision during what was his first public address as the new Air Force chief. Notably, the new IAF chief succeeds Air Chief Marshal AP Singh, who retired after 42 years of military service." data-source="Hindustan Times" data-published="2026-11-01T05:50:29+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/drones-ai-and-more-new-iaf-chief-ashutosh-dixit-says-new-technologies-reshaping-nature-of-war-101793511539675.html" target="_blank" rel="noopener">In his first address, new Air Force chief Ashutosh Dixit outlines ‘VAYU’ vision</a>
+          <p class="summary">Air Chief Marshal Ashutosh Dixit , who on Saturday took charge as the 29th Chief of the Air Staff , on Sunday outlined his priorities for the Indian Air Force ( IAF ) under the ‘VAYU’ vision during what was his first public address as the new Air Force chief. Notably, the new IAF chief succeeds Air Chief Marshal AP Singh, who retired after 42 years of military service.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/drones-ai-and-more-new-iaf-chief-ashutosh-dixit-says-new-technologies-reshaping-nature-of-war-101793511539675.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">1 Nov, 05:50</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="In his first address, new Air Force chief Ashutosh Dixit outlines ‘VAYU’ vision" data-url="https://www.hindustantimes.com/india-news/drones-ai-and-more-new-iaf-chief-ashutosh-dixit-says-new-technologies-reshaping-nature-of-war-101793511539675.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
