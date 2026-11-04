@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Wednesday, 04 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Wednesday, 04 November 2026, Updated as of 06:30 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-04.html" selected>Wednesday, 04 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-03.html">Tuesday, 03 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-02.html">Monday, 02 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-01.html">Sunday, 01 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-31.html">Saturday, 31 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-30.html">Friday, 30 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-29.html">Thursday, 29 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-28.html">Wednesday, 28 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-27.html">Tuesday, 27 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-26.html">Monday, 26 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-25.html">Sunday, 25 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-24.html">Saturday, 24 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-23.html">Friday, 23 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-22.html">Thursday, 22 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-21.html">Wednesday, 21 October 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcVpXalJIQ0dCb1pQYmI0dVBtMjlVMFRGcWxISEtJY2s1dUkteGN1ZWRmYnFEZmg3WnlnbE5xT1h6NWl4eEQtY2NUQ3d3UFFJQnpKNjNsTEt2RUNmbFlSQ243czFHRi1TeW5vQi1UZzVEejNxcWp5SG9YaXJrMGZTZ2xxWE9EdXFFSVpkOWpSRENrSHV0ZE1CNmwwNmFISkxDRlNDVlpBd1d2b2s2bW5NdUp4TVdPR3ZQ?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra - Rajasthan Royals</span>
+      </a>
+      <a class="pick" href="https://www.theguardian.com/us-news/2026/nov/03/sherrod-brown-jon-husted-ohio-senate" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — Global</span>
+        <span class="pick-headline">Democrat Sherrod Brown wins Ohio Senate race in major blow to Republicans</span>
+      </a>
+      <a class="pick" href="https://www.hindustantimes.com/india-news/pm-modi-calls-sharad-pawar-advises-rest-as-ncp-sp-chief-discharged-from-hospital-101793772037356.html" target="_blank" rel="noopener">
+        <span class="pick-topic">India News</span>
+        <span class="pick-headline">PM Modi calls Sharad Pawar, advises rest as NCP (SP) chief discharged from hospital</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.theverge.com/tech/1026148/amd-earnings-q3-2026-data-center-pc" data-title="AMD rides data center riches to ‘largest and most profitable’ quarter in history" data-summary="AMD thinks over 80 percent of its revenue will eventually come from its data center business alone.﻿ AMD CEO Lisa Su said in the company’s quarterly earnings call on Tuesday that Q3 2026 was “was the largest and most profitable in our history.” AMD reported a record $13.4 billion in quarterly revenue, and it’s predicting it will hit another record high next quarter of $17 billion." data-source="The Verge" data-published="2026-11-04T01:15:34+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1026148/amd-earnings-q3-2026-data-center-pc" target="_blank" rel="noopener">AMD rides data center riches to ‘largest and most profitable’ quarter in history</a>
+          <p class="summary">AMD thinks over 80 percent of its revenue will eventually come from its data center business alone.﻿ AMD CEO Lisa Su said in the company’s quarterly earnings call on Tuesday that Q3 2026 was “was the largest and most profitable in our history.” AMD reported a record $13.4 billion in quarterly revenue, and it’s predicting it will hit another record high next quarter of $17 billion.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1026148/amd-earnings-q3-2026-data-center-pc" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">4 Nov, 01:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="AMD rides data center riches to ‘largest and most profitable’ quarter in history" data-url="https://www.theverge.com/tech/1026148/amd-earnings-q3-2026-data-center-pc">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c820vz6wyp65o?at_medium=RSS&amp;at_campaign=rss" data-title="Graduates are managing AI - but are they learning much else?" data-summary="Recent university graduate Lotte Underwood is a public relations executive with a twist - she spends more time using AI than actually doing PR. Underwood, 25, joined London-based PR agency Fight or Flight in November last year, in the new role of &quot;AI associate&quot; after completing a degree and then a masters in marketing. She&#x27;s part of a recently established, dedicated AI team that has built around 30 AI agents." data-source="BBC News" data-published="2026-11-04T00:04:35+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c820vz6wyp65o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Graduates are managing AI - but are they learning much else?</a>
+          <p class="summary">Recent university graduate Lotte Underwood is a public relations executive with a twist - she spends more time using AI than actually doing PR. Underwood, 25, joined London-based PR agency Fight or Flight in November last year, in the new role of &quot;AI associate&quot; after completing a degree and then a masters in marketing. She&#x27;s part of a recently established, dedicated AI team that has built around 30 AI agents.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c820vz6wyp65o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 00:04</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Graduates are managing AI - but are they learning much else?" data-url="https://www.bbc.co.uk/news/articles/c820vz6wyp65o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/tech-policy/2026/11/california-fights-preposterous-trump-admin-demand-to-scrap-state-broadband-laws/" data-title="California fights &quot;preposterous&quot; Trump admin demand to scrap state broadband laws" data-summary="California is accepting $1.42 billion in broadband grant funding from the Trump administration, but the state is not accepting the Trump administration’s demand that it stop enforcing a net neutrality law and other telecom regulations. California’s stand against the Trump administration could result in multiple legal battles involving the state, federal government, and Internet providers seeking government funds." data-source="Ars Technica" data-published="2026-11-03T22:39:37+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/tech-policy/2026/11/california-fights-preposterous-trump-admin-demand-to-scrap-state-broadband-laws/" target="_blank" rel="noopener">California fights &quot;preposterous&quot; Trump admin demand to scrap state broadband laws</a>
+          <p class="summary">California is accepting $1.42 billion in broadband grant funding from the Trump administration, but the state is not accepting the Trump administration’s demand that it stop enforcing a net neutrality law and other telecom regulations. California’s stand against the Trump administration could result in multiple legal battles involving the state, federal government, and Internet providers seeking government funds.</p>
+          <span class="source"><a href="https://arstechnica.com/tech-policy/2026/11/california-fights-preposterous-trump-admin-demand-to-scrap-state-broadband-laws/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">3 Nov, 22:39</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="California fights &quot;preposterous&quot; Trump admin demand to scrap state broadband laws" data-url="https://arstechnica.com/tech-policy/2026/11/california-fights-preposterous-trump-admin-demand-to-scrap-state-broadband-laws/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/ai-artificial-intelligence/1025826/ai-bubble-pimco-apollo-bonds" data-title="Please stop asking me when the AI bubble will pop" data-summary="I’m getting some real mixed messages here, boys! People, including on this staff, keep asking me with varying degrees of excitement or trepidation when the AI bubble will burst. I’ll tell you what I tell them: If I knew that, I would make a life-changing bet on the market, levered up as far as I could, and then, after I made my money, go retire on a beach somewhere. Maybe run a cat sanctuary, who knows." data-source="The Verge" data-published="2026-11-03T23:37:45+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/ai-artificial-intelligence/1025826/ai-bubble-pimco-apollo-bonds" target="_blank" rel="noopener">Please stop asking me when the AI bubble will pop</a>
+          <p class="summary">I’m getting some real mixed messages here, boys! People, including on this staff, keep asking me with varying degrees of excitement or trepidation when the AI bubble will burst. I’ll tell you what I tell them: If I knew that, I would make a life-changing bet on the market, levered up as far as I could, and then, after I made my money, go retire on a beach somewhere. Maybe run a cat sanctuary, who knows.</p>
+          <span class="source"><a href="https://www.theverge.com/ai-artificial-intelligence/1025826/ai-bubble-pimco-apollo-bonds" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">3 Nov, 23:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Please stop asking me when the AI bubble will pop" data-url="https://www.theverge.com/ai-artificial-intelligence/1025826/ai-bubble-pimco-apollo-bonds">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://www.theverge.com/games/1026085/nexus-mods-ai-disclosures" data-title="The biggest modding site in PC gaming is taking a stance on AI" data-summary="Nexus Mods says that authors of newly uploaded mods will have to declare whether AI was ‘used in their work.’ The PC gaming mods repository Nexus Mods is making disclosures about AI mandatory for uploads of new mods, meaning that mod authors will have to declare “whether AI has been used in their work,” the site announced today as part of a big post about AI-generated content on the platform." data-source="The Verge" data-published="2026-11-04T00:42:10+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/games/1026085/nexus-mods-ai-disclosures" target="_blank" rel="noopener">The biggest modding site in PC gaming is taking a stance on AI</a>
+          <p class="summary">Nexus Mods says that authors of newly uploaded mods will have to declare whether AI was ‘used in their work.’ The PC gaming mods repository Nexus Mods is making disclosures about AI mandatory for uploads of new mods, meaning that mod authors will have to declare “whether AI has been used in their work,” the site announced today as part of a big post about AI-generated content on the platform.</p>
+          <span class="source"><a href="https://www.theverge.com/games/1026085/nexus-mods-ai-disclosures" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">4 Nov, 00:42</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="The biggest modding site in PC gaming is taking a stance on AI" data-url="https://www.theverge.com/games/1026085/nexus-mods-ai-disclosures">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/11/03/anthropic-is-working-on-a-system-to-prove-ai-models-identity/" data-title="Anthropic is working on a system to prove AI models’ identity" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Anthropic is working on an open source system to verify which AI model produced a given output, according to a blog post published Tuesday." data-source="TechCrunch" data-published="2026-11-03T22:41:03+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/03/anthropic-is-working-on-a-system-to-prove-ai-models-identity/" target="_blank" rel="noopener">Anthropic is working on a system to prove AI models’ identity</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Anthropic is working on an open source system to verify which AI model produced a given output, according to a blog post published Tuesday.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/03/anthropic-is-working-on-a-system-to-prove-ai-models-identity/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">3 Nov, 22:41</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Anthropic is working on a system to prove AI models’ identity" data-url="https://techcrunch.com/2026/11/03/anthropic-is-working-on-a-system-to-prove-ai-models-identity/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/ai/2026/11/russia-looks-to-hide-data-centers-underground-as-ukrainian-drones-strike-back/" data-title="Ukraine’s drone strikes spur hasty Russian plans for underground data centers" data-summary="Russian tech companies are scrambling to harden and hide their data centers underground after Ukrainian drone strikes damaged facilities housing AI supercomputers and disrupted cloud services for millions of Russian users. Meanwhile, the Kremlin is requiring data center owners to reserve computing capacity for emergency state needs and has even authorized possible use of foreign data centers." data-source="Ars Technica" data-published="2026-11-03T20:39:55+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/ai/2026/11/russia-looks-to-hide-data-centers-underground-as-ukrainian-drones-strike-back/" target="_blank" rel="noopener">Ukraine’s drone strikes spur hasty Russian plans for underground data centers</a>
+          <p class="summary">Russian tech companies are scrambling to harden and hide their data centers underground after Ukrainian drone strikes damaged facilities housing AI supercomputers and disrupted cloud services for millions of Russian users. Meanwhile, the Kremlin is requiring data center owners to reserve computing capacity for emergency state needs and has even authorized possible use of foreign data centers.</p>
+          <span class="source"><a href="https://arstechnica.com/ai/2026/11/russia-looks-to-hide-data-centers-underground-as-ukrainian-drones-strike-back/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">3 Nov, 20:39</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ukraine’s drone strikes spur hasty Russian plans for underground data centers" data-url="https://arstechnica.com/ai/2026/11/russia-looks-to-hide-data-centers-underground-as-ukrainian-drones-strike-back/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.zdnet.com/tech/apple-foldable-iphone-duo-stock-shortage/" data-title="Want an iPhone Duo for the holidays? Apple’s latest stock update isn’t reassuring" data-summary="Apple is unsure when it will have more of its foldable iPhone Duo in stock for customers to purchase ahead of Black Friday and the holiday shopping season. During Apple’s earnings call on Monday, Nov. 2,  Apple’s chief operating officer, Sabih Khan, told investors that the company couldn’t say when supply of its new iPhone Duo would catch up with current demand." data-source="ZDNet" data-published="2026-11-03T19:28:32+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.zdnet.com/tech/apple-foldable-iphone-duo-stock-shortage/" target="_blank" rel="noopener">Want an iPhone Duo for the holidays? Apple’s latest stock update isn’t reassuring</a>
+          <p class="summary">Apple is unsure when it will have more of its foldable iPhone Duo in stock for customers to purchase ahead of Black Friday and the holiday shopping season. During Apple’s earnings call on Monday, Nov. 2,  Apple’s chief operating officer, Sabih Khan, told investors that the company couldn’t say when supply of its new iPhone Duo would catch up with current demand.</p>
+          <span class="source"><a href="https://www.zdnet.com/tech/apple-foldable-iphone-duo-stock-shortage/" target="_blank" rel="noopener">ZDNet</a> &middot; <span class="pubdate">3 Nov, 19:28</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Want an iPhone Duo for the holidays? Apple’s latest stock update isn’t reassuring" data-url="https://www.zdnet.com/tech/apple-foldable-iphone-duo-stock-shortage/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.theguardian.com/business/2026/nov/04/rogue-energy-bosses-and-brokers-face-crackdown-on-mis-selling" data-title="Rogue UK energy bosses and brokers face crackdown on mis-selling" data-summary="Exclusive: Ofgem to be given powers to issue fines and rein in bonuses for executives who ‘reward themselves while customers suffer’Energy bosses in the UK will have their bonuses curtailed when suppliers and brokers break the rules under a crackdown on mis-selling.Through the energy independence bill, which will be introduced on Wednesday, Ofgem will be given new powers to order compensation, impose fines and ban rogue operators that have pushed businesses and households into overpriced contracts." data-source="The Guardian" data-published="2026-11-04T06:00:27+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/business/2026/nov/04/rogue-energy-bosses-and-brokers-face-crackdown-on-mis-selling" target="_blank" rel="noopener">Rogue UK energy bosses and brokers face crackdown on mis-selling</a>
+          <p class="summary">Exclusive: Ofgem to be given powers to issue fines and rein in bonuses for executives who ‘reward themselves while customers suffer’Energy bosses in the UK will have their bonuses curtailed when suppliers and brokers break the rules under a crackdown on mis-selling.Through the energy independence bill, which will be introduced on Wednesday, Ofgem will be given new powers to order compensation, impose fines and ban rogue operators that have pushed businesses and households into overpriced contracts.</p>
+          <span class="source"><a href="https://www.theguardian.com/business/2026/nov/04/rogue-energy-bosses-and-brokers-face-crackdown-on-mis-selling" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">4 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rogue UK energy bosses and brokers face crackdown on mis-selling" data-url="https://www.theguardian.com/business/2026/nov/04/rogue-energy-bosses-and-brokers-face-crackdown-on-mis-selling">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/videos/cr5ynex46j75o?at_medium=RSS&amp;at_campaign=rss" data-title="What the Democratic takeover of the Senate means for Trump" data-summary="The Iowa Senate seat is projected to go to the Democrat Josh Turek, CBS says. This win brings the Democrats to a 51-member majority, so far, in the US Senate. The BBC&#x27;s North America editor Sarah Smith explains how Democratic control of both chambers could impact the last two years of Donald Trump&#x27;s presidency." data-source="BBC News" data-published="2026-11-04T04:53:35+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/videos/cr5ynex46j75o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">What the Democratic takeover of the Senate means for Trump</a>
+          <p class="summary">The Iowa Senate seat is projected to go to the Democrat Josh Turek, CBS says. This win brings the Democrats to a 51-member majority, so far, in the US Senate. The BBC&#x27;s North America editor Sarah Smith explains how Democratic control of both chambers could impact the last two years of Donald Trump&#x27;s presidency.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/videos/cr5ynex46j75o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 04:53</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="What the Democratic takeover of the Senate means for Trump" data-url="https://www.bbc.co.uk/news/videos/cr5ynex46j75o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.economist.com/britain/2026/11/03/blighty-newsletter-postcard-from-antigua-thinking-of-eu" data-title="Blighty newsletter: Postcard from Antigua—thinking of EU" data-summary="Hugo Gye, our Britain political correspondent, interviews Andy Burnham from the Caribbean" data-source="The Economist" data-published="2026-11-03T18:20:00+00:00" data-section="Politics — UK" data-paywalled="true">
+          <a class="headline" href="https://www.economist.com/britain/2026/11/03/blighty-newsletter-postcard-from-antigua-thinking-of-eu" target="_blank" rel="noopener">Blighty newsletter: Postcard from Antigua—thinking of EU</a>
+          <p class="summary">Hugo Gye, our Britain political correspondent, interviews Andy Burnham from the Caribbean</p>
+          <span class="source"><a href="https://www.economist.com/britain/2026/11/03/blighty-newsletter-postcard-from-antigua-thinking-of-eu" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">3 Nov, 18:20</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="Blighty newsletter: Postcard from Antigua—thinking of EU" data-url="https://www.economist.com/britain/2026/11/03/blighty-newsletter-postcard-from-antigua-thinking-of-eu">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/uk-news/2026/nov/04/parliament-notre-dame-style-fire-renovation-costs" data-title="Houses of Parliament at risk of ‘Notre Dame-style fire’ as renovation costs rise" data-summary="Report says cost of maintenance could soon reach £2m a week, including 24-hour patrols to avert fire riskThe Palace of Westminster will be at risk of a Notre Dame-style fire or a similar catastrophic event if MPs do not tackle the issue of funding refurbishments, a parliamentary committee has said.Decisions about how and when to begin a full restoration of the building, which is Grade I-listed and a Unesco world heritage site, have been repeatedly delayed amid disagreement over how it should be done and spiralling costs." data-source="The Guardian" data-published="2026-11-04T00:01:18+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/uk-news/2026/nov/04/parliament-notre-dame-style-fire-renovation-costs" target="_blank" rel="noopener">Houses of Parliament at risk of ‘Notre Dame-style fire’ as renovation costs rise</a>
+          <p class="summary">Report says cost of maintenance could soon reach £2m a week, including 24-hour patrols to avert fire riskThe Palace of Westminster will be at risk of a Notre Dame-style fire or a similar catastrophic event if MPs do not tackle the issue of funding refurbishments, a parliamentary committee has said.Decisions about how and when to begin a full restoration of the building, which is Grade I-listed and a Unesco world heritage site, have been repeatedly delayed amid disagreement over how it should be done and spiralling costs.</p>
+          <span class="source"><a href="https://www.theguardian.com/uk-news/2026/nov/04/parliament-notre-dame-style-fire-renovation-costs" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">4 Nov, 00:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Houses of Parliament at risk of ‘Notre Dame-style fire’ as renovation costs rise" data-url="https://www.theguardian.com/uk-news/2026/nov/04/parliament-notre-dame-style-fire-renovation-costs">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.theguardian.com/us-news/2026/nov/03/sherrod-brown-jon-husted-ohio-senate" data-title="Democrat Sherrod Brown wins Ohio Senate race in major blow to Republicans" data-summary="Populist Brown makes successful return to US Senate after voters reject Republican incumbent Jon HustedUS midterm elections – live updatesTrack live results from all 50 statesDemocrat Sherrod Brown will return to the US Senate, as Ohio’s voters rejected the incumbent Jon Husted in a significant defeat for Republicans.Brown’s bid for a comeback after being ousted from the seat he held for 18 years in 2024 became one of the marquee contests of this year’s midterm elections, and a key test of whether Democrats can regain support among the working class and rural voters who have deserted them in recent years." data-source="The Guardian" data-published="2026-11-04T06:24:31+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/us-news/2026/nov/03/sherrod-brown-jon-husted-ohio-senate" target="_blank" rel="noopener">Democrat Sherrod Brown wins Ohio Senate race in major blow to Republicans</a>
+          <p class="summary">Populist Brown makes successful return to US Senate after voters reject Republican incumbent Jon HustedUS midterm elections – live updatesTrack live results from all 50 statesDemocrat Sherrod Brown will return to the US Senate, as Ohio’s voters rejected the incumbent Jon Husted in a significant defeat for Republicans.Brown’s bid for a comeback after being ousted from the seat he held for 18 years in 2024 became one of the marquee contests of this year’s midterm elections, and a key test of whether Democrats can regain support among the working class and rural voters who have deserted them in recent years.</p>
+          <span class="source"><a href="https://www.theguardian.com/us-news/2026/nov/03/sherrod-brown-jon-husted-ohio-senate" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">4 Nov, 06:24</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Democrat Sherrod Brown wins Ohio Senate race in major blow to Republicans" data-url="https://www.theguardian.com/us-news/2026/nov/03/sherrod-brown-jon-husted-ohio-senate">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cwz0v5lv30lyo?at_medium=RSS&amp;at_campaign=rss" data-title="Anthony Zurcher: Democrats tear up Trump&#x27;s political map on historic night" data-summary="Democrats have torn up Donald Trump&#x27;s political map on a night that will send shockwaves through American politics for years to come. With a string of major Senate victories in states that have been reliably Republican for decades - and in Kansas&#x27;s case, nearly a century - a blue tidal wave crashed across the nation, sweeping Republicans out of power." data-source="BBC News" data-published="2026-11-04T06:14:20+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cwz0v5lv30lyo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Anthony Zurcher: Democrats tear up Trump&#x27;s political map on historic night</a>
+          <p class="summary">Democrats have torn up Donald Trump&#x27;s political map on a night that will send shockwaves through American politics for years to come. With a string of major Senate victories in states that have been reliably Republican for decades - and in Kansas&#x27;s case, nearly a century - a blue tidal wave crashed across the nation, sweeping Republicans out of power.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cwz0v5lv30lyo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 06:14</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Anthony Zurcher: Democrats tear up Trump&#x27;s political map on historic night" data-url="https://www.bbc.co.uk/news/articles/cwz0v5lv30lyo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/gallery/2026/11/4/photos-champions-league-and-tenerife-fans-pay-tribute-to-de-miguel?traffic_source=rss" data-title="Photos: Champions League and Tenerife fans pay tribute to De Miguel" data-summary="Fans of Spanish football club CD Tenerife gathered outside the Estadio Heliodoro Rodriguez Lopez in Santa Cruz de Tenerife as tributes poured in for forward Jesus de Miguel, who died after an on-field collision . De Miguel died on Tuesday from injuries sustained in a clash with FC Andorra goalkeeper Jesus Owono during a Spanish second-division match, leaving Spanish and European football in mourning. Spanish police have opened an investigation into possible involuntary manslaughter." data-source="Al Jazeera" data-published="2026-11-04T05:49:43+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/gallery/2026/11/4/photos-champions-league-and-tenerife-fans-pay-tribute-to-de-miguel?traffic_source=rss" target="_blank" rel="noopener">Photos: Champions League and Tenerife fans pay tribute to De Miguel</a>
+          <p class="summary">Fans of Spanish football club CD Tenerife gathered outside the Estadio Heliodoro Rodriguez Lopez in Santa Cruz de Tenerife as tributes poured in for forward Jesus de Miguel, who died after an on-field collision . De Miguel died on Tuesday from injuries sustained in a clash with FC Andorra goalkeeper Jesus Owono during a Spanish second-division match, leaving Spanish and European football in mourning. Spanish police have opened an investigation into possible involuntary manslaughter.</p>
+          <span class="source"><a href="https://www.aljazeera.com/gallery/2026/11/4/photos-champions-league-and-tenerife-fans-pay-tribute-to-de-miguel?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">4 Nov, 05:49</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Photos: Champions League and Tenerife fans pay tribute to De Miguel" data-url="https://www.aljazeera.com/gallery/2026/11/4/photos-champions-league-and-tenerife-fans-pay-tribute-to-de-miguel?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.economist.com/international/2026/11/03/fear-united-europe-nationalism-may-tear-it-apart" data-title="Fear united Europe. Nationalism may tear it apart" data-summary="Donald Trump and Vladimir Putin made Europe serious about its own defences. That may not last" data-source="The Economist" data-published="2026-11-03T22:13:41+00:00" data-section="Politics — Global" data-paywalled="true">
+          <a class="headline" href="https://www.economist.com/international/2026/11/03/fear-united-europe-nationalism-may-tear-it-apart" target="_blank" rel="noopener">Fear united Europe. Nationalism may tear it apart</a>
+          <p class="summary">Donald Trump and Vladimir Putin made Europe serious about its own defences. That may not last</p>
+          <span class="source"><a href="https://www.economist.com/international/2026/11/03/fear-united-europe-nationalism-may-tear-it-apart" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">3 Nov, 22:13</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="Fear united Europe. Nationalism may tear it apart" data-url="https://www.economist.com/international/2026/11/03/fear-united-europe-nationalism-may-tear-it-apart">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cjly0qpv35p3o?at_medium=RSS&amp;at_campaign=rss" data-title="Problems at health trust buildings could cost additional £20m" data-summary="Problems at two Belfast Health and Social Care Trust buildings could amount to almost Â£20m in additional costs, the BBC has learned. Newly-discovered issues with the Belfast maternity hospital could add almost Â£10m to the project&#x27;s spiralling costs, while the amount spent on repairs and rehousing patients at the Acute Mental Health facility has now reached Â£9.4m." data-source="BBC News" data-published="2026-11-04T06:00:22+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cjly0qpv35p3o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Problems at health trust buildings could cost additional £20m</a>
+          <p class="summary">Problems at two Belfast Health and Social Care Trust buildings could amount to almost Â£20m in additional costs, the BBC has learned. Newly-discovered issues with the Belfast maternity hospital could add almost Â£10m to the project&#x27;s spiralling costs, while the amount spent on repairs and rehousing patients at the Acute Mental Health facility has now reached Â£9.4m.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cjly0qpv35p3o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Problems at health trust buildings could cost additional £20m" data-url="https://www.bbc.co.uk/news/articles/cjly0qpv35p3o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/2026/11/03/midterm-elections-what-democratic-control-senate-means-healthcare/?utm_campaign=rss" data-title="STAT+: Democrats win power to push back on Trump’s health care moves" data-summary="Democrats win Senate control, and with it the power to push back on Trump’s health care moves." data-source="STAT News" data-published="2026-11-04T04:38:26+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/03/midterm-elections-what-democratic-control-senate-means-healthcare/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Democrats win power to push back on Trump’s health care moves</a>
+          <p class="summary">Democrats win Senate control, and with it the power to push back on Trump’s health care moves.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/03/midterm-elections-what-democratic-control-senate-means-healthcare/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">4 Nov, 04:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: Democrats win power to push back on Trump’s health care moves" data-url="https://www.statnews.com/2026/11/03/midterm-elections-what-democratic-control-senate-means-healthcare/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261102202829.htm" data-title="Gene editing could replace a lifetime of medication, but there&#x27;s a catch" data-summary="Imagine receiving a single treatment that could keep your cholesterol under control for decades, potentially eliminating the need for daily medication. Advances in gene editing are bringing that possibility closer to reality. But scientists say the same technology that could revolutionize medicine also raises difficult questions about safety, permanent genetic changes, and unintended consequences. Gene therapy is already being used to treat certain serious illnesses." data-source="ScienceDaily" data-published="2026-11-04T04:30:57+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261102202829.htm" target="_blank" rel="noopener">Gene editing could replace a lifetime of medication, but there&#x27;s a catch</a>
+          <p class="summary">Imagine receiving a single treatment that could keep your cholesterol under control for decades, potentially eliminating the need for daily medication. Advances in gene editing are bringing that possibility closer to reality. But scientists say the same technology that could revolutionize medicine also raises difficult questions about safety, permanent genetic changes, and unintended consequences. Gene therapy is already being used to treat certain serious illnesses.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261102202829.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">4 Nov, 04:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Gene editing could replace a lifetime of medication, but there&#x27;s a catch" data-url="https://www.sciencedaily.com/releases/2026/11/261102202829.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cm9qz93ew22no?at_medium=RSS&amp;at_campaign=rss" data-title="&#x27;Multi-cancer&#x27; blood tests coming to some GP surgeries soon" data-summary="New blood tests designed to check for multiple cancers in one go will be offered to NHS patients in some 200 GP surgeries in England as part of a trial. The aim is to detect hard-to-diagnose abdominal cancers, including liver, ovarian and pancreatic cancer, much sooner. These cancers are often found only after they have spread. The tests look for proteins or fragments of DNA in the blood that may signal cancer." data-source="BBC News" data-published="2026-11-04T00:04:28+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cm9qz93ew22no?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">&#x27;Multi-cancer&#x27; blood tests coming to some GP surgeries soon</a>
+          <p class="summary">New blood tests designed to check for multiple cancers in one go will be offered to NHS patients in some 200 GP surgeries in England as part of a trial. The aim is to detect hard-to-diagnose abdominal cancers, including liver, ovarian and pancreatic cancer, much sooner. These cancers are often found only after they have spread. The tests look for proteins or fragments of DNA in the blood that may signal cancer.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cm9qz93ew22no?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 00:04</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&#x27;Multi-cancer&#x27; blood tests coming to some GP surgeries soon" data-url="https://www.bbc.co.uk/news/articles/cm9qz93ew22no?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMilAFBVV95cUxQMlZqX2kxZXprUjZONnZFTnVsdE10WVh1MlcwbE10QjZfbEtkT01iTlVDc1JxYU9hYmVtdjhIbzkwbF9jbTg3anJqVHI2QUh0dnItTndsYWs0bU8wX0xqRHQ3bEpPZmdGeER0R3BVMVNaOXc0MnlLQ3EybDZ2Vzl2RGZYaTJiQl9YY1lOM0dFZElGeTBm?oc=5" data-title="Ranji Trophy 2026-27, HPCA vs RCA, Day 2: Match Highlights - BCCI" data-summary="Ranji Trophy 2026-27, HPCA vs RCA, Day 2: Match Highlights BCCI" data-source="BCCI" data-published="2026-11-04T04:50:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQMlZqX2kxZXprUjZONnZFTnVsdE10WVh1MlcwbE10QjZfbEtkT01iTlVDc1JxYU9hYmVtdjhIbzkwbF9jbTg3anJqVHI2QUh0dnItTndsYWs0bU8wX0xqRHQ3bEpPZmdGeER0R3BVMVNaOXc0MnlLQ3EybDZ2Vzl2RGZYaTJiQl9YY1lOM0dFZElGeTBm?oc=5" target="_blank" rel="noopener">Ranji Trophy 2026-27, HPCA vs RCA, Day 2: Match Highlights - BCCI</a>
+          <p class="summary">Ranji Trophy 2026-27, HPCA vs RCA, Day 2: Match Highlights BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQMlZqX2kxZXprUjZONnZFTnVsdE10WVh1MlcwbE10QjZfbEtkT01iTlVDc1JxYU9hYmVtdjhIbzkwbF9jbTg3anJqVHI2QUh0dnItTndsYWs0bU8wX0xqRHQ3bEpPZmdGeER0R3BVMVNaOXc0MnlLQ3EybDZ2Vzl2RGZYaTJiQl9YY1lOM0dFZElGeTBm?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">4 Nov, 04:50</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ranji Trophy 2026-27, HPCA vs RCA, Day 2: Match Highlights - BCCI" data-url="https://news.google.com/rss/articles/CBMilAFBVV95cUxQMlZqX2kxZXprUjZONnZFTnVsdE10WVh1MlcwbE10QjZfbEtkT01iTlVDc1JxYU9hYmVtdjhIbzkwbF9jbTg3anJqVHI2QUh0dnItTndsYWs0bU8wX0xqRHQ3bEpPZmdGeER0R3BVMVNaOXc0MnlLQ3EybDZ2Vzl2RGZYaTJiQl9YY1lOM0dFZElGeTBm?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMizgFBVV95cUxOVm1ndVR2bUUyaWxTZG5QQUZKdmx0YlFEM1daWVZJWm9NRWFQbVMzN2otZ0ZwQktzbnl5cTl2ZlVFWDVOMVBjOU0tZGpaQkVlbVhiYnpwZjA1ZXktSEM0RjNnblA3cWdTdVRXdEpvNzh0SVNXME44QkRpQXVXd1c3eWxORTRnNktmcjB2VkZReDdpUTlXVHRkS1hycHdTV3V1SnVLcG0wZEUycms4X0RESk4yTjdySHAxaWI3bHd4QlBqY29vbDU4Z1dGS0Nadw?oc=5" data-title="HCA row: BCCI opposes appeals by individual members, says society alone can challenge court order - NewsMeter" data-summary="HCA row: BCCI opposes appeals by individual members, says society alone can challenge court order NewsMeter" data-source="NewsMeter" data-published="2026-11-04T02:30:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMizgFBVV95cUxOVm1ndVR2bUUyaWxTZG5QQUZKdmx0YlFEM1daWVZJWm9NRWFQbVMzN2otZ0ZwQktzbnl5cTl2ZlVFWDVOMVBjOU0tZGpaQkVlbVhiYnpwZjA1ZXktSEM0RjNnblA3cWdTdVRXdEpvNzh0SVNXME44QkRpQXVXd1c3eWxORTRnNktmcjB2VkZReDdpUTlXVHRkS1hycHdTV3V1SnVLcG0wZEUycms4X0RESk4yTjdySHAxaWI3bHd4QlBqY29vbDU4Z1dGS0Nadw?oc=5" target="_blank" rel="noopener">HCA row: BCCI opposes appeals by individual members, says society alone can challenge court order - NewsMeter</a>
+          <p class="summary">HCA row: BCCI opposes appeals by individual members, says society alone can challenge court order NewsMeter</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMizgFBVV95cUxOVm1ndVR2bUUyaWxTZG5QQUZKdmx0YlFEM1daWVZJWm9NRWFQbVMzN2otZ0ZwQktzbnl5cTl2ZlVFWDVOMVBjOU0tZGpaQkVlbVhiYnpwZjA1ZXktSEM0RjNnblA3cWdTdVRXdEpvNzh0SVNXME44QkRpQXVXd1c3eWxORTRnNktmcjB2VkZReDdpUTlXVHRkS1hycHdTV3V1SnVLcG0wZEUycms4X0RESk4yTjdySHAxaWI3bHd4QlBqY29vbDU4Z1dGS0Nadw?oc=5" target="_blank" rel="noopener">NewsMeter</a> &middot; <span class="pubdate">4 Nov, 02:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="HCA row: BCCI opposes appeals by individual members, says society alone can challenge court order - NewsMeter" data-url="https://news.google.com/rss/articles/CBMizgFBVV95cUxOVm1ndVR2bUUyaWxTZG5QQUZKdmx0YlFEM1daWVZJWm9NRWFQbVMzN2otZ0ZwQktzbnl5cTl2ZlVFWDVOMVBjOU0tZGpaQkVlbVhiYnpwZjA1ZXktSEM0RjNnblA3cWdTdVRXdEpvNzh0SVNXME44QkRpQXVXd1c3eWxORTRnNktmcjB2VkZReDdpUTlXVHRkS1hycHdTV3V1SnVLcG0wZEUycms4X0RESk4yTjdySHAxaWI3bHd4QlBqY29vbDU4Z1dGS0Nadw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMixgFBVV95cUxQZEZRbHQ5TkkyT25MbDBqZXhPVThDVHByLUFYcTd6Yl9JcmNzeFlaQXNEd3BVNnZ6Q2dEdnhGTVZFaDlIaThybmktQVBQZ29NWVI4aVFvVmtXQi1xU1NSSU83MmcxV2R2MUJTYm95TVB4QmQ3cVIzMFV0MTdhVDZUa25OX0tjbW1XcDNTWUloLXVnY3VNSWZUajc4NUh5eVBxMUcweHJQRGRfQmRUNVZldnZkTVFVMGd4UXdXSk4xS2xWRTI4MUE?oc=5" data-title="BCCI Invites Applications For Fielding Coach For Women&#x27;s Team, Head Physio For Men&#x27;s Side - NDTV Sports" data-summary="BCCI Invites Applications For Fielding Coach For Women&#x27;s Team, Head Physio For Men&#x27;s Side NDTV Sports" data-source="NDTV Sports" data-published="2026-11-03T18:06:48+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMixgFBVV95cUxQZEZRbHQ5TkkyT25MbDBqZXhPVThDVHByLUFYcTd6Yl9JcmNzeFlaQXNEd3BVNnZ6Q2dEdnhGTVZFaDlIaThybmktQVBQZ29NWVI4aVFvVmtXQi1xU1NSSU83MmcxV2R2MUJTYm95TVB4QmQ3cVIzMFV0MTdhVDZUa25OX0tjbW1XcDNTWUloLXVnY3VNSWZUajc4NUh5eVBxMUcweHJQRGRfQmRUNVZldnZkTVFVMGd4UXdXSk4xS2xWRTI4MUE?oc=5" target="_blank" rel="noopener">BCCI Invites Applications For Fielding Coach For Women&#x27;s Team, Head Physio For Men&#x27;s Side - NDTV Sports</a>
+          <p class="summary">BCCI Invites Applications For Fielding Coach For Women&#x27;s Team, Head Physio For Men&#x27;s Side NDTV Sports</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMixgFBVV95cUxQZEZRbHQ5TkkyT25MbDBqZXhPVThDVHByLUFYcTd6Yl9JcmNzeFlaQXNEd3BVNnZ6Q2dEdnhGTVZFaDlIaThybmktQVBQZ29NWVI4aVFvVmtXQi1xU1NSSU83MmcxV2R2MUJTYm95TVB4QmQ3cVIzMFV0MTdhVDZUa25OX0tjbW1XcDNTWUloLXVnY3VNSWZUajc4NUh5eVBxMUcweHJQRGRfQmRUNVZldnZkTVFVMGd4UXdXSk4xS2xWRTI4MUE?oc=5" target="_blank" rel="noopener">NDTV Sports</a> &middot; <span class="pubdate">3 Nov, 18:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="BCCI Invites Applications For Fielding Coach For Women&#x27;s Team, Head Physio For Men&#x27;s Side - NDTV Sports" data-url="https://news.google.com/rss/articles/CBMixgFBVV95cUxQZEZRbHQ5TkkyT25MbDBqZXhPVThDVHByLUFYcTd6Yl9JcmNzeFlaQXNEd3BVNnZ6Q2dEdnhGTVZFaDlIaThybmktQVBQZ29NWVI4aVFvVmtXQi1xU1NSSU83MmcxV2R2MUJTYm95TVB4QmQ3cVIzMFV0MTdhVDZUa25OX0tjbW1XcDNTWUloLXVnY3VNSWZUajc4NUh5eVBxMUcweHJQRGRfQmRUNVZldnZkTVFVMGd4UXdXSk4xS2xWRTI4MUE?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiqAFBVV95cUxPTkZyYXRRbmNHWmUxM3E5aENBbFROdFVUdUhHd05Od1M1V3FwaEVtTWZNV2Q2UmRYTjJETlR0M2QzQWhzWDVRUDVwSkotNDhmT3UtMHZnS3VmcU5iZ1BMTnpia2xyRFg3MWJ4S3ZmUk0zVUFzMkhselRGdmxSMWV6dUlmSDRiTExMR3JGRXdxdWdESXZGMnBSOXRlVGcxNG90TGtjNFYwNjPSAasBQVVfeXFMTzg3R3VsTk9GcWRwRVpHblBEdlUyUXM4MWQ2N1pOaTQ5TjNEU0w0bUdneTJJRGxKeXVzVXpVblZoX09IUnpjanpOTGQ3YjJ3YUVPRXhWcV9uOWVDOUd0QloxUDFmMEQyYktoTkFqV3E3UUh4SVJiREczREt3MWVWR25XcnYySVdNUlZmNjJPWG5MajI4cmpXYmszN2Zqd3dyemx5NG5XUTJaYVZz?oc=5" data-title="BCCI invites applications for two key Team India roles - Rediff" data-summary="BCCI invites applications for two key Team India roles Rediff" data-source="Rediff" data-published="2026-11-03T17:01:12+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiqAFBVV95cUxPTkZyYXRRbmNHWmUxM3E5aENBbFROdFVUdUhHd05Od1M1V3FwaEVtTWZNV2Q2UmRYTjJETlR0M2QzQWhzWDVRUDVwSkotNDhmT3UtMHZnS3VmcU5iZ1BMTnpia2xyRFg3MWJ4S3ZmUk0zVUFzMkhselRGdmxSMWV6dUlmSDRiTExMR3JGRXdxdWdESXZGMnBSOXRlVGcxNG90TGtjNFYwNjPSAasBQVVfeXFMTzg3R3VsTk9GcWRwRVpHblBEdlUyUXM4MWQ2N1pOaTQ5TjNEU0w0bUdneTJJRGxKeXVzVXpVblZoX09IUnpjanpOTGQ3YjJ3YUVPRXhWcV9uOWVDOUd0QloxUDFmMEQyYktoTkFqV3E3UUh4SVJiREczREt3MWVWR25XcnYySVdNUlZmNjJPWG5MajI4cmpXYmszN2Zqd3dyemx5NG5XUTJaYVZz?oc=5" target="_blank" rel="noopener">BCCI invites applications for two key Team India roles - Rediff</a>
+          <p class="summary">BCCI invites applications for two key Team India roles Rediff</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiqAFBVV95cUxPTkZyYXRRbmNHWmUxM3E5aENBbFROdFVUdUhHd05Od1M1V3FwaEVtTWZNV2Q2UmRYTjJETlR0M2QzQWhzWDVRUDVwSkotNDhmT3UtMHZnS3VmcU5iZ1BMTnpia2xyRFg3MWJ4S3ZmUk0zVUFzMkhselRGdmxSMWV6dUlmSDRiTExMR3JGRXdxdWdESXZGMnBSOXRlVGcxNG90TGtjNFYwNjPSAasBQVVfeXFMTzg3R3VsTk9GcWRwRVpHblBEdlUyUXM4MWQ2N1pOaTQ5TjNEU0w0bUdneTJJRGxKeXVzVXpVblZoX09IUnpjanpOTGQ3YjJ3YUVPRXhWcV9uOWVDOUd0QloxUDFmMEQyYktoTkFqV3E3UUh4SVJiREczREt3MWVWR25XcnYySVdNUlZmNjJPWG5MajI4cmpXYmszN2Zqd3dyemx5NG5XUTJaYVZz?oc=5" target="_blank" rel="noopener">Rediff</a> &middot; <span class="pubdate">3 Nov, 17:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="BCCI invites applications for two key Team India roles - Rediff" data-url="https://news.google.com/rss/articles/CBMiqAFBVV95cUxPTkZyYXRRbmNHWmUxM3E5aENBbFROdFVUdUhHd05Od1M1V3FwaEVtTWZNV2Q2UmRYTjJETlR0M2QzQWhzWDVRUDVwSkotNDhmT3UtMHZnS3VmcU5iZ1BMTnpia2xyRFg3MWJ4S3ZmUk0zVUFzMkhselRGdmxSMWV6dUlmSDRiTExMR3JGRXdxdWdESXZGMnBSOXRlVGcxNG90TGtjNFYwNjPSAasBQVVfeXFMTzg3R3VsTk9GcWRwRVpHblBEdlUyUXM4MWQ2N1pOaTQ5TjNEU0w0bUdneTJJRGxKeXVzVXpVblZoX09IUnpjanpOTGQ3YjJ3YUVPRXhWcV9uOWVDOUd0QloxUDFmMEQyYktoTkFqV3E3UUh4SVJiREczREt3MWVWR25XcnYySVdNUlZmNjJPWG5MajI4cmpXYmszN2Zqd3dyemx5NG5XUTJaYVZz?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcVpXalJIQ0dCb1pQYmI0dVBtMjlVMFRGcWxISEtJY2s1dUkteGN1ZWRmYnFEZmg3WnlnbE5xT1h6NWl4eEQtY2NUQ3d3UFFJQnpKNjNsTEt2RUNmbFlSQ243czFHRi1TeW5vQi1UZzVEejNxcWp5SG9YaXJrMGZTZ2xxWE9EdXFFSVpkOWpSRENrSHV0ZE1CNmwwNmFISkxDRlNDVlpBd1d2b2s2bW5NdUp4TVdPR3ZQ?oc=5" data-title="Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra - Rajasthan Royals" data-summary="Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra Rajasthan Royals" data-source="Rajasthan Royals" data-published="2026-11-03T12:05:51+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcVpXalJIQ0dCb1pQYmI0dVBtMjlVMFRGcWxISEtJY2s1dUkteGN1ZWRmYnFEZmg3WnlnbE5xT1h6NWl4eEQtY2NUQ3d3UFFJQnpKNjNsTEt2RUNmbFlSQ243czFHRi1TeW5vQi1UZzVEejNxcWp5SG9YaXJrMGZTZ2xxWE9EdXFFSVpkOWpSRENrSHV0ZE1CNmwwNmFISkxDRlNDVlpBd1d2b2s2bW5NdUp4TVdPR3ZQ?oc=5" target="_blank" rel="noopener">Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra - Rajasthan Royals</a>
+          <p class="summary">Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra Rajasthan Royals</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcVpXalJIQ0dCb1pQYmI0dVBtMjlVMFRGcWxISEtJY2s1dUkteGN1ZWRmYnFEZmg3WnlnbE5xT1h6NWl4eEQtY2NUQ3d3UFFJQnpKNjNsTEt2RUNmbFlSQ243czFHRi1TeW5vQi1UZzVEejNxcWp5SG9YaXJrMGZTZ2xxWE9EdXFFSVpkOWpSRENrSHV0ZE1CNmwwNmFISkxDRlNDVlpBd1d2b2s2bW5NdUp4TVdPR3ZQ?oc=5" target="_blank" rel="noopener">Rajasthan Royals</a> &middot; <span class="pubdate">3 Nov, 12:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Emanjot Singh Chahal&#x27;s second Ranji Trophy century lifts Punjab to massive total against Andhra - Rajasthan Royals" data-url="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcVpXalJIQ0dCb1pQYmI0dVBtMjlVMFRGcWxISEtJY2s1dUkteGN1ZWRmYnFEZmg3WnlnbE5xT1h6NWl4eEQtY2NUQ3d3UFFJQnpKNjNsTEt2RUNmbFlSQ243czFHRi1TeW5vQi1UZzVEejNxcWp5SG9YaXJrMGZTZ2xxWE9EdXFFSVpkOWpSRENrSHV0ZE1CNmwwNmFISkxDRlNDVlpBd1d2b2s2bW5NdUp4TVdPR3ZQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561335.html?ex_cid=OTC-RSS" data-title="India opt to bowl, pick Nabi and Kamboj" data-summary="India opt to bowl against New Zealand in the first ODI; Auqib Nabi and Anshul Kamboj earn their spots, while Tim Seifert makes his ODI comeback" data-source="ESPNcricinfo" data-published="2026-11-04T05:41:23+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561335.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">India opt to bowl, pick Nabi and Kamboj</a>
+          <p class="summary">India opt to bowl against New Zealand in the first ODI; Auqib Nabi and Anshul Kamboj earn their spots, while Tim Seifert makes his ODI comeback</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561335.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">4 Nov, 05:41</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="India opt to bowl, pick Nabi and Kamboj" data-url="https://www.cricinfo.com/ci/content/story/1561335.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561361.html?ex_cid=OTC-RSS" data-title="Mustafizur signs with Melbourne Renegades for BBL 2026-27" data-summary="Veteran Bangladesh quick Mustafizur Rahman will miss the first game of the BBL because of his ILT20 commitments" data-source="ESPNcricinfo" data-published="2026-11-04T05:36:40+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561361.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Mustafizur signs with Melbourne Renegades for BBL 2026-27</a>
+          <p class="summary">Veteran Bangladesh quick Mustafizur Rahman will miss the first game of the BBL because of his ILT20 commitments</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561361.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">4 Nov, 05:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Mustafizur signs with Melbourne Renegades for BBL 2026-27" data-url="https://www.cricinfo.com/ci/content/story/1561361.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561356.html?ex_cid=OTC-RSS" data-title="Meghalaya infighting: Ranji squad sacked, new players selected following court order" data-summary="The side that played the first three rounds of the Ranji Trophy has been removed and a new set of players were hastily arranged for the ongoing match against Nagaland" data-source="ESPNcricinfo" data-published="2026-11-04T05:06:38+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561356.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Meghalaya infighting: Ranji squad sacked, new players selected following court order</a>
+          <p class="summary">The side that played the first three rounds of the Ranji Trophy has been removed and a new set of players were hastily arranged for the ongoing match against Nagaland</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561356.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">4 Nov, 05:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Meghalaya infighting: Ranji squad sacked, new players selected following court order" data-url="https://www.cricinfo.com/ci/content/story/1561356.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561151.html?ex_cid=OTC-RSS" data-title="Sarfaraz Khan: &#x27;Every day I ask myself why I should work harder&#x27;" data-summary="The Mumbai batter last played for India two years ago but remains unfazed, as he still churns out runs in the domestic circuit" data-source="ESPNcricinfo" data-published="2026-11-04T03:18:29+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561151.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Sarfaraz Khan: &#x27;Every day I ask myself why I should work harder&#x27;</a>
+          <p class="summary">The Mumbai batter last played for India two years ago but remains unfazed, as he still churns out runs in the domestic circuit</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561151.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">4 Nov, 03:18</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Sarfaraz Khan: &#x27;Every day I ask myself why I should work harder&#x27;" data-url="https://www.cricinfo.com/ci/content/story/1561151.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.skysports.com/f1/news/12040/13607248/toto-wolff-says-good-person-kimi-antonelli-should-be-a-role-model-for-entitled-formula-1-drivers-ahead-of-sao-paulo-grand-prix" data-title="Wolff: &#x27;Good person&#x27; Antonelli should be a role model for entitled F1 drivers" data-summary="Mercedes team principal Toto Wolff lauded Kimi Antonelli and stated the new world champion &quot;represents the modern Formula 1 driver&quot;; watch Friday&#x27;s practice sessions at the Sao Paulo Grand Prix from 3.30pm and 7pm, live on Sky Sports F1 Please use Chrome browser for a more accessible video player Mercedes boss Toto Wolff says newly crowned world champion Kimi Antonelli should be a role model for both upcoming drivers and some of his “entitled” Formula 1 rivals." data-source="Sky Sports" data-published="2026-11-04T06:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/news/12040/13607248/toto-wolff-says-good-person-kimi-antonelli-should-be-a-role-model-for-entitled-formula-1-drivers-ahead-of-sao-paulo-grand-prix" target="_blank" rel="noopener">Wolff: &#x27;Good person&#x27; Antonelli should be a role model for entitled F1 drivers</a>
+          <p class="summary">Mercedes team principal Toto Wolff lauded Kimi Antonelli and stated the new world champion &quot;represents the modern Formula 1 driver&quot;; watch Friday&#x27;s practice sessions at the Sao Paulo Grand Prix from 3.30pm and 7pm, live on Sky Sports F1 Please use Chrome browser for a more accessible video player Mercedes boss Toto Wolff says newly crowned world champion Kimi Antonelli should be a role model for both upcoming drivers and some of his “entitled” Formula 1 rivals.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/news/12040/13607248/toto-wolff-says-good-person-kimi-antonelli-should-be-a-role-model-for-entitled-formula-1-drivers-ahead-of-sao-paulo-grand-prix" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">4 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Wolff: &#x27;Good person&#x27; Antonelli should be a role model for entitled F1 drivers" data-url="https://www.skysports.com/f1/news/12040/13607248/toto-wolff-says-good-person-kimi-antonelli-should-be-a-role-model-for-entitled-formula-1-drivers-ahead-of-sao-paulo-grand-prix">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cqkg5dgvygr1o?at_medium=RSS&amp;at_campaign=rss" data-title="Fernandes critical of media &#x27;lies&#x27; about Carrick relationship" data-summary="Bruno Fernandes says &quot;a lot of lies&quot; have been reported about his relationship with Manchester United head coach Michael Carrick in recent weeks. Speaking after United&#x27;s 3-2 win over Roma on Tuesday, it was the first time the 32-year-old had addressed the media since being dropped to the bench after publicly criticising Carrick&#x27;s tactics in the wake of their 4-1 loss at Como." data-source="BBC News" data-published="2026-11-04T00:45:33+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cqkg5dgvygr1o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Fernandes critical of media &#x27;lies&#x27; about Carrick relationship</a>
+          <p class="summary">Bruno Fernandes says &quot;a lot of lies&quot; have been reported about his relationship with Manchester United head coach Michael Carrick in recent weeks. Speaking after United&#x27;s 3-2 win over Roma on Tuesday, it was the first time the 32-year-old had addressed the media since being dropped to the bench after publicly criticising Carrick&#x27;s tactics in the wake of their 4-1 loss at Como.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cqkg5dgvygr1o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 00:45</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Fernandes critical of media &#x27;lies&#x27; about Carrick relationship" data-url="https://www.bbc.co.uk/sport/football/articles/cqkg5dgvygr1o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/boxing/news/12040/13607667/chris-billam-smith-amateur-grudge-with-cheavon-clarke-revealed-only-nine-minutes-but-it-affected-his-life-for-years" data-title="Billam-Smith grudge with Clarke revealed | &#x27;It affected him for years&#x27;" data-summary="Chris Billam-Smith fights Cheavon Clarke at the Copper Box Arena on Saturday live on Sky Sports ; Billam-Smith&#x27;s rivalry with Clarke dates back more than 10 years; Clarke beat him in an amateur bout that had profound consequences for both boxers; Now they look to settle the score Please use Chrome browser for a more accessible video player Old wounds can still ache. Chris Billam-Smith has achieved more than Cheavon Clarke as a professional fighter." data-source="Sky Sports" data-published="2026-11-04T06:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/boxing/news/12040/13607667/chris-billam-smith-amateur-grudge-with-cheavon-clarke-revealed-only-nine-minutes-but-it-affected-his-life-for-years" target="_blank" rel="noopener">Billam-Smith grudge with Clarke revealed | &#x27;It affected him for years&#x27;</a>
+          <p class="summary">Chris Billam-Smith fights Cheavon Clarke at the Copper Box Arena on Saturday live on Sky Sports ; Billam-Smith&#x27;s rivalry with Clarke dates back more than 10 years; Clarke beat him in an amateur bout that had profound consequences for both boxers; Now they look to settle the score Please use Chrome browser for a more accessible video player Old wounds can still ache. Chris Billam-Smith has achieved more than Cheavon Clarke as a professional fighter.</p>
+          <span class="source"><a href="https://www.skysports.com/boxing/news/12040/13607667/chris-billam-smith-amateur-grudge-with-cheavon-clarke-revealed-only-nine-minutes-but-it-affected-his-life-for-years" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">4 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Billam-Smith grudge with Clarke revealed | &#x27;It affected him for years&#x27;" data-url="https://www.skysports.com/boxing/news/12040/13607667/chris-billam-smith-amateur-grudge-with-cheavon-clarke-revealed-only-nine-minutes-but-it-affected-his-life-for-years">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/c6q8n98y4023o?at_medium=RSS&amp;at_campaign=rss" data-title="A half-time speech, a retaken penalty - and a win to save Carrick&#x27;s job?" data-summary="We cannot know how important Bryan Cristante&#x27;s foot touching the Roma penalty area as Bruno Fernandes took his initial spot-kick at Old Trafford will prove to be for Michael Carrick. In the moment, as the Roma fans celebrated, and Manchester United trailed 2-0, it seemed catastrophic for the club and terminal for Carrick&#x27;s position as head coach." data-source="BBC News" data-published="2026-11-04T00:27:37+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/c6q8n98y4023o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">A half-time speech, a retaken penalty - and a win to save Carrick&#x27;s job?</a>
+          <p class="summary">We cannot know how important Bryan Cristante&#x27;s foot touching the Roma penalty area as Bruno Fernandes took his initial spot-kick at Old Trafford will prove to be for Michael Carrick. In the moment, as the Roma fans celebrated, and Manchester United trailed 2-0, it seemed catastrophic for the club and terminal for Carrick&#x27;s position as head coach.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/c6q8n98y4023o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">4 Nov, 00:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="A half-time speech, a retaken penalty - and a win to save Carrick&#x27;s job?" data-url="https://www.bbc.co.uk/sport/football/articles/c6q8n98y4023o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/pm-modi-calls-sharad-pawar-advises-rest-as-ncp-sp-chief-discharged-from-hospital-101793772037356.html" data-title="PM Modi calls Sharad Pawar, advises rest as NCP (SP) chief discharged from hospital" data-summary="Prime Minister Narendra Modi on Wednesday morning called Sharad Pawar and advised him to cut down on travel, get adequate rest and pay greater attention to his diet, amid the NCP (SP) chief&#x27;s discharge from the hospital. Pawar was admitted to Pune&#x27;s Ruby Hall Clinic on Monday (November 2) following complaints of cough and pleuritic chest pain. According to Vitthal Maniyar, a close associate of Pawar, PM Modi urged the 86-year-old leader to prioritise his health and avoid an exhausting schedule." data-source="Hindustan Times" data-published="2026-11-04T06:11:28+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/pm-modi-calls-sharad-pawar-advises-rest-as-ncp-sp-chief-discharged-from-hospital-101793772037356.html" target="_blank" rel="noopener">PM Modi calls Sharad Pawar, advises rest as NCP (SP) chief discharged from hospital</a>
+          <p class="summary">Prime Minister Narendra Modi on Wednesday morning called Sharad Pawar and advised him to cut down on travel, get adequate rest and pay greater attention to his diet, amid the NCP (SP) chief&#x27;s discharge from the hospital. Pawar was admitted to Pune&#x27;s Ruby Hall Clinic on Monday (November 2) following complaints of cough and pleuritic chest pain. According to Vitthal Maniyar, a close associate of Pawar, PM Modi urged the 86-year-old leader to prioritise his health and avoid an exhausting schedule.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/pm-modi-calls-sharad-pawar-advises-rest-as-ncp-sp-chief-discharged-from-hospital-101793772037356.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">4 Nov, 06:11</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="PM Modi calls Sharad Pawar, advises rest as NCP (SP) chief discharged from hospital" data-url="https://www.hindustantimes.com/india-news/pm-modi-calls-sharad-pawar-advises-rest-as-ncp-sp-chief-discharged-from-hospital-101793772037356.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/science/wildlife/meet-zorba-a-belgian-malinois-who-was-indias-first-dog-on-anti-poaching-duty-and-helped-catch-60-poachers-of-assams-rhinos-in-his-eight-year-career/articleshow/135522239.cms" data-title="He tracked down over 60 poachers and followed a blood trail for 1.5 km: Meet Zorba, the dog who protected Assam’s rhinos" data-summary="Zorba, a Belgian Malinois esteemed for his exemplary contributions to wildlife conservation in Assam, was instrumental in tracking more than 60 poachers within Kaziranga National Park. His remarkable ability to retrieve vital evidence and follow scent trails showcased the invaluable role of trained dogs in environmental protection. Honored for his unwavering service, Zorba passed away in November 2022, leaving a lasting impact on both his handlers and the conservation community." data-source="Times of India" data-published="2026-11-04T05:30:24+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/science/wildlife/meet-zorba-a-belgian-malinois-who-was-indias-first-dog-on-anti-poaching-duty-and-helped-catch-60-poachers-of-assams-rhinos-in-his-eight-year-career/articleshow/135522239.cms" target="_blank" rel="noopener">He tracked down over 60 poachers and followed a blood trail for 1.5 km: Meet Zorba, the dog who protected Assam’s rhinos</a>
+          <p class="summary">Zorba, a Belgian Malinois esteemed for his exemplary contributions to wildlife conservation in Assam, was instrumental in tracking more than 60 poachers within Kaziranga National Park. His remarkable ability to retrieve vital evidence and follow scent trails showcased the invaluable role of trained dogs in environmental protection. Honored for his unwavering service, Zorba passed away in November 2022, leaving a lasting impact on both his handlers and the conservation community.</p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/science/wildlife/meet-zorba-a-belgian-malinois-who-was-indias-first-dog-on-anti-poaching-duty-and-helped-catch-60-poachers-of-assams-rhinos-in-his-eight-year-career/articleshow/135522239.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">4 Nov, 05:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="He tracked down over 60 poachers and followed a blood trail for 1.5 km: Meet Zorba, the dog who protected Assam’s rhinos" data-url="https://timesofindia.indiatimes.com/science/wildlife/meet-zorba-a-belgian-malinois-who-was-indias-first-dog-on-anti-poaching-duty-and-helped-catch-60-poachers-of-assams-rhinos-in-his-eight-year-career/articleshow/135522239.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmqlnx7z1549o?at_medium=RSS&amp;at_campaign=rss" data-title="Indian tourist killed after two helicopters collide near Everest base camp" data-summary="An Indian tourist has died after two helicopters collided while attempting to land near the base camp of Mount Everest, two officials have confirmed to the BBC. Verified footage of the crash showed the helicopter blades of the two aircraft clipping each other as they came into land at around 08:15 local time (02:30 GMT) in Pheriche, approximately 12km (7 miles) south of Mount Everest Base Camp. Helicopter company Fishtail Air named the man  killed in the crash as Vasanth Kumar Balaramudu." data-source="BBC News" data-published="2026-11-03T11:51:08+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmqlnx7z1549o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Indian tourist killed after two helicopters collide near Everest base camp</a>
+          <p class="summary">An Indian tourist has died after two helicopters collided while attempting to land near the base camp of Mount Everest, two officials have confirmed to the BBC. Verified footage of the crash showed the helicopter blades of the two aircraft clipping each other as they came into land at around 08:15 local time (02:30 GMT) in Pheriche, approximately 12km (7 miles) south of Mount Everest Base Camp. Helicopter company Fishtail Air named the man  killed in the crash as Vasanth Kumar Balaramudu.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmqlnx7z1549o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">3 Nov, 11:51</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Indian tourist killed after two helicopters collide near Everest base camp" data-url="https://www.bbc.co.uk/news/articles/cmqlnx7z1549o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/bjp-had-no-role-to-play-says-ram-madhav-as-friction-in-nc-intensifies-101793772000979.html" data-title="BJP had no role to play, says Ram Madhav as friction in NC intensifies" data-summary="The Bharatiya Janata Party (BJP) has no involvement in the internal affairs of the National Conference (NC), the ruling party in Jammu and Kashmir, and the regional party’s “leaders are fighting among themselves”, a senior party leader said on Tuesday after Srinagar MP Aga Syed Ruhullah Mehdi resigned from the party and the Lok Sabha." data-source="Hindustan Times" data-published="2026-11-04T06:00:00+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/bjp-had-no-role-to-play-says-ram-madhav-as-friction-in-nc-intensifies-101793772000979.html" target="_blank" rel="noopener">BJP had no role to play, says Ram Madhav as friction in NC intensifies</a>
+          <p class="summary">The Bharatiya Janata Party (BJP) has no involvement in the internal affairs of the National Conference (NC), the ruling party in Jammu and Kashmir, and the regional party’s “leaders are fighting among themselves”, a senior party leader said on Tuesday after Srinagar MP Aga Syed Ruhullah Mehdi resigned from the party and the Lok Sabha.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/bjp-had-no-role-to-play-says-ram-madhav-as-friction-in-nc-intensifies-101793772000979.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">4 Nov, 06:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="BJP had no role to play, says Ram Madhav as friction in NC intensifies" data-url="https://www.hindustantimes.com/india-news/bjp-had-no-role-to-play-says-ram-madhav-as-friction-in-nc-intensifies-101793772000979.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
