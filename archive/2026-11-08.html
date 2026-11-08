@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Sunday, 08 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Sunday, 08 November 2026, Updated as of 13:29 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-08.html" selected>Sunday, 08 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-07.html">Saturday, 07 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-06.html">Friday, 06 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-05.html">Thursday, 05 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-04.html">Wednesday, 04 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-03.html">Tuesday, 03 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-02.html">Monday, 02 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-01.html">Sunday, 01 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-31.html">Saturday, 31 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-30.html">Friday, 30 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-29.html">Thursday, 29 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-28.html">Wednesday, 28 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-27.html">Tuesday, 27 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-26.html">Monday, 26 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-25.html">Sunday, 25 October 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://www.cricinfo.com/ci/content/story/1561911.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">
+        <span class="pick-topic">Cricket</span>
+        <span class="pick-headline">Kavem Hodge: There is a belief and shared mindset among WI batters</span>
+      </a>
+      <a class="pick" href="https://timesofindia.indiatimes.com/world/rest-of-world/australia-planned-to-sell-67-military-sites-to-raise-1-8-billion-but-public-protests-over-sydneys-166-year-old-victoria-barracks-prompted-a-november-8-reversal-that-will-keep-four-historic-sites-publicly-owned/articleshow/135659211.cms" target="_blank" rel="noopener">
+        <span class="pick-topic">India News</span>
+        <span class="pick-headline">Australia reverses military land sale plans after protests, saving four historic sites</span>
+      </a>
+      <a class="pick" href="https://www.theguardian.com/media/2026/nov/08/women-abuse-media-industry-lisa-nandy-russell-brand" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — UK</span>
+        <span class="pick-headline">Women in media alleging abuse too often not protected, Lisa Nandy says</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.theverge.com/column/1026252/video-media-news-tiktok-pivot" data-title="There’s no slowing down media’s pivot-to-video 2.0" data-summary="Just as publishers are starting to crack the vertical video code, social media platforms are looking ahead to a new format.﻿ This is The Stepback , a weekly newsletter breaking down one essential story from the tech world. For more on the pressures of creating content for the internet, follow Mia Sato . The Stepback arrives in our subscribers’ inboxes on Sunday at 8AM ET. Opt in for The Stepback here ." data-source="The Verge" data-published="2026-11-08T13:00:00+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/column/1026252/video-media-news-tiktok-pivot" target="_blank" rel="noopener">There’s no slowing down media’s pivot-to-video 2.0</a>
+          <p class="summary">Just as publishers are starting to crack the vertical video code, social media platforms are looking ahead to a new format.﻿ This is The Stepback , a weekly newsletter breaking down one essential story from the tech world. For more on the pressures of creating content for the internet, follow Mia Sato . The Stepback arrives in our subscribers’ inboxes on Sunday at 8AM ET. Opt in for The Stepback here .</p>
+          <span class="source"><a href="https://www.theverge.com/column/1026252/video-media-news-tiktok-pivot" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">8 Nov, 13:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="There’s no slowing down media’s pivot-to-video 2.0" data-url="https://www.theverge.com/column/1026252/video-media-news-tiktok-pivot">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/science/2026/11/physicists-listened-to-electrical-noise-to-crack-a-superconductor-mystery/" data-title="Physicists listened to electrical noise to crack a superconductor mystery" data-summary="Superconductors carry electricity without resistance, but most only work a few degrees above absolute zero. In the late 1980s, copper-based materials called cuprates were found to superconduct at higher temperatures—reachable with affordable liquid nitrogen. Yet nearly 40 years later, physicists still don’t agree on why." data-source="Ars Technica" data-published="2026-11-08T12:15:31+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/science/2026/11/physicists-listened-to-electrical-noise-to-crack-a-superconductor-mystery/" target="_blank" rel="noopener">Physicists listened to electrical noise to crack a superconductor mystery</a>
+          <p class="summary">Superconductors carry electricity without resistance, but most only work a few degrees above absolute zero. In the late 1980s, copper-based materials called cuprates were found to superconduct at higher temperatures—reachable with affordable liquid nitrogen. Yet nearly 40 years later, physicists still don’t agree on why.</p>
+          <span class="source"><a href="https://arstechnica.com/science/2026/11/physicists-listened-to-electrical-noise-to-crack-a-superconductor-mystery/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">8 Nov, 12:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Physicists listened to electrical noise to crack a superconductor mystery" data-url="https://arstechnica.com/science/2026/11/physicists-listened-to-electrical-noise-to-crack-a-superconductor-mystery/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmzxjvpqrjxro?at_medium=RSS&amp;at_campaign=rss" data-title="Government &#x27;looking seriously&#x27; at banning under-16s from Vinted and eBay" data-summary="Vinted and eBay could be included in the list of platforms set to be banned for under-16s, the culture secretary has said. Lisa Nandy said the government was &quot;looking seriously&quot; at including the retailing websites in the social media ban &quot;in order to keep children safe&quot;. The UK&#x27;s social media ban for those under the age of 16 is set to come into force in March next year, with children barred from accessing platforms such as Instagram, TikTok and Snapchat." data-source="BBC News" data-published="2026-11-08T11:25:32+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmzxjvpqrjxro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Government &#x27;looking seriously&#x27; at banning under-16s from Vinted and eBay</a>
+          <p class="summary">Vinted and eBay could be included in the list of platforms set to be banned for under-16s, the culture secretary has said. Lisa Nandy said the government was &quot;looking seriously&quot; at including the retailing websites in the social media ban &quot;in order to keep children safe&quot;. The UK&#x27;s social media ban for those under the age of 16 is set to come into force in March next year, with children barred from accessing platforms such as Instagram, TikTok and Snapchat.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmzxjvpqrjxro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 11:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Government &#x27;looking seriously&#x27; at banning under-16s from Vinted and eBay" data-url="https://www.bbc.co.uk/news/articles/cmzxjvpqrjxro?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1023230/the90-gem-necklace-hands-on-impressions" data-title="The UV-tracking Gem made me rethink how sunlight affects my health, not just my appearance" data-summary="What started as a test to understand how sun exposure was aging my skin took a turn that I wasn’t expecting. With temperatures rising to the 90s in Los Angeles, avoiding the heat wasn’t exactly an option while I was at a relative’s outdoor party in August. So I sat beneath a patio umbrella with a powerful fan nearby, figuring I was protected from the sun and heat. Half an hour later, I felt exhausted, dizzy, nauseous, and generally unwell, symptoms consistent with heat exhaustion." data-source="The Verge" data-published="2026-11-07T17:00:00+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1023230/the90-gem-necklace-hands-on-impressions" target="_blank" rel="noopener">The UV-tracking Gem made me rethink how sunlight affects my health, not just my appearance</a>
+          <p class="summary">What started as a test to understand how sun exposure was aging my skin took a turn that I wasn’t expecting. With temperatures rising to the 90s in Los Angeles, avoiding the heat wasn’t exactly an option while I was at a relative’s outdoor party in August. So I sat beneath a patio umbrella with a powerful fan nearby, figuring I was protected from the sun and heat. Half an hour later, I felt exhausted, dizzy, nauseous, and generally unwell, symptoms consistent with heat exhaustion.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1023230/the90-gem-necklace-hands-on-impressions" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">7 Nov, 17:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="The UV-tracking Gem made me rethink how sunlight affects my health, not just my appearance" data-url="https://www.theverge.com/tech/1023230/the90-gem-necklace-hands-on-impressions">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/" data-title="After the midterms, things are looking rocky for Elon Musk and data centers" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Democrats’ historic victory in this week’s midterm elections could also have a dramatic effect on the tech industry. In dozens of local ballot measures, voters rejected data centers ." data-source="TechCrunch" data-published="2026-11-07T22:07:22+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/" target="_blank" rel="noopener">After the midterms, things are looking rocky for Elon Musk and data centers</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. Democrats’ historic victory in this week’s midterm elections could also have a dramatic effect on the tech industry. In dozens of local ballot measures, voters rejected data centers .</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">7 Nov, 22:07</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="After the midterms, things are looking rocky for Elon Musk and data centers" data-url="https://techcrunch.com/2026/11/07/after-the-midterms-things-are-looking-rocky-for-elon-musk-and-data-centers/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1029489/nyt-cooking-ai-assistant-review" data-title="NYT Cooking’s AI assistant saved my weeknight chicken, but almost ruined my cake" data-summary="I tested the new AI-powered tool on ingredient swaps, recipe scaling, and a missing Bundt pan. Around 7PM each weeknight, I find myself standing in front of the fridge, trying to decide on something for dinner that won’t make my husband complain, “Chicken again ?” Yes, I should meal plan more, but I don’t, so this is where I’m at. A nightly battle in which the chicken usually wins. Recently, my best weapon in this fight has been AI." data-source="The Verge" data-published="2026-11-07T15:50:00+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1029489/nyt-cooking-ai-assistant-review" target="_blank" rel="noopener">NYT Cooking’s AI assistant saved my weeknight chicken, but almost ruined my cake</a>
+          <p class="summary">I tested the new AI-powered tool on ingredient swaps, recipe scaling, and a missing Bundt pan. Around 7PM each weeknight, I find myself standing in front of the fridge, trying to decide on something for dinner that won’t make my husband complain, “Chicken again ?” Yes, I should meal plan more, but I don’t, so this is where I’m at. A nightly battle in which the chicken usually wins. Recently, my best weapon in this fight has been AI.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1029489/nyt-cooking-ai-assistant-review" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">7 Nov, 15:50</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="NYT Cooking’s AI assistant saved my weeknight chicken, but almost ruined my cake" data-url="https://www.theverge.com/tech/1029489/nyt-cooking-ai-assistant-review">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/11/07/chinese-exec-was-recruited-to-spy-on-nvidia-ceo-according-to-us-intelligence-memo/" data-title="Megaspeed exec was recruited to spy on Nvidia CEO, according to US intelligence memo" data-summary="Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. A memo circulated earlier this year claimed that technology executive Alice Huang was recruited by China’s Ministry of State Security to spy on Nvidia CEO Jensen Huang, according to multiple media reports." data-source="TechCrunch" data-published="2026-11-07T21:17:08+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/07/chinese-exec-was-recruited-to-spy-on-nvidia-ceo-according-to-us-intelligence-memo/" target="_blank" rel="noopener">Megaspeed exec was recruited to spy on Nvidia CEO, according to US intelligence memo</a>
+          <p class="summary">Buy One Founder Summit Ticket, Get a Second for Free. Register now. Founder Summit begins Nov. 4, 9:00 a.m. ET. Get your pass savings &amp; deals before it starts. REGISTER HERE. A memo circulated earlier this year claimed that technology executive Alice Huang was recruited by China’s Ministry of State Security to spy on Nvidia CEO Jensen Huang, according to multiple media reports.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/07/chinese-exec-was-recruited-to-spy-on-nvidia-ceo-according-to-us-intelligence-memo/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">7 Nov, 21:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Megaspeed exec was recruited to spy on Nvidia CEO, according to US intelligence memo" data-url="https://techcrunch.com/2026/11/07/chinese-exec-was-recruited-to-spy-on-nvidia-ceo-according-to-us-intelligence-memo/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/ai-artificial-intelligence/1029483/nvidia-ai-chips-china-blacklist-government" data-title="The US let Nvidia sell chips to an empty office in China" data-summary="Concerns are being raised that neither the Commerce Department nor Nvidia are doing their due diligence when it comes to vetting Chinese firms cleared to handle the company&#x27;s H200 AI chips. According to The New York Times, New Matrix is on the list of approved firms, yet its offices are empty, &quot;a hollow gray shell […]" data-source="The Verge" data-published="2026-11-07T15:43:45+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/ai-artificial-intelligence/1029483/nvidia-ai-chips-china-blacklist-government" target="_blank" rel="noopener">The US let Nvidia sell chips to an empty office in China</a>
+          <p class="summary">Concerns are being raised that neither the Commerce Department nor Nvidia are doing their due diligence when it comes to vetting Chinese firms cleared to handle the company&#x27;s H200 AI chips. According to The New York Times, New Matrix is on the list of approved firms, yet its offices are empty, &quot;a hollow gray shell […]</p>
+          <span class="source"><a href="https://www.theverge.com/ai-artificial-intelligence/1029483/nvidia-ai-chips-china-blacklist-government" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">7 Nov, 15:43</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="The US let Nvidia sell chips to an empty office in China" data-url="https://www.theverge.com/ai-artificial-intelligence/1029483/nvidia-ai-chips-china-blacklist-government">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.theguardian.com/media/2026/nov/08/women-abuse-media-industry-lisa-nandy-russell-brand" data-title="Women in media alleging abuse too often not protected, Lisa Nandy says" data-summary="Culture secretary says there is still a problem in media industry and across public life after Russell Brand convictionLisa Nandy, the culture secretary, has said there is still a problem with exploitation and abuse in the media industry and a failure to properly deal with allegations, after Russell Brand’s conviction for rape and sexual assault.The cabinet minister said women who came forward were too often “not protected” by institutions across public life, including in politics, and that huge power imbalances meant speaking up came at a “very heavy cost”." data-source="The Guardian" data-published="2026-11-08T13:18:50+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/media/2026/nov/08/women-abuse-media-industry-lisa-nandy-russell-brand" target="_blank" rel="noopener">Women in media alleging abuse too often not protected, Lisa Nandy says</a>
+          <p class="summary">Culture secretary says there is still a problem in media industry and across public life after Russell Brand convictionLisa Nandy, the culture secretary, has said there is still a problem with exploitation and abuse in the media industry and a failure to properly deal with allegations, after Russell Brand’s conviction for rape and sexual assault.The cabinet minister said women who came forward were too often “not protected” by institutions across public life, including in politics, and that huge power imbalances meant speaking up came at a “very heavy cost”.</p>
+          <span class="source"><a href="https://www.theguardian.com/media/2026/nov/08/women-abuse-media-industry-lisa-nandy-russell-brand" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">8 Nov, 13:18</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Women in media alleging abuse too often not protected, Lisa Nandy says" data-url="https://www.theguardian.com/media/2026/nov/08/women-abuse-media-industry-lisa-nandy-russell-brand">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmvg72p1zgvlo?at_medium=RSS&amp;at_campaign=rss" data-title="Nandy rejects claims of politicising Remembrance Sunday after Erasmus row" data-summary="Culture Secretary Lisa Nandy has rejected accusations of politicising Remembrance Sunday after being criticised for linking the event to the UK rejoining the European Union&#x27;s Erasmus scheme. Her department announced on Saturday night that &quot;as we mark Remembrance Sunday, Erasmus+ will give a new generation the chance to build connections across Europe&quot;." data-source="BBC News" data-published="2026-11-08T13:05:30+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmvg72p1zgvlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Nandy rejects claims of politicising Remembrance Sunday after Erasmus row</a>
+          <p class="summary">Culture Secretary Lisa Nandy has rejected accusations of politicising Remembrance Sunday after being criticised for linking the event to the UK rejoining the European Union&#x27;s Erasmus scheme. Her department announced on Saturday night that &quot;as we mark Remembrance Sunday, Erasmus+ will give a new generation the chance to build connections across Europe&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmvg72p1zgvlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 13:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Nandy rejects claims of politicising Remembrance Sunday after Erasmus row" data-url="https://www.bbc.co.uk/news/articles/cmvg72p1zgvlo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/technology/2026/nov/08/ai-clog-public-bodies-local-authorities-onslaught-chatbot-generated-correspondence" data-title="‘AI clog’: UK public bodies battle onslaught of chatbot-generated complaints" data-summary="MPs, local authorities, lawyers, schools and more are receiving floods of grievances, requests and legal challenges, often complex to read and respond to“It started as a trickle in 2024 and now it’s an onslaught.” Hollie Wickens, a senior caseworker in a Labour MP’s office, is explaining the daily reality of dealing with surging volumes of artificial intelligence-generated correspondence.“Half the emails we receive are some form of AI,” she says, adding that this has made requests and complaints much more complex and time-consuming to read and deal with, despite her decade of experience in the role." data-source="The Guardian" data-published="2026-11-08T08:00:36+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/technology/2026/nov/08/ai-clog-public-bodies-local-authorities-onslaught-chatbot-generated-correspondence" target="_blank" rel="noopener">‘AI clog’: UK public bodies battle onslaught of chatbot-generated complaints</a>
+          <p class="summary">MPs, local authorities, lawyers, schools and more are receiving floods of grievances, requests and legal challenges, often complex to read and respond to“It started as a trickle in 2024 and now it’s an onslaught.” Hollie Wickens, a senior caseworker in a Labour MP’s office, is explaining the daily reality of dealing with surging volumes of artificial intelligence-generated correspondence.“Half the emails we receive are some form of AI,” she says, adding that this has made requests and complaints much more complex and time-consuming to read and deal with, despite her decade of experience in the role.</p>
+          <span class="source"><a href="https://www.theguardian.com/technology/2026/nov/08/ai-clog-public-bodies-local-authorities-onslaught-chatbot-generated-correspondence" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">8 Nov, 08:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="‘AI clog’: UK public bodies battle onslaught of chatbot-generated complaints" data-url="https://www.theguardian.com/technology/2026/nov/08/ai-clog-public-bodies-local-authorities-onslaught-chatbot-generated-correspondence">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/politics/2026/nov/08/turkish-nationals-uk-indefinite-leave-to-remain-home-office-windrush" data-title="‘Windrush’ accusations over sharp rise in Turkish nationals facing removal from UK" data-summary="David Lammy among those raising concerns after errors found in rejected applications for indefinite leave to remainConcerns have been raised over the sudden rise in number of Turkish nationals facing removal from the UK as a result of mistakes, prompting accusations that the Home Office has failed to learn the lessons of the Windrush scandal.Since the start of the year, there has been a sharp rise in the number of rejected applications for indefinite leave to remain for those on European Community Association Agreement (ECAA) visas, a longstanding route to residency for Turkish nationals seeking to set up a business in the UK." data-source="The Guardian" data-published="2026-11-08T07:00:33+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/2026/nov/08/turkish-nationals-uk-indefinite-leave-to-remain-home-office-windrush" target="_blank" rel="noopener">‘Windrush’ accusations over sharp rise in Turkish nationals facing removal from UK</a>
+          <p class="summary">David Lammy among those raising concerns after errors found in rejected applications for indefinite leave to remainConcerns have been raised over the sudden rise in number of Turkish nationals facing removal from the UK as a result of mistakes, prompting accusations that the Home Office has failed to learn the lessons of the Windrush scandal.Since the start of the year, there has been a sharp rise in the number of rejected applications for indefinite leave to remain for those on European Community Association Agreement (ECAA) visas, a longstanding route to residency for Turkish nationals seeking to set up a business in the UK.</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/2026/nov/08/turkish-nationals-uk-indefinite-leave-to-remain-home-office-windrush" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">8 Nov, 07:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="‘Windrush’ accusations over sharp rise in Turkish nationals facing removal from UK" data-url="https://www.theguardian.com/politics/2026/nov/08/turkish-nationals-uk-indefinite-leave-to-remain-home-office-windrush">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.aljazeera.com/news/2026/11/8/could-iraqs-kurdish-region-return-to-two-separate-administrations?traffic_source=rss" data-title="Could Iraq’s Kurdish region return to two separate administrations?" data-summary="Disagreements between the Kurdistan Democratic Party (KDP) and the Patriotic Union of Kurdistan (PUK) over the formation of a new government have led to the threat of two rival administrations emerging in the Kurdish region of northern Iraq, analysts say." data-source="Al Jazeera" data-published="2026-11-08T13:06:28+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/news/2026/11/8/could-iraqs-kurdish-region-return-to-two-separate-administrations?traffic_source=rss" target="_blank" rel="noopener">Could Iraq’s Kurdish region return to two separate administrations?</a>
+          <p class="summary">Disagreements between the Kurdistan Democratic Party (KDP) and the Patriotic Union of Kurdistan (PUK) over the formation of a new government have led to the threat of two rival administrations emerging in the Kurdish region of northern Iraq, analysts say.</p>
+          <span class="source"><a href="https://www.aljazeera.com/news/2026/11/8/could-iraqs-kurdish-region-return-to-two-separate-administrations?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">8 Nov, 13:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Could Iraq’s Kurdish region return to two separate administrations?" data-url="https://www.aljazeera.com/news/2026/11/8/could-iraqs-kurdish-region-return-to-two-separate-administrations?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/uk-news/2026/nov/08/second-world-war-veterans-outnumber-former-pms-for-possible-last-time-on-remembrance-sunday" data-title="Second world war veterans outnumber former PMs for possible last time on Remembrance Sunday" data-summary="Andy Burnham takes part for first time alongside eight ex-premiers as 12 veterans participate in ceremony Second world war veterans outnumbered former prime ministers for what could be the last time at the national service of remembrance at the Cenotaph in central London. The number of veterans from that conflict has dwindled to about a dozen, the oldest of whom was Jeffrey Brereton who served in the RAF." data-source="The Guardian" data-published="2026-11-08T13:05:13+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/uk-news/2026/nov/08/second-world-war-veterans-outnumber-former-pms-for-possible-last-time-on-remembrance-sunday" target="_blank" rel="noopener">Second world war veterans outnumber former PMs for possible last time on Remembrance Sunday</a>
+          <p class="summary">Andy Burnham takes part for first time alongside eight ex-premiers as 12 veterans participate in ceremony Second world war veterans outnumbered former prime ministers for what could be the last time at the national service of remembrance at the Cenotaph in central London. The number of veterans from that conflict has dwindled to about a dozen, the oldest of whom was Jeffrey Brereton who served in the RAF.</p>
+          <span class="source"><a href="https://www.theguardian.com/uk-news/2026/nov/08/second-world-war-veterans-outnumber-former-pms-for-possible-last-time-on-remembrance-sunday" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">8 Nov, 13:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Second world war veterans outnumber former PMs for possible last time on Remembrance Sunday" data-url="https://www.theguardian.com/uk-news/2026/nov/08/second-world-war-veterans-outnumber-former-pms-for-possible-last-time-on-remembrance-sunday">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmd7q15drwgeo?at_medium=RSS&amp;at_campaign=rss" data-title="What we know so far after Krakow gun attack" data-summary="At least six people were killed and more than a dozen others injured when a gunman suspected to have ties to the far-right opened fire in central Krakow, the second largest city in Poland. Three bodies were found at his home when it was searched by police. Here is everything we know so far. The attack began shortly before 15:00 local time (14:00 GMT) in Krakow&#x27;s Main Market Square, the bustling central point of the city which is popular with tourists." data-source="BBC News" data-published="2026-11-08T11:22:17+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmd7q15drwgeo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">What we know so far after Krakow gun attack</a>
+          <p class="summary">At least six people were killed and more than a dozen others injured when a gunman suspected to have ties to the far-right opened fire in central Krakow, the second largest city in Poland. Three bodies were found at his home when it was searched by police. Here is everything we know so far. The attack began shortly before 15:00 local time (14:00 GMT) in Krakow&#x27;s Main Market Square, the bustling central point of the city which is popular with tourists.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmd7q15drwgeo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 11:22</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="What we know so far after Krakow gun attack" data-url="https://www.bbc.co.uk/news/articles/cmd7q15drwgeo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/news/2026/11/8/poland-mourns-six-killed-in-attack-as-authorities-launch-terrorism-probe?traffic_source=rss" data-title="Poland mourns six killed in attack as authorities launch ‘terrorism’ probe" data-summary="Poland has begun two days of national mourning after an armed man killed six people in central Krakow, as the national prosecutor’s office opened a “terrorism” investigation. The 24-year-old Polish suspect opened fire on Saturday in the heart of Krakow’s historic city centre. A British national was among those killed, according to police, and nationals from Austria, Britain, Germany, Portugal and Russia were among the 15 wounded, authorities told the PAP news agency." data-source="Al Jazeera" data-published="2026-11-08T12:40:12+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/news/2026/11/8/poland-mourns-six-killed-in-attack-as-authorities-launch-terrorism-probe?traffic_source=rss" target="_blank" rel="noopener">Poland mourns six killed in attack as authorities launch ‘terrorism’ probe</a>
+          <p class="summary">Poland has begun two days of national mourning after an armed man killed six people in central Krakow, as the national prosecutor’s office opened a “terrorism” investigation. The 24-year-old Polish suspect opened fire on Saturday in the heart of Krakow’s historic city centre. A British national was among those killed, according to police, and nationals from Austria, Britain, Germany, Portugal and Russia were among the 15 wounded, authorities told the PAP news agency.</p>
+          <span class="source"><a href="https://www.aljazeera.com/news/2026/11/8/poland-mourns-six-killed-in-attack-as-authorities-launch-terrorism-probe?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">8 Nov, 12:40</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Poland mourns six killed in attack as authorities launch ‘terrorism’ probe" data-url="https://www.aljazeera.com/news/2026/11/8/poland-mourns-six-killed-in-attack-as-authorities-launch-terrorism-probe?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261104084024.htm" data-title="A 24-hour fast triggers a surprising repair response in the gut" data-summary="A 24-hour fast may help prepare the intestines to recover from radiation damage, but scientists have discovered that a particular gut bacterium plays a crucial role in making this possible. New preclinical research from The University of Texas MD Anderson Cancer Center reveals how fasting and beneficial microbes work together to activate the body&#x27;s natural tissue repair mechanisms. The findings could eventually lead to new ways to protect healthy tissue during cancer treatment." data-source="ScienceDaily" data-published="2026-11-08T11:06:30+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261104084024.htm" target="_blank" rel="noopener">A 24-hour fast triggers a surprising repair response in the gut</a>
+          <p class="summary">A 24-hour fast may help prepare the intestines to recover from radiation damage, but scientists have discovered that a particular gut bacterium plays a crucial role in making this possible. New preclinical research from The University of Texas MD Anderson Cancer Center reveals how fasting and beneficial microbes work together to activate the body&#x27;s natural tissue repair mechanisms. The findings could eventually lead to new ways to protect healthy tissue during cancer treatment.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261104084024.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">8 Nov, 11:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="A 24-hour fast triggers a surprising repair response in the gut" data-url="https://www.sciencedaily.com/releases/2026/11/261104084024.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/2026/11/08/heart-drug-failures-lessons-for-artificial-intelligence-from-aha-conference/?utm_campaign=rss" data-title="STAT+: Why the latest heart drug failures should make us all more skeptical of AI hype" data-summary="Once again, a hot new technology that was supposed to speed up drug research has fallen flat." data-source="STAT News" data-published="2026-11-08T09:30:00+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/08/heart-drug-failures-lessons-for-artificial-intelligence-from-aha-conference/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Why the latest heart drug failures should make us all more skeptical of AI hype</a>
+          <p class="summary">Once again, a hot new technology that was supposed to speed up drug research has fallen flat.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/08/heart-drug-failures-lessons-for-artificial-intelligence-from-aha-conference/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">8 Nov, 09:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: Why the latest heart drug failures should make us all more skeptical of AI hype" data-url="https://www.statnews.com/2026/11/08/heart-drug-failures-lessons-for-artificial-intelligence-from-aha-conference/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/ckr5y8ze8me7o?at_medium=RSS&amp;at_campaign=rss" data-title="&#x27;Cancer treatment plummeted me into menopause&#x27;" data-summary="When Jo Menneer was diagnosed with breast cancer, she knew undergoing treatment would be a difficult process. What she did not anticipate was the challenge of navigating the menopause afterwards. Before her diagnosis in 2022, Jo, now 55, from East Yorkshire, had been taking hormonal replacement therapy (HRT) to manage the menopause. Part of her treatment included surgery, which meant she had to stop taking HRT, and is still unable to use it." data-source="BBC News" data-published="2026-11-08T09:17:32+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/ckr5y8ze8me7o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">&#x27;Cancer treatment plummeted me into menopause&#x27;</a>
+          <p class="summary">When Jo Menneer was diagnosed with breast cancer, she knew undergoing treatment would be a difficult process. What she did not anticipate was the challenge of navigating the menopause afterwards. Before her diagnosis in 2022, Jo, now 55, from East Yorkshire, had been taking hormonal replacement therapy (HRT) to manage the menopause. Part of her treatment included surgery, which meant she had to stop taking HRT, and is still unable to use it.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/ckr5y8ze8me7o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 09:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&#x27;Cancer treatment plummeted me into menopause&#x27;" data-url="https://www.bbc.co.uk/news/articles/ckr5y8ze8me7o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261104084015.htm" data-title="MIT scientists turn immune cells into cancer killers inside the body" data-summary="MIT researchers have developed a new technique that allows them to transform immune cells into cancer fighters directly inside the body, potentially making advanced treatments for cancer and autoimmune diseases much easier to produce and administer. The method focuses on natural killer (NK) cells, a type of immune cell that can be engineered to recognize and destroy harmful cells." data-source="ScienceDaily" data-published="2026-11-08T10:52:31+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261104084015.htm" target="_blank" rel="noopener">MIT scientists turn immune cells into cancer killers inside the body</a>
+          <p class="summary">MIT researchers have developed a new technique that allows them to transform immune cells into cancer fighters directly inside the body, potentially making advanced treatments for cancer and autoimmune diseases much easier to produce and administer. The method focuses on natural killer (NK) cells, a type of immune cell that can be engineered to recognize and destroy harmful cells.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261104084015.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">8 Nov, 10:52</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="MIT scientists turn immune cells into cancer killers inside the body" data-url="https://www.sciencedaily.com/releases/2026/11/261104084015.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561869.html?ex_cid=OTC-RSS" data-title="India A include Badoni for Rising Stars Asia Cup after Patidar opts out" data-summary="Rajat Patidar asked the BCCI to be released from the India A squad to manage &quot;existing injuries&quot;" data-source="ESPNcricinfo" data-published="2026-11-08T12:23:27+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561869.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">India A include Badoni for Rising Stars Asia Cup after Patidar opts out</a>
+          <p class="summary">Rajat Patidar asked the BCCI to be released from the India A squad to manage &quot;existing injuries&quot;</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561869.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">8 Nov, 12:23</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="India A include Badoni for Rising Stars Asia Cup after Patidar opts out" data-url="https://www.cricinfo.com/ci/content/story/1561869.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <p class="no-story">No qualifying story in the last 24 hours.</p>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561911.html?ex_cid=OTC-RSS" data-title="Kavem Hodge: There is a belief and shared mindset among WI batters" data-summary="Kavem Hodge scored his third Test century in Sylhet and ascribed his team&#x27;s collective rise in batting form as down to belief and camaraderie within the set-up" data-source="ESPNcricinfo" data-published="2026-11-08T13:25:17+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561911.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Kavem Hodge: There is a belief and shared mindset among WI batters</a>
+          <p class="summary">Kavem Hodge scored his third Test century in Sylhet and ascribed his team&#x27;s collective rise in batting form as down to belief and camaraderie within the set-up</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561911.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">8 Nov, 13:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Kavem Hodge: There is a belief and shared mindset among WI batters" data-url="https://www.cricinfo.com/ci/content/story/1561911.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561909.html?ex_cid=OTC-RSS" data-title="Pakistan and Sri Lanka begin their search for a way forward in Tests" data-summary="Neither side has had much to celebrate of late in Tests, but these games promise to be an absorbing strategic battle" data-source="ESPNcricinfo" data-published="2026-11-08T13:13:11+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561909.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Pakistan and Sri Lanka begin their search for a way forward in Tests</a>
+          <p class="summary">Neither side has had much to celebrate of late in Tests, but these games promise to be an absorbing strategic battle</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561909.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">8 Nov, 13:13</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Pakistan and Sri Lanka begin their search for a way forward in Tests" data-url="https://www.cricinfo.com/ci/content/story/1561909.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561857.html?ex_cid=OTC-RSS" data-title="Hodge 140* puts West Indies in command" data-summary="West Indies stretched their lead to 315 and are firmly in control of the Test" data-source="ESPNcricinfo" data-published="2026-11-08T11:11:27+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561857.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Hodge 140* puts West Indies in command</a>
+          <p class="summary">West Indies stretched their lead to 315 and are firmly in control of the Test</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561857.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">8 Nov, 11:11</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hodge 140* puts West Indies in command" data-url="https://www.cricinfo.com/ci/content/story/1561857.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1561879.html?ex_cid=OTC-RSS" data-title="Kusal Mendis: &#x27;I have no doubt in my batting line-up&#x27;" data-summary="&quot;Overall, we&#x27;re in a very good path,&quot; new Sri Lanka Test captain Kusal Mendis says ahead of the first Test in Pakistan" data-source="ESPNcricinfo" data-published="2026-11-08T10:08:09+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1561879.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Kusal Mendis: &#x27;I have no doubt in my batting line-up&#x27;</a>
+          <p class="summary">&quot;Overall, we&#x27;re in a very good path,&quot; new Sri Lanka Test captain Kusal Mendis says ahead of the first Test in Pakistan</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1561879.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">8 Nov, 10:08</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Kusal Mendis: &#x27;I have no doubt in my batting line-up&#x27;" data-url="https://www.cricinfo.com/ci/content/story/1561879.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.skysports.com/golf/news/12040/13609669/abu-dhabi-championship-jon-rahm-beats-tyrrell-hatton-rory-mcilroy-to-rolex-series-win-and-boosts-race-to-dubai-hopes" data-title="Rahm holds off Hatton and McIlroy for Rolex Series win in Abu Dhabi" data-summary="Rory McIlroy moved above Patrick Reed to second in the Race to Dubai standings; McIlroy finished four strokes behind Jon Rahm, who claimed a two-shot win over Tyrrell Hatton on his Abu Dhabi Aldar Championship debut Jon Rahm held off former LIV Golf team-mate Tyrrell Hatton and Masters champion Rory McIlroy to claim an two-shot victory at the Abu Dhabi Aldar Championship." data-source="Sky Sports" data-published="2026-11-08T12:48:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/golf/news/12040/13609669/abu-dhabi-championship-jon-rahm-beats-tyrrell-hatton-rory-mcilroy-to-rolex-series-win-and-boosts-race-to-dubai-hopes" target="_blank" rel="noopener">Rahm holds off Hatton and McIlroy for Rolex Series win in Abu Dhabi</a>
+          <p class="summary">Rory McIlroy moved above Patrick Reed to second in the Race to Dubai standings; McIlroy finished four strokes behind Jon Rahm, who claimed a two-shot win over Tyrrell Hatton on his Abu Dhabi Aldar Championship debut Jon Rahm held off former LIV Golf team-mate Tyrrell Hatton and Masters champion Rory McIlroy to claim an two-shot victory at the Abu Dhabi Aldar Championship.</p>
+          <span class="source"><a href="https://www.skysports.com/golf/news/12040/13609669/abu-dhabi-championship-jon-rahm-beats-tyrrell-hatton-rory-mcilroy-to-rolex-series-win-and-boosts-race-to-dubai-hopes" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">8 Nov, 12:48</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rahm holds off Hatton and McIlroy for Rolex Series win in Abu Dhabi" data-url="https://www.skysports.com/golf/news/12040/13609669/abu-dhabi-championship-jon-rahm-beats-tyrrell-hatton-rory-mcilroy-to-rolex-series-win-and-boosts-race-to-dubai-hopes">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/rugby-league/articles/c6vg02klk084o?at_medium=RSS&amp;at_campaign=rss" data-title="Australia reach World Cup final after Fiji scare" data-summary="Tries: Church 4, Upton, Chapman Goals: Kelleher 3 Tries: Yaranamua, Paseka Goals: Yaranamua 3 Australia have reached their fifth successive Women&#x27;s Rugby League World Cup final as they seek a fourth consecutive title - but they were made to work harder than anyone expected. They had breezed through the group stages and there looked to be little to stop the procession. But World Cup debutants Fiji had other ideas." data-source="BBC News" data-published="2026-11-08T12:39:01+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/rugby-league/articles/c6vg02klk084o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Australia reach World Cup final after Fiji scare</a>
+          <p class="summary">Tries: Church 4, Upton, Chapman Goals: Kelleher 3 Tries: Yaranamua, Paseka Goals: Yaranamua 3 Australia have reached their fifth successive Women&#x27;s Rugby League World Cup final as they seek a fourth consecutive title - but they were made to work harder than anyone expected. They had breezed through the group stages and there looked to be little to stop the procession. But World Cup debutants Fiji had other ideas.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/rugby-league/articles/c6vg02klk084o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 12:39</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Australia reach World Cup final after Fiji scare" data-url="https://www.bbc.co.uk/sport/rugby-league/articles/c6vg02klk084o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/football/sunderland-vs-chelsea/live/559543" data-title="Henderson returns for Chelsea to face former side Sunderland LIVE!" data-summary="Sunderland
+                          vs Chelsea. Premier League. Sorry, this blog is currently unavailable. Please try again later." data-source="Sky Sports" data-published="2026-11-08T12:33:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/football/sunderland-vs-chelsea/live/559543" target="_blank" rel="noopener">Henderson returns for Chelsea to face former side Sunderland LIVE!</a>
+          <p class="summary">Sunderland
+                          vs Chelsea. Premier League. Sorry, this blog is currently unavailable. Please try again later.</p>
+          <span class="source"><a href="https://www.skysports.com/football/sunderland-vs-chelsea/live/559543" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">8 Nov, 12:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Henderson returns for Chelsea to face former side Sunderland LIVE!" data-url="https://www.skysports.com/football/sunderland-vs-chelsea/live/559543">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cmq8nl4w3e8eo?at_medium=RSS&amp;at_campaign=rss" data-title="Last season difficult with injury and miscarriage - Muniz" data-summary="Fulham striker Rodrigo Muniz has spoken of the struggles he endured last season, revealing his wife suffered a miscarriage. Muniz scored the equaliser for the Cottagers in a 1-1 draw against Newcastle United on Saturday for his first league goal since their opening top-flight match of last season." data-source="BBC News" data-published="2026-11-08T11:56:01+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cmq8nl4w3e8eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Last season difficult with injury and miscarriage - Muniz</a>
+          <p class="summary">Fulham striker Rodrigo Muniz has spoken of the struggles he endured last season, revealing his wife suffered a miscarriage. Muniz scored the equaliser for the Cottagers in a 1-1 draw against Newcastle United on Saturday for his first league goal since their opening top-flight match of last season.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cmq8nl4w3e8eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">8 Nov, 11:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Last season difficult with injury and miscarriage - Muniz" data-url="https://www.bbc.co.uk/sport/football/articles/cmq8nl4w3e8eo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/rest-of-world/australia-planned-to-sell-67-military-sites-to-raise-1-8-billion-but-public-protests-over-sydneys-166-year-old-victoria-barracks-prompted-a-november-8-reversal-that-will-keep-four-historic-sites-publicly-owned/articleshow/135659211.cms" data-title="Australia reverses military land sale plans after protests, saving four historic sites" data-summary="The Australian government has opted to retain four significant historical military sites in public hands, responding to widespread public dissent against their potential sale. Notably, Victoria Barracks in Sydney and other sites in Victoria will remain untouched. The government aims to find new public purposes for these locations while preserving their heritage, and part of the broader reforms includes returning certain military lands to Indigenous communities." data-source="Times of India" data-published="2026-11-08T13:21:37+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/rest-of-world/australia-planned-to-sell-67-military-sites-to-raise-1-8-billion-but-public-protests-over-sydneys-166-year-old-victoria-barracks-prompted-a-november-8-reversal-that-will-keep-four-historic-sites-publicly-owned/articleshow/135659211.cms" target="_blank" rel="noopener">Australia reverses military land sale plans after protests, saving four historic sites</a>
+          <p class="summary">The Australian government has opted to retain four significant historical military sites in public hands, responding to widespread public dissent against their potential sale. Notably, Victoria Barracks in Sydney and other sites in Victoria will remain untouched. The government aims to find new public purposes for these locations while preserving their heritage, and part of the broader reforms includes returning certain military lands to Indigenous communities.</p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/rest-of-world/australia-planned-to-sell-67-military-sites-to-raise-1-8-billion-but-public-protests-over-sydneys-166-year-old-victoria-barracks-prompted-a-november-8-reversal-that-will-keep-four-historic-sites-publicly-owned/articleshow/135659211.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">8 Nov, 13:21</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Australia reverses military land sale plans after protests, saving four historic sites" data-url="https://timesofindia.indiatimes.com/world/rest-of-world/australia-planned-to-sell-67-military-sites-to-raise-1-8-billion-but-public-protests-over-sydneys-166-year-old-victoria-barracks-prompted-a-november-8-reversal-that-will-keep-four-historic-sites-publicly-owned/articleshow/135659211.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/wanted-in-over-30-heinous-criminal-cases-carried-5-lakh-reward-punjab-gangster-gurwinder-alias-afridi-brought-back-to-india-101794140093310.html" data-title="Wanted in over 30 heinous criminal cases, carried ₹5 lakh reward: Punjab gangster Gurwinder alias Afridi brought back to India" data-summary="Gangster Gurwinder alias Afridi, wanted in more than 30 heinous criminal cases, was brought to India from Ethiopia by the Punjab Police on Sunday. Police sources told HT that this was the first time the Punjab Police had secured the return of a fugitive from an African country. Afridi, a resident of Tut village in Tarn Taran district, carried a ₹ 5 lakh reward announced by the Punjab government." data-source="Hindustan Times" data-published="2026-11-08T12:32:23+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/wanted-in-over-30-heinous-criminal-cases-carried-5-lakh-reward-punjab-gangster-gurwinder-alias-afridi-brought-back-to-india-101794140093310.html" target="_blank" rel="noopener">Wanted in over 30 heinous criminal cases, carried ₹5 lakh reward: Punjab gangster Gurwinder alias Afridi brought back to India</a>
+          <p class="summary">Gangster Gurwinder alias Afridi, wanted in more than 30 heinous criminal cases, was brought to India from Ethiopia by the Punjab Police on Sunday. Police sources told HT that this was the first time the Punjab Police had secured the return of a fugitive from an African country. Afridi, a resident of Tut village in Tarn Taran district, carried a ₹ 5 lakh reward announced by the Punjab government.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/wanted-in-over-30-heinous-criminal-cases-carried-5-lakh-reward-punjab-gangster-gurwinder-alias-afridi-brought-back-to-india-101794140093310.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">8 Nov, 12:32</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Wanted in over 30 heinous criminal cases, carried ₹5 lakh reward: Punjab gangster Gurwinder alias Afridi brought back to India" data-url="https://www.hindustantimes.com/india-news/wanted-in-over-30-heinous-criminal-cases-carried-5-lakh-reward-punjab-gangster-gurwinder-alias-afridi-brought-back-to-india-101794140093310.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/rest-of-world/at-least-21-dead-after-migrant-boat-sinks-off-senegals-northwestern-coast/articleshow/135659201.cms" data-title="At least 21 dead after migrant boat sinks off Senegal&#x27;s northwestern coast" data-summary="" data-source="Times of India" data-published="2026-11-08T12:46:51+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/rest-of-world/at-least-21-dead-after-migrant-boat-sinks-off-senegals-northwestern-coast/articleshow/135659201.cms" target="_blank" rel="noopener">At least 21 dead after migrant boat sinks off Senegal&#x27;s northwestern coast</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/rest-of-world/at-least-21-dead-after-migrant-boat-sinks-off-senegals-northwestern-coast/articleshow/135659201.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">8 Nov, 12:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="At least 21 dead after migrant boat sinks off Senegal&#x27;s northwestern coast" data-url="https://timesofindia.indiatimes.com/world/rest-of-world/at-least-21-dead-after-migrant-boat-sinks-off-senegals-northwestern-coast/articleshow/135659201.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/one-child-dead-269-treated-for-burn-injuries-in-tn-during-deepavali-101794140352435.html" data-title="One child dead, 269 treated for burn injuries in TN during Deepavali" data-summary="Chennai, One child succumbed to burn injuries, and 269 people were treated for firecracker-related burns across Tamil Nadu during the Deepavali festivities, according to official data tracking emergencies over a 24-hour window. As per the official bulletin, the state 108 emergency ambulance network received 16,079 calls between 7 am on November 7 and 7 am on November 8. Of the total distress calls, 2,475 were related to accidents, 396 for minor injuries, and 98 specifically for burn injuries." data-source="Hindustan Times" data-published="2026-11-08T12:19:12+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/one-child-dead-269-treated-for-burn-injuries-in-tn-during-deepavali-101794140352435.html" target="_blank" rel="noopener">One child dead, 269 treated for burn injuries in TN during Deepavali</a>
+          <p class="summary">Chennai, One child succumbed to burn injuries, and 269 people were treated for firecracker-related burns across Tamil Nadu during the Deepavali festivities, according to official data tracking emergencies over a 24-hour window. As per the official bulletin, the state 108 emergency ambulance network received 16,079 calls between 7 am on November 7 and 7 am on November 8. Of the total distress calls, 2,475 were related to accidents, 396 for minor injuries, and 98 specifically for burn injuries.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/one-child-dead-269-treated-for-burn-injuries-in-tn-during-deepavali-101794140352435.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">8 Nov, 12:19</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="One child dead, 269 treated for burn injuries in TN during Deepavali" data-url="https://www.hindustantimes.com/india-news/one-child-dead-269-treated-for-burn-injuries-in-tn-during-deepavali-101794140352435.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
