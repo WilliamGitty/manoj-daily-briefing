@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Tuesday, 10 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Tuesday, 10 November 2026, Updated as of 14:56 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-10.html" selected>Tuesday, 10 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-09.html">Monday, 09 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-08.html">Sunday, 08 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-07.html">Saturday, 07 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-06.html">Friday, 06 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-05.html">Thursday, 05 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-04.html">Wednesday, 04 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-03.html">Tuesday, 03 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-02.html">Monday, 02 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-01.html">Sunday, 01 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-31.html">Saturday, 31 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-30.html">Friday, 30 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-29.html">Thursday, 29 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-28.html">Wednesday, 28 October 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-10-27.html">Tuesday, 27 October 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOc3ZUV21jNWUtd2k2QzM2NTdSeENYc1FRLUFPMWczWmZ0bDdaVjkwdGFWMUVTS1E1MjNxaUpjc3lDZ0FmOGc5Tk0yNlFCRUp6QUZxUVRqYVhJNHlVNGJPT1hPaHdVVVJXYjRfRjd0MV9KUDAyOF9OSE1kdm9RZ0RnbHhwNmswRklYS1lVYWJFWm9ET1QwTk5Dcks2OG9Ham9hQjYzOGNlZDcyY081WXB5QzVTemdMeWd0aW0xTg?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener - Sportskeeda</span>
+      </a>
+      <a class="pick" href="https://www.hindustantimes.com/india-news/india-exchanges-ideas-on-food-corridors-with-russia-ukraine-101794322282208.html" target="_blank" rel="noopener">
+        <span class="pick-topic">India News</span>
+        <span class="pick-headline">India exchanges ideas on ‘food corridors’ with Russia, Ukraine</span>
+      </a>
+      <a class="pick" href="https://www.bbc.co.uk/news/articles/crpdgd723x2zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">
+        <span class="pick-topic">Tech</span>
+        <span class="pick-headline">Anthropic heads for lower than expected $1.3 trillion valuation in stock market debut</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/crpdgd723x2zo?at_medium=RSS&amp;at_campaign=rss" data-title="Anthropic heads for lower than expected $1.3 trillion valuation in stock market debut" data-summary="Anthropic, the AI company behind the Claude chatbot, could be valued at around $1.3 trillion (Â£1 trillion) when it lists its shares for sale on New York&#x27;s Nasdaq stock exchange. The loss-making company says it will offer its shares for between $70 and $78 each and will raise up to $64bn when it floats this month. It would value Anthropic at between $1.1tn and $1.3tn which, although large, is below the $2tn some backers of the firm predicted in summer, according to the Financial Times." data-source="BBC News" data-published="2026-11-10T14:46:50+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/crpdgd723x2zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Anthropic heads for lower than expected $1.3 trillion valuation in stock market debut</a>
+          <p class="summary">Anthropic, the AI company behind the Claude chatbot, could be valued at around $1.3 trillion (Â£1 trillion) when it lists its shares for sale on New York&#x27;s Nasdaq stock exchange. The loss-making company says it will offer its shares for between $70 and $78 each and will raise up to $64bn when it floats this month. It would value Anthropic at between $1.1tn and $1.3tn which, although large, is below the $2tn some backers of the firm predicted in summer, according to the Financial Times.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/crpdgd723x2zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Anthropic heads for lower than expected $1.3 trillion valuation in stock market debut" data-url="https://www.bbc.co.uk/news/articles/crpdgd723x2zo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/news/1030714/gta-vi-xbox-cloud-gaming-support" data-title="GTA VI will be available on Xbox Cloud Gaming for Xbox One consoles" data-summary="Rockstar Games confirms GTA VI will run at 30fps across all consoles. Rockstar Games is making Grand Theft Auto VI available on Xbox Cloud Gaming when it launches next week. While you’d normally assume that would mean Grand Theft Auto VI would be available to stream on PCs, the web, Xbox consoles, and even TVs, it appears to be restricted to just Xbox Series X / S and Xbox One consoles." data-source="The Verge" data-published="2026-11-10T14:37:09+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/news/1030714/gta-vi-xbox-cloud-gaming-support" target="_blank" rel="noopener">GTA VI will be available on Xbox Cloud Gaming for Xbox One consoles</a>
+          <p class="summary">Rockstar Games confirms GTA VI will run at 30fps across all consoles. Rockstar Games is making Grand Theft Auto VI available on Xbox Cloud Gaming when it launches next week. While you’d normally assume that would mean Grand Theft Auto VI would be available to stream on PCs, the web, Xbox consoles, and even TVs, it appears to be restricted to just Xbox Series X / S and Xbox One consoles.</p>
+          <span class="source"><a href="https://www.theverge.com/news/1030714/gta-vi-xbox-cloud-gaming-support" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">10 Nov, 14:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="GTA VI will be available on Xbox Cloud Gaming for Xbox One consoles" data-url="https://www.theverge.com/news/1030714/gta-vi-xbox-cloud-gaming-support">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/gadgets/2026/11/ukraines-fiber-optic-drones-get-squeezed-by-ai-data-center-demand/" data-title="Ukraine’s fiber-optic drones get squeezed by AI data center demand" data-summary="Impervious to battlefield jamming, drones physically connected to human operators by miles of fiber-optic cables have become such a common weapon of war in Ukraine that trees and fields are strewn with tangled cables thinner than fishing lines. But importing such fiber-optic material from China has become more costly as drone warfare’s needs compete with global demand from AI data centers for the same limited supply—and so Ukrainian drone makers have been adapting." data-source="Ars Technica" data-published="2026-11-10T12:15:32+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/gadgets/2026/11/ukraines-fiber-optic-drones-get-squeezed-by-ai-data-center-demand/" target="_blank" rel="noopener">Ukraine’s fiber-optic drones get squeezed by AI data center demand</a>
+          <p class="summary">Impervious to battlefield jamming, drones physically connected to human operators by miles of fiber-optic cables have become such a common weapon of war in Ukraine that trees and fields are strewn with tangled cables thinner than fishing lines. But importing such fiber-optic material from China has become more costly as drone warfare’s needs compete with global demand from AI data centers for the same limited supply—and so Ukrainian drone makers have been adapting.</p>
+          <span class="source"><a href="https://arstechnica.com/gadgets/2026/11/ukraines-fiber-optic-drones-get-squeezed-by-ai-data-center-demand/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">10 Nov, 12:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ukraine’s fiber-optic drones get squeezed by AI data center demand" data-url="https://arstechnica.com/gadgets/2026/11/ukraines-fiber-optic-drones-get-squeezed-by-ai-data-center-demand/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c64g1gzy2vdzo?at_medium=RSS&amp;at_campaign=rss" data-title="Faisal Islam: What the boss of US tech giant Nvidia told me about China and national security" data-summary="Jensen Huang has the air of the late Steve Jobs about him. I have interviewed both, and the up-close charisma - and occasionally scratchy genius - is shared. Both sported a signature item of black clothing, although Huang opts for a leather jacket rather than the Apple founder&#x27;s turtle neck. Both are innovators revered in the tech world. However, Huang is now being investigated over an affair with an alleged Chinese spy ." data-source="BBC News" data-published="2026-11-10T09:23:55+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c64g1gzy2vdzo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Faisal Islam: What the boss of US tech giant Nvidia told me about China and national security</a>
+          <p class="summary">Jensen Huang has the air of the late Steve Jobs about him. I have interviewed both, and the up-close charisma - and occasionally scratchy genius - is shared. Both sported a signature item of black clothing, although Huang opts for a leather jacket rather than the Apple founder&#x27;s turtle neck. Both are innovators revered in the tech world. However, Huang is now being investigated over an affair with an alleged Chinese spy .</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c64g1gzy2vdzo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 09:23</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Faisal Islam: What the boss of US tech giant Nvidia told me about China and national security" data-url="https://www.bbc.co.uk/news/articles/c64g1gzy2vdzo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://www.zdnet.com/home-and-office/third-party-app-developers-siri-ai-integration/" data-title="5 apps I need Siri AI to work with now that it’s open to third-party developers" data-summary="One of the many benefits of the new Siri AI is its ability to work directly with apps on your device via a feature known as App Intents. Currently, this skill includes many of Apple’s own built-in apps and some third-party ones. But with the latest public and developer betas for iOS 27.3, the company is expanding support to all third-party developers . Also: Ready for a Siri AI agent?" data-source="ZDNet" data-published="2026-11-10T14:38:36+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.zdnet.com/home-and-office/third-party-app-developers-siri-ai-integration/" target="_blank" rel="noopener">5 apps I need Siri AI to work with now that it’s open to third-party developers</a>
+          <p class="summary">One of the many benefits of the new Siri AI is its ability to work directly with apps on your device via a feature known as App Intents. Currently, this skill includes many of Apple’s own built-in apps and some third-party ones. But with the latest public and developer betas for iOS 27.3, the company is expanding support to all third-party developers . Also: Ready for a Siri AI agent?</p>
+          <span class="source"><a href="https://www.zdnet.com/home-and-office/third-party-app-developers-siri-ai-integration/" target="_blank" rel="noopener">ZDNet</a> &middot; <span class="pubdate">10 Nov, 14:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="5 apps I need Siri AI to work with now that it’s open to third-party developers" data-url="https://www.zdnet.com/home-and-office/third-party-app-developers-siri-ai-integration/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/ai-artificial-intelligence/1030703/anthropic-ipo-1-4-trillion" data-title="Anthropic targets $1.4 trillion IPO" data-summary="Anthropic’s public offering is expected to make it one of the world’s most valuable publicly traded companies as soon as next week. Anthropic confirmed on Tuesday that its IPO could be one of the biggest ever, even while falling short of previous expectations. Its IPO price is expected to be between $70.00 and $78.00 per share, which would put its valuation as high as $1.4 trillion, according to the New York Times ." data-source="The Verge" data-published="2026-11-10T14:06:54+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/ai-artificial-intelligence/1030703/anthropic-ipo-1-4-trillion" target="_blank" rel="noopener">Anthropic targets $1.4 trillion IPO</a>
+          <p class="summary">Anthropic’s public offering is expected to make it one of the world’s most valuable publicly traded companies as soon as next week. Anthropic confirmed on Tuesday that its IPO could be one of the biggest ever, even while falling short of previous expectations. Its IPO price is expected to be between $70.00 and $78.00 per share, which would put its valuation as high as $1.4 trillion, according to the New York Times .</p>
+          <span class="source"><a href="https://www.theverge.com/ai-artificial-intelligence/1030703/anthropic-ipo-1-4-trillion" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">10 Nov, 14:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Anthropic targets $1.4 trillion IPO" data-url="https://www.theverge.com/ai-artificial-intelligence/1030703/anthropic-ipo-1-4-trillion">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp/" data-title="Adobe brings AI agents and new creative tools to Photoshop, Premiere, and Firefly" data-summary="Adobe is pouring more AI into its products, including Photoshop, Premiere, Illustrator, and InDesign, in a major product feature announcement at its MAX event in Miami. The company is also expanding AI capabilities in its creative tool, Firefly, and releasing a Model Context Protocol (MCP) that lets other chatbots like ChatGPT, Claude, or Gemini use Adobe features." data-source="TechCrunch" data-published="2026-11-10T14:05:10+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp/" target="_blank" rel="noopener">Adobe brings AI agents and new creative tools to Photoshop, Premiere, and Firefly</a>
+          <p class="summary">Adobe is pouring more AI into its products, including Photoshop, Premiere, Illustrator, and InDesign, in a major product feature announcement at its MAX event in Miami. The company is also expanding AI capabilities in its creative tool, Firefly, and releasing a Model Context Protocol (MCP) that lets other chatbots like ChatGPT, Claude, or Gemini use Adobe features.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">10 Nov, 14:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Adobe brings AI agents and new creative tools to Photoshop, Premiere, and Firefly" data-url="https://techcrunch.com/2026/11/10/adobe-adds-more-ai-to-its-products-and-launches-an-mcp/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.technologyreview.com/2026/11/09/1148194/the-backlash-about-data-centers-might-really-just-be-about-electricity/" data-title="The backlash about data centers might really just be about electricity" data-summary="This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here . As voters went to the polls across the US last week, I was in Ashburn, Virginia, part of what’s known as Data Center Alley—the world’s largest data center hub. It’s also where the backlash now sweeping the country arguably first began taking shape. Driving through it is surreal." data-source="MIT Technology Review" data-published="2026-11-09T19:35:33+00:00" data-section="AI" data-paywalled="true">
+          <a class="headline" href="https://www.technologyreview.com/2026/11/09/1148194/the-backlash-about-data-centers-might-really-just-be-about-electricity/" target="_blank" rel="noopener">The backlash about data centers might really just be about electricity</a>
+          <p class="summary">This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here . As voters went to the polls across the US last week, I was in Ashburn, Virginia, part of what’s known as Data Center Alley—the world’s largest data center hub. It’s also where the backlash now sweeping the country arguably first began taking shape. Driving through it is surreal.</p>
+          <span class="source"><a href="https://www.technologyreview.com/2026/11/09/1148194/the-backlash-about-data-centers-might-really-just-be-about-electricity/" target="_blank" rel="noopener">MIT Technology Review</a> &middot; <span class="pubdate">9 Nov, 19:35</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="The backlash about data centers might really just be about electricity" data-url="https://www.technologyreview.com/2026/11/09/1148194/the-backlash-about-data-centers-might-really-just-be-about-electricity/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.theguardian.com/politics/live/2026/nov/10/badenoch-conservative-welfare-cuts-disability-benefits-burnham-politics-latest-news-updates" data-title="Planned Tory welfare cuts ‘a charter for human misery,’ says Labour – UK politics live" data-summary="Good morning. It is quite easy for politicians to declare that they will cut the welfare bill by X amount – but much harder when they have to explain exactly who will lose out. This is summed up by a good anecdote about a former chancellor (Ken Clarke, according to some versions, but it could have been any of them), who gave this reply when asked for cuts that would save £1bn: double quotation mark So, do you want one million people to lose £1,000 each, or 10 million people to lose £100 each?" data-source="The Guardian" data-published="2026-11-10T14:25:14+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/live/2026/nov/10/badenoch-conservative-welfare-cuts-disability-benefits-burnham-politics-latest-news-updates" target="_blank" rel="noopener">Planned Tory welfare cuts ‘a charter for human misery,’ says Labour – UK politics live</a>
+          <p class="summary">Good morning. It is quite easy for politicians to declare that they will cut the welfare bill by X amount – but much harder when they have to explain exactly who will lose out. This is summed up by a good anecdote about a former chancellor (Ken Clarke, according to some versions, but it could have been any of them), who gave this reply when asked for cuts that would save £1bn: double quotation mark So, do you want one million people to lose £1,000 each, or 10 million people to lose £100 each?</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/live/2026/nov/10/badenoch-conservative-welfare-cuts-disability-benefits-burnham-politics-latest-news-updates" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">10 Nov, 14:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Planned Tory welfare cuts ‘a charter for human misery,’ says Labour – UK politics live" data-url="https://www.theguardian.com/politics/live/2026/nov/10/badenoch-conservative-welfare-cuts-disability-benefits-burnham-politics-latest-news-updates">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cqev3vl4ek33o?at_medium=RSS&amp;at_campaign=rss" data-title="Sales of tinned food and bottled water jump after &#x27;Be Ready&#x27; campaign launch" data-summary="Sales of essential goods such as bottled water and canned food soared in the 10 days following the launch of the government&#x27;s &quot;Be Ready&quot; emergency preparedness campaign on 22 October, research indicates. Hand sanitiser sales were up 83%, sales of bottled water rose 67% and tinned and jarred goods climbed 37%, according to data from retail research firm Worldpanel by Numerator." data-source="BBC News" data-published="2026-11-10T14:15:28+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cqev3vl4ek33o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Sales of tinned food and bottled water jump after &#x27;Be Ready&#x27; campaign launch</a>
+          <p class="summary">Sales of essential goods such as bottled water and canned food soared in the 10 days following the launch of the government&#x27;s &quot;Be Ready&quot; emergency preparedness campaign on 22 October, research indicates. Hand sanitiser sales were up 83%, sales of bottled water rose 67% and tinned and jarred goods climbed 37%, according to data from retail research firm Worldpanel by Numerator.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cqev3vl4ek33o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Sales of tinned food and bottled water jump after &#x27;Be Ready&#x27; campaign launch" data-url="https://www.bbc.co.uk/news/articles/cqev3vl4ek33o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/news/2026/nov/10/lucy-powell-russell-brand-cross-examination-victims" data-title="Police receive further criminal allegations against Russell Brand" data-summary="Met says several people have been in contact since start of disgraced comedian’s rape and sexual assault trialBrand sentenced to more than 10 years in prison for rape and sexual assaultPolice have received further criminal allegations against Russell Brand since the start of his trial.The Metropolitan police said several people have been in contact during and since the conclusion of the 51-year-old’s rape and sexual assault case. Continue reading..." data-source="The Guardian" data-published="2026-11-10T10:28:51+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/news/2026/nov/10/lucy-powell-russell-brand-cross-examination-victims" target="_blank" rel="noopener">Police receive further criminal allegations against Russell Brand</a>
+          <p class="summary">Met says several people have been in contact since start of disgraced comedian’s rape and sexual assault trialBrand sentenced to more than 10 years in prison for rape and sexual assaultPolice have received further criminal allegations against Russell Brand since the start of his trial.The Metropolitan police said several people have been in contact during and since the conclusion of the 51-year-old’s rape and sexual assault case. Continue reading...</p>
+          <span class="source"><a href="https://www.theguardian.com/news/2026/nov/10/lucy-powell-russell-brand-cross-examination-victims" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">10 Nov, 10:28</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Police receive further criminal allegations against Russell Brand" data-url="https://www.theguardian.com/news/2026/nov/10/lucy-powell-russell-brand-cross-examination-victims">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/videos/cm4g1gv05qljo?at_medium=RSS&amp;at_campaign=rss" data-title="Shopping centre will &#x27;make Wakefield the city to be in&#x27;" data-summary="Shopping centre will &#x27;make Wakefield the city to be in&#x27;" data-source="BBC News" data-published="2026-11-10T14:14:09+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/videos/cm4g1gv05qljo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Shopping centre will &#x27;make Wakefield the city to be in&#x27;</a>
+          <p class="summary">Shopping centre will &#x27;make Wakefield the city to be in&#x27;</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/videos/cm4g1gv05qljo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:14</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Shopping centre will &#x27;make Wakefield the city to be in&#x27;" data-url="https://www.bbc.co.uk/news/videos/cm4g1gv05qljo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.theguardian.com/world/live/2026/nov/10/ukraine-russia-war-us-talks-abu-dhabi-europe-latest-news-updates" data-title="Russia-Ukraine talks ‘very productive,’ says US’s Rubio – Europe live" data-summary="US-led talks in Abu Dhabi break up after four hours but are expected to resume tomorrowUS officials seek ‘final end’ to Russia-Ukraine war as talks beginThe EU has said it stands ready “to come with a swift and united response” after France blamed Iran for a spate of cyber-attacks on supermarket freezers and chillers that caused millions of euros of damage.Speaking to journalists on Monday, French foreign minister Jean-Noël Barrot said “Europe-wide sanctions” would be imposed against those responsible as he announced France believed that Iran’s Revolutionary Guards were “responsible for this attack”.We acknowledge that France has attributed these (cyber-attacks) to Iran." data-source="The Guardian" data-published="2026-11-10T14:42:58+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/world/live/2026/nov/10/ukraine-russia-war-us-talks-abu-dhabi-europe-latest-news-updates" target="_blank" rel="noopener">Russia-Ukraine talks ‘very productive,’ says US’s Rubio – Europe live</a>
+          <p class="summary">US-led talks in Abu Dhabi break up after four hours but are expected to resume tomorrowUS officials seek ‘final end’ to Russia-Ukraine war as talks beginThe EU has said it stands ready “to come with a swift and united response” after France blamed Iran for a spate of cyber-attacks on supermarket freezers and chillers that caused millions of euros of damage.Speaking to journalists on Monday, French foreign minister Jean-Noël Barrot said “Europe-wide sanctions” would be imposed against those responsible as he announced France believed that Iran’s Revolutionary Guards were “responsible for this attack”.We acknowledge that France has attributed these (cyber-attacks) to Iran.</p>
+          <span class="source"><a href="https://www.theguardian.com/world/live/2026/nov/10/ukraine-russia-war-us-talks-abu-dhabi-europe-latest-news-updates" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">10 Nov, 14:42</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Russia-Ukraine talks ‘very productive,’ says US’s Rubio – Europe live" data-url="https://www.theguardian.com/world/live/2026/nov/10/ukraine-russia-war-us-talks-abu-dhabi-europe-latest-news-updates">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/video/witness/2026/11/10/mongolias-iron-winter-a-race-to-save-an-ancient-tradition?traffic_source=rss" data-title="Mongolia’s Iron Winter: A Race to Save an Ancient Tradition" data-summary="Two young horse herders revive Mongolia’s most dangerous winter ritual to save their community’s ancient way of life. In Mongolia’s remote Tsakhir Valley, horses mean survival. For generations, herders protected them from winter storms by gathering a vast herd and nominating their bravest young men to protect it. But mounting environmental pressures forced the centuries-old tradition to be abruptly abandoned in 2019, sparking fears that the rite of passage would be lost forever." data-source="Al Jazeera" data-published="2026-11-10T14:40:00+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/video/witness/2026/11/10/mongolias-iron-winter-a-race-to-save-an-ancient-tradition?traffic_source=rss" target="_blank" rel="noopener">Mongolia’s Iron Winter: A Race to Save an Ancient Tradition</a>
+          <p class="summary">Two young horse herders revive Mongolia’s most dangerous winter ritual to save their community’s ancient way of life. In Mongolia’s remote Tsakhir Valley, horses mean survival. For generations, herders protected them from winter storms by gathering a vast herd and nominating their bravest young men to protect it. But mounting environmental pressures forced the centuries-old tradition to be abruptly abandoned in 2019, sparking fears that the rite of passage would be lost forever.</p>
+          <span class="source"><a href="https://www.aljazeera.com/video/witness/2026/11/10/mongolias-iron-winter-a-race-to-save-an-ancient-tradition?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">10 Nov, 14:40</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Mongolia’s Iron Winter: A Race to Save an Ancient Tradition" data-url="https://www.aljazeera.com/video/witness/2026/11/10/mongolias-iron-winter-a-race-to-save-an-ancient-tradition?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cqpvgvrpjvv8o?at_medium=RSS&amp;at_campaign=rss" data-title="First day of Ukraine peace talks &#x27;very productive&#x27;, US says" data-summary="The first day of trilateral talks between Ukraine, Russia and the US aimed at ending the war in Ukraine has concluded in Abu Dhabi. While senior officials from Kyiv and Moscow were tight-lipped after the four hour-long discussions - due to resume on Wednesday - US Secretary of State Marco Rubio, who did not attend the talks, said they had been &quot;very productive&quot;." data-source="BBC News" data-published="2026-11-10T14:36:57+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cqpvgvrpjvv8o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">First day of Ukraine peace talks &#x27;very productive&#x27;, US says</a>
+          <p class="summary">The first day of trilateral talks between Ukraine, Russia and the US aimed at ending the war in Ukraine has concluded in Abu Dhabi. While senior officials from Kyiv and Moscow were tight-lipped after the four hour-long discussions - due to resume on Wednesday - US Secretary of State Marco Rubio, who did not attend the talks, said they had been &quot;very productive&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cqpvgvrpjvv8o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="First day of Ukraine peace talks &#x27;very productive&#x27;, US says" data-url="https://www.bbc.co.uk/news/articles/cqpvgvrpjvv8o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/us-news/2026/nov/10/ocean-liner-ship-sunk-artificial-reef" data-title="Historic ocean liner to ‘live on’ beneath waves as world’s biggest artificial reef" data-summary="The SS United States will sink off Florida coast to become an artificial reef, ending long-running wrangle over its fateFinal preparations were under way on Tuesday to sink the world’s fastest ocean liner in the Gulf of Mexico as an artificial reef, concluding a decades-long wrangle over the fate of the transatlantic icon.A fleet of five tugboats moved the rusting hulk of the SS United States from a quayside in Mobile, Alabama, on Monday for its short journey to 25 miles off the coast of Destin, Florida, where it will be scuttled in a precision operation on Wednesday afternoon." data-source="The Guardian" data-published="2026-11-10T14:05:32+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/us-news/2026/nov/10/ocean-liner-ship-sunk-artificial-reef" target="_blank" rel="noopener">Historic ocean liner to ‘live on’ beneath waves as world’s biggest artificial reef</a>
+          <p class="summary">The SS United States will sink off Florida coast to become an artificial reef, ending long-running wrangle over its fateFinal preparations were under way on Tuesday to sink the world’s fastest ocean liner in the Gulf of Mexico as an artificial reef, concluding a decades-long wrangle over the fate of the transatlantic icon.A fleet of five tugboats moved the rusting hulk of the SS United States from a quayside in Mobile, Alabama, on Monday for its short journey to 25 miles off the coast of Destin, Florida, where it will be scuttled in a precision operation on Wednesday afternoon.</p>
+          <span class="source"><a href="https://www.theguardian.com/us-news/2026/nov/10/ocean-liner-ship-sunk-artificial-reef" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">10 Nov, 14:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Historic ocean liner to ‘live on’ beneath waves as world’s biggest artificial reef" data-url="https://www.theguardian.com/us-news/2026/nov/10/ocean-liner-ship-sunk-artificial-reef">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.statnews.com/2026/11/10/biotech-news-glp-1-given-an-fda-warning-for-rare-eye-condition-risk/?utm_campaign=rss" data-title="STAT+: GLP-1s are given an FDA warning for rare eye condition risk" data-summary="The FDA warned that GLP-1 drugs carry a potential risk of a rare but serious eye condition sometimes referred to as an “eye stroke.”" data-source="STAT News" data-published="2026-11-10T14:38:29+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/10/biotech-news-glp-1-given-an-fda-warning-for-rare-eye-condition-risk/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: GLP-1s are given an FDA warning for rare eye condition risk</a>
+          <p class="summary">The FDA warned that GLP-1 drugs carry a potential risk of a rare but serious eye condition sometimes referred to as an “eye stroke.”</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/10/biotech-news-glp-1-given-an-fda-warning-for-rare-eye-condition-risk/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">10 Nov, 14:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: GLP-1s are given an FDA warning for rare eye condition risk" data-url="https://www.statnews.com/2026/11/10/biotech-news-glp-1-given-an-fda-warning-for-rare-eye-condition-risk/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c678p8yz0k38o?at_medium=RSS&amp;at_campaign=rss" data-title="Amber alert as Scotland faces blood donation shortages" data-summary="An amber alert has come into force for the first time as stocks of blood in Scotland have dropped to unprecedented low levels due to the shortage of donors. The warning has been sent to hospitals across the country by the Scottish National Blood Transfusion Service (SNBTS), urging medical staff to only use Type O blood when essential." data-source="BBC News" data-published="2026-11-10T11:30:32+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c678p8yz0k38o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Amber alert as Scotland faces blood donation shortages</a>
+          <p class="summary">An amber alert has come into force for the first time as stocks of blood in Scotland have dropped to unprecedented low levels due to the shortage of donors. The warning has been sent to hospitals across the country by the Scottish National Blood Transfusion Service (SNBTS), urging medical staff to only use Type O blood when essential.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c678p8yz0k38o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 11:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Amber alert as Scotland faces blood donation shortages" data-url="https://www.bbc.co.uk/news/articles/c678p8yz0k38o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261108233103.htm" data-title="Alzheimer’s may have early warning signs outside the brain" data-summary="A surprising discovery suggests that some early signs of Alzheimer’s disease may begin outside the brain. Using miniature laboratory systems made from human cells, scientists found that genetic mutations associated with inherited Alzheimer’s can disrupt nerve-to-muscle connections without any involvement from the brain or spinal cord. This could help explain why some patients experience changes in balance, walking, and coordination long before memory problems develop." data-source="ScienceDaily" data-published="2026-11-10T01:47:34+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261108233103.htm" target="_blank" rel="noopener">Alzheimer’s may have early warning signs outside the brain</a>
+          <p class="summary">A surprising discovery suggests that some early signs of Alzheimer’s disease may begin outside the brain. Using miniature laboratory systems made from human cells, scientists found that genetic mutations associated with inherited Alzheimer’s can disrupt nerve-to-muscle connections without any involvement from the brain or spinal cord. This could help explain why some patients experience changes in balance, walking, and coordination long before memory problems develop.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261108233103.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">10 Nov, 01:47</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Alzheimer’s may have early warning signs outside the brain" data-url="https://www.sciencedaily.com/releases/2026/11/261108233103.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/pharmalot/2026/11/10/stroke-drug-sunharbo-eye-warning-glp-drugs-pharmalittle/?utm_campaign=rss" data-title="STAT+: Pharmalittle: We’re reading about an approval for novel drug for strokes, a warning for GLP-1 drugs, and more" data-summary="The FDA approved a novel drug to reduce recurrence of stroke, the agency is warning that GLP-1s carry a potential risk for an eye condition, and more pharma news of…" data-source="STAT News" data-published="2026-11-10T14:25:24+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/pharmalot/2026/11/10/stroke-drug-sunharbo-eye-warning-glp-drugs-pharmalittle/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Pharmalittle: We’re reading about an approval for novel drug for strokes, a warning for GLP-1 drugs, and more</a>
+          <p class="summary">The FDA approved a novel drug to reduce recurrence of stroke, the agency is warning that GLP-1s carry a potential risk for an eye condition, and more pharma news of…</p>
+          <span class="source"><a href="https://www.statnews.com/pharmalot/2026/11/10/stroke-drug-sunharbo-eye-warning-glp-drugs-pharmalittle/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">10 Nov, 14:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: Pharmalittle: We’re reading about an approval for novel drug for strokes, a warning for GLP-1 drugs, and more" data-url="https://www.statnews.com/pharmalot/2026/11/10/stroke-drug-sunharbo-eye-warning-glp-drugs-pharmalittle/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiU0FVX3lxTE1mN3l4d2JpX2h5VkpnUzVLUDI3S1BpYlJicUpGNE9PMjRSRmc3SlR3YlhEM2pVcFJHQVlJOWFtQ2RIRmdmUmR1Vl9lWnZYV3NWMXpj?oc=5" data-title="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - شبكة تواصل الإخبارية" data-summary="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report شبكة تواصل الإخبارية" data-source="شبكة تواصل الإخبارية" data-published="2026-11-10T12:45:03+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiU0FVX3lxTE1mN3l4d2JpX2h5VkpnUzVLUDI3S1BpYlJicUpGNE9PMjRSRmc3SlR3YlhEM2pVcFJHQVlJOWFtQ2RIRmdmUmR1Vl9lWnZYV3NWMXpj?oc=5" target="_blank" rel="noopener">2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - شبكة تواصل الإخبارية</a>
+          <p class="summary">2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report شبكة تواصل الإخبارية</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiU0FVX3lxTE1mN3l4d2JpX2h5VkpnUzVLUDI3S1BpYlJicUpGNE9PMjRSRmc3SlR3YlhEM2pVcFJHQVlJOWFtQ2RIRmdmUmR1Vl9lWnZYV3NWMXpj?oc=5" target="_blank" rel="noopener">شبكة تواصل الإخبارية</a> &middot; <span class="pubdate">10 Nov, 12:45</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - شبكة تواصل الإخبارية" data-url="https://news.google.com/rss/articles/CBMiU0FVX3lxTE1mN3l4d2JpX2h5VkpnUzVLUDI3S1BpYlJicUpGNE9PMjRSRmc3SlR3YlhEM2pVcFJHQVlJOWFtQ2RIRmdmUmR1Vl9lWnZYV3NWMXpj?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMipgFBVV95cUxQNnJhYTE5QnZ0UUFzdUpaRDVqX2VNR1lQaWc4TEJlT3AxX2VidVowb3ZFeWFQT29tNEdTR2FpYjZ3YnN4MzZJbDIxc2p2aTVyUmlCYWZIaC02MzRVTUNUOWxmMnR5NWEzRTdBaThyRVJ2c2RuN0hwcHJJS010a2puc0FMY1lSUUI0UDR0cl91dU56dmR6VjVrLUdpTVBVTHp0V0tKbTdn0gGrAUFVX3lxTFAySTFyLTV6MzZObHRoS1dONlZBUDctZnlyT1lfd3I3b0ZiVWE1SXRqRnVtdXhOM2FMSEg3LTViZEF1cUEtS2tEV0lvT3NlZG1iUWdxUjdhc1pkMlA0WUZMQUJEWWZpVHd0aWVqSFRReDBnRFdmRGdLOUczZ0ExU0F1cFZBOXY2ZnVqQTEtdWh0LVlheEVGY282YjBlQ2Q2aC1tM1lrZU1ld3Z4QQ?oc=5" data-title="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - WION" data-summary="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report WION" data-source="WION" data-published="2026-11-10T12:25:30+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMipgFBVV95cUxQNnJhYTE5QnZ0UUFzdUpaRDVqX2VNR1lQaWc4TEJlT3AxX2VidVowb3ZFeWFQT29tNEdTR2FpYjZ3YnN4MzZJbDIxc2p2aTVyUmlCYWZIaC02MzRVTUNUOWxmMnR5NWEzRTdBaThyRVJ2c2RuN0hwcHJJS010a2puc0FMY1lSUUI0UDR0cl91dU56dmR6VjVrLUdpTVBVTHp0V0tKbTdn0gGrAUFVX3lxTFAySTFyLTV6MzZObHRoS1dONlZBUDctZnlyT1lfd3I3b0ZiVWE1SXRqRnVtdXhOM2FMSEg3LTViZEF1cUEtS2tEV0lvT3NlZG1iUWdxUjdhc1pkMlA0WUZMQUJEWWZpVHd0aWVqSFRReDBnRFdmRGdLOUczZ0ExU0F1cFZBOXY2ZnVqQTEtdWh0LVlheEVGY282YjBlQ2Q2aC1tM1lrZU1ld3Z4QQ?oc=5" target="_blank" rel="noopener">2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - WION</a>
+          <p class="summary">2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report WION</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMipgFBVV95cUxQNnJhYTE5QnZ0UUFzdUpaRDVqX2VNR1lQaWc4TEJlT3AxX2VidVowb3ZFeWFQT29tNEdTR2FpYjZ3YnN4MzZJbDIxc2p2aTVyUmlCYWZIaC02MzRVTUNUOWxmMnR5NWEzRTdBaThyRVJ2c2RuN0hwcHJJS010a2puc0FMY1lSUUI0UDR0cl91dU56dmR6VjVrLUdpTVBVTHp0V0tKbTdn0gGrAUFVX3lxTFAySTFyLTV6MzZObHRoS1dONlZBUDctZnlyT1lfd3I3b0ZiVWE1SXRqRnVtdXhOM2FMSEg3LTViZEF1cUEtS2tEV0lvT3NlZG1iUWdxUjdhc1pkMlA0WUZMQUJEWWZpVHd0aWVqSFRReDBnRFdmRGdLOUczZ0ExU0F1cFZBOXY2ZnVqQTEtdWh0LVlheEVGY282YjBlQ2Q2aC1tM1lrZU1ld3Z4QQ?oc=5" target="_blank" rel="noopener">WION</a> &middot; <span class="pubdate">10 Nov, 12:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="2 new IPL teams to be added by 2028 as BCCI plans league expansion: Report - WION" data-url="https://news.google.com/rss/articles/CBMipgFBVV95cUxQNnJhYTE5QnZ0UUFzdUpaRDVqX2VNR1lQaWc4TEJlT3AxX2VidVowb3ZFeWFQT29tNEdTR2FpYjZ3YnN4MzZJbDIxc2p2aTVyUmlCYWZIaC02MzRVTUNUOWxmMnR5NWEzRTdBaThyRVJ2c2RuN0hwcHJJS010a2puc0FMY1lSUUI0UDR0cl91dU56dmR6VjVrLUdpTVBVTHp0V0tKbTdn0gGrAUFVX3lxTFAySTFyLTV6MzZObHRoS1dONlZBUDctZnlyT1lfd3I3b0ZiVWE1SXRqRnVtdXhOM2FMSEg3LTViZEF1cUEtS2tEV0lvT3NlZG1iUWdxUjdhc1pkMlA0WUZMQUJEWWZpVHd0aWVqSFRReDBnRFdmRGdLOUczZ0ExU0F1cFZBOXY2ZnVqQTEtdWh0LVlheEVGY282YjBlQ2Q2aC1tM1lrZU1ld3Z4QQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiowFBVV95cUxQcUgtT2RTTzI2azBLanAybkF0QjdjQmRUWVM0dU1iUjFmYWg1bm1xaHgxTXJCRlZxRFM3YTIxX1JBbnB2YVVtZndhOE9oZWFwVEdMOVVNT0lTeEtnUU0wT1VBdzZVX0NoOXFTelNXT1AtRTg1eGF5NjNtSDJCYW1kUF9lOTAtSno3QUJhQ25JLWlfeTVmMXJrcFZJelJOblhNT3hR0gGoAUFVX3lxTE1mTE5qa2JheFJ5bVdIUXFVbDUwYUFOMHVfeENVU2dRS294RmVtRkhadWRaZks4aGdiSHBjXzBoMkRGT1ZldmhSMXhZd21Qck9lNTJvQ25tUEx1eVQyUmZnMDJQTTQtanZvZFNhNXVTdUg0Tk90ZTVRS2RlUjlHN3FTYVBJd1hVNVdpM0lpZy1ZUVc1dFc3RWEtQjM4WTk2VFU1Ykw4S2hrTQ?oc=5" data-title="Exclusive: BCCI names Meghalaya’s suspended cricket secretary for women’s tournament role - ThePrint" data-summary="Exclusive: BCCI names Meghalaya’s suspended cricket secretary for women’s tournament role ThePrint" data-source="ThePrint" data-published="2026-11-10T08:05:41+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiowFBVV95cUxQcUgtT2RTTzI2azBLanAybkF0QjdjQmRUWVM0dU1iUjFmYWg1bm1xaHgxTXJCRlZxRFM3YTIxX1JBbnB2YVVtZndhOE9oZWFwVEdMOVVNT0lTeEtnUU0wT1VBdzZVX0NoOXFTelNXT1AtRTg1eGF5NjNtSDJCYW1kUF9lOTAtSno3QUJhQ25JLWlfeTVmMXJrcFZJelJOblhNT3hR0gGoAUFVX3lxTE1mTE5qa2JheFJ5bVdIUXFVbDUwYUFOMHVfeENVU2dRS294RmVtRkhadWRaZks4aGdiSHBjXzBoMkRGT1ZldmhSMXhZd21Qck9lNTJvQ25tUEx1eVQyUmZnMDJQTTQtanZvZFNhNXVTdUg0Tk90ZTVRS2RlUjlHN3FTYVBJd1hVNVdpM0lpZy1ZUVc1dFc3RWEtQjM4WTk2VFU1Ykw4S2hrTQ?oc=5" target="_blank" rel="noopener">Exclusive: BCCI names Meghalaya’s suspended cricket secretary for women’s tournament role - ThePrint</a>
+          <p class="summary">Exclusive: BCCI names Meghalaya’s suspended cricket secretary for women’s tournament role ThePrint</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiowFBVV95cUxQcUgtT2RTTzI2azBLanAybkF0QjdjQmRUWVM0dU1iUjFmYWg1bm1xaHgxTXJCRlZxRFM3YTIxX1JBbnB2YVVtZndhOE9oZWFwVEdMOVVNT0lTeEtnUU0wT1VBdzZVX0NoOXFTelNXT1AtRTg1eGF5NjNtSDJCYW1kUF9lOTAtSno3QUJhQ25JLWlfeTVmMXJrcFZJelJOblhNT3hR0gGoAUFVX3lxTE1mTE5qa2JheFJ5bVdIUXFVbDUwYUFOMHVfeENVU2dRS294RmVtRkhadWRaZks4aGdiSHBjXzBoMkRGT1ZldmhSMXhZd21Qck9lNTJvQ25tUEx1eVQyUmZnMDJQTTQtanZvZFNhNXVTdUg0Tk90ZTVRS2RlUjlHN3FTYVBJd1hVNVdpM0lpZy1ZUVc1dFc3RWEtQjM4WTk2VFU1Ykw4S2hrTQ?oc=5" target="_blank" rel="noopener">ThePrint</a> &middot; <span class="pubdate">10 Nov, 08:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Exclusive: BCCI names Meghalaya’s suspended cricket secretary for women’s tournament role - ThePrint" data-url="https://news.google.com/rss/articles/CBMiowFBVV95cUxQcUgtT2RTTzI2azBLanAybkF0QjdjQmRUWVM0dU1iUjFmYWg1bm1xaHgxTXJCRlZxRFM3YTIxX1JBbnB2YVVtZndhOE9oZWFwVEdMOVVNT0lTeEtnUU0wT1VBdzZVX0NoOXFTelNXT1AtRTg1eGF5NjNtSDJCYW1kUF9lOTAtSno3QUJhQ25JLWlfeTVmMXJrcFZJelJOblhNT3hR0gGoAUFVX3lxTE1mTE5qa2JheFJ5bVdIUXFVbDUwYUFOMHVfeENVU2dRS294RmVtRkhadWRaZks4aGdiSHBjXzBoMkRGT1ZldmhSMXhZd21Qck9lNTJvQ25tUEx1eVQyUmZnMDJQTTQtanZvZFNhNXVTdUg0Tk90ZTVRS2RlUjlHN3FTYVBJd1hVNVdpM0lpZy1ZUVc1dFc3RWEtQjM4WTk2VFU1Ykw4S2hrTQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMi1AFBVV95cUxQbFBneUNaeTUtaGdDeWU4U056V1puV3BWZVBzeVYta2NDSWdVajlxQWk4U3VzRy10YkFQcHJJa3JJRnB2S18ycUJ4U21vbUI4MVJucHRRRTZwS0kxVjI1Z1RNRkJCTXJVd2ZpTHdOQ1VDUk5CVXY5MjJTT0hjLXFWZVVFUzhTd3p0SktWbUU1SGIyNlRmNElSWGFKNEFQb2RQeU4tWTUwNWhmRDZSYzNNTkpYVHZSTU50VzVCb1VpUktLQkNXY1hCUzVheU95WmpBcVBZMQ?oc=5" data-title="BCCI eyes two new teams in lucrative league; Pune &amp; Vadodara front-runners for new franchises - Bhaskar English" data-summary="BCCI eyes two new teams in lucrative league; Pune &amp; Vadodara front-runners for new franchises Bhaskar English" data-source="Bhaskar English" data-published="2026-11-10T06:30:13+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMi1AFBVV95cUxQbFBneUNaeTUtaGdDeWU4U056V1puV3BWZVBzeVYta2NDSWdVajlxQWk4U3VzRy10YkFQcHJJa3JJRnB2S18ycUJ4U21vbUI4MVJucHRRRTZwS0kxVjI1Z1RNRkJCTXJVd2ZpTHdOQ1VDUk5CVXY5MjJTT0hjLXFWZVVFUzhTd3p0SktWbUU1SGIyNlRmNElSWGFKNEFQb2RQeU4tWTUwNWhmRDZSYzNNTkpYVHZSTU50VzVCb1VpUktLQkNXY1hCUzVheU95WmpBcVBZMQ?oc=5" target="_blank" rel="noopener">BCCI eyes two new teams in lucrative league; Pune &amp; Vadodara front-runners for new franchises - Bhaskar English</a>
+          <p class="summary">BCCI eyes two new teams in lucrative league; Pune &amp; Vadodara front-runners for new franchises Bhaskar English</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMi1AFBVV95cUxQbFBneUNaeTUtaGdDeWU4U056V1puV3BWZVBzeVYta2NDSWdVajlxQWk4U3VzRy10YkFQcHJJa3JJRnB2S18ycUJ4U21vbUI4MVJucHRRRTZwS0kxVjI1Z1RNRkJCTXJVd2ZpTHdOQ1VDUk5CVXY5MjJTT0hjLXFWZVVFUzhTd3p0SktWbUU1SGIyNlRmNElSWGFKNEFQb2RQeU4tWTUwNWhmRDZSYzNNTkpYVHZSTU50VzVCb1VpUktLQkNXY1hCUzVheU95WmpBcVBZMQ?oc=5" target="_blank" rel="noopener">Bhaskar English</a> &middot; <span class="pubdate">10 Nov, 06:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="BCCI eyes two new teams in lucrative league; Pune &amp; Vadodara front-runners for new franchises - Bhaskar English" data-url="https://news.google.com/rss/articles/CBMi1AFBVV95cUxQbFBneUNaeTUtaGdDeWU4U056V1puV3BWZVBzeVYta2NDSWdVajlxQWk4U3VzRy10YkFQcHJJa3JJRnB2S18ycUJ4U21vbUI4MVJucHRRRTZwS0kxVjI1Z1RNRkJCTXJVd2ZpTHdOQ1VDUk5CVXY5MjJTT0hjLXFWZVVFUzhTd3p0SktWbUU1SGIyNlRmNElSWGFKNEFQb2RQeU4tWTUwNWhmRDZSYzNNTkpYVHZSTU50VzVCb1VpUktLQkNXY1hCUzVheU95WmpBcVBZMQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMivAFBVV95cUxOc3ZUV21jNWUtd2k2QzM2NTdSeENYc1FRLUFPMWczWmZ0bDdaVjkwdGFWMUVTS1E1MjNxaUpjc3lDZ0FmOGc5Tk0yNlFCRUp6QUZxUVRqYVhJNHlVNGJPT1hPaHdVVVJXYjRfRjd0MV9KUDAyOF9OSE1kdm9RZ0RnbHhwNmswRklYS1lVYWJFWm9ET1QwTk5Dcks2OG9Ham9hQjYzOGNlZDcyY081WXB5QzVTemdMeWd0aW0xTg?oc=5" data-title="Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener - Sportskeeda" data-summary="Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener Sportskeeda" data-source="Sportskeeda" data-published="2026-11-10T11:23:11+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOc3ZUV21jNWUtd2k2QzM2NTdSeENYc1FRLUFPMWczWmZ0bDdaVjkwdGFWMUVTS1E1MjNxaUpjc3lDZ0FmOGc5Tk0yNlFCRUp6QUZxUVRqYVhJNHlVNGJPT1hPaHdVVVJXYjRfRjd0MV9KUDAyOF9OSE1kdm9RZ0RnbHhwNmswRklYS1lVYWJFWm9ET1QwTk5Dcks2OG9Ham9hQjYzOGNlZDcyY081WXB5QzVTemdMeWd0aW0xTg?oc=5" target="_blank" rel="noopener">Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener - Sportskeeda</a>
+          <p class="summary">Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener Sportskeeda</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOc3ZUV21jNWUtd2k2QzM2NTdSeENYc1FRLUFPMWczWmZ0bDdaVjkwdGFWMUVTS1E1MjNxaUpjc3lDZ0FmOGc5Tk0yNlFCRUp6QUZxUVRqYVhJNHlVNGJPT1hPaHdVVVJXYjRfRjd0MV9KUDAyOF9OSE1kdm9RZ0RnbHhwNmswRklYS1lVYWJFWm9ET1QwTk5Dcks2OG9Ham9hQjYzOGNlZDcyY081WXB5QzVTemdMeWd0aW0xTg?oc=5" target="_blank" rel="noopener">Sportskeeda</a> &middot; <span class="pubdate">10 Nov, 11:23</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Cheteshwar Pujara picks Rajasthan Royals retentions for IPL 2027; unsure about star opener - Sportskeeda" data-url="https://news.google.com/rss/articles/CBMivAFBVV95cUxOc3ZUV21jNWUtd2k2QzM2NTdSeENYc1FRLUFPMWczWmZ0bDdaVjkwdGFWMUVTS1E1MjNxaUpjc3lDZ0FmOGc5Tk0yNlFCRUp6QUZxUVRqYVhJNHlVNGJPT1hPaHdVVVJXYjRfRjd0MV9KUDAyOF9OSE1kdm9RZ0RnbHhwNmswRklYS1lVYWJFWm9ET1QwTk5Dcks2OG9Ham9hQjYzOGNlZDcyY081WXB5QzVTemdMeWd0aW0xTg?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiygFBVV95cUxQS3dxdE8wUjdfdjNQOVJ4WThaRkJaaDVXd1VpU1BSWE43SnBrQmdSQ1ZNMVlYWk9jcGlJT1hhUDMzR1JER1BKWEZabUI1el9KakFyX3lZRkRUWXR0M1JQc0ZmMndlemJiU2F1OUluQ25YSlBOTGJQb3lKRy03UFE3NUt0d0lDNnBvdUdIY1p2YUJIZmV1MHZQdE5YeGVnZ3FLRFJocXFzQU5aZkZQVl9PbWpDTUs1ZHlETnZudVpVeUVPSjZ0cGs5ZmFn0gHPAUFVX3lxTE1hRm5zQmJnaEdhWTU0YUZ5NTZCdl9lWHFLc1NQT0JHQ0hiQTFGR3RZN2JDalhMV3FwZEY1THJmbG1ZbWZ2NXVMZkxuaS1VM090V200NE52TjVpTjM1WGVQakw2dGZEOG1EYXdqVGZYT05sbFpsbTVad2pqQWxFSmZhTkctTjk0UEdSU1dxZGlEUGhqRkM5bnZEdU5MNzBMQ3hqYkpkdjF4WXRHR2czNHJ6cFZENi1EeVNiWnhnUjVQUWdQU0Z1c21DU3Z6WXVKTQ?oc=5" data-title="Can Hardik Pandya join Rajasthan Royals?: Yashasvi Jaiswal may move to Mumbai as franchises explore a major... - Bhaskar English" data-summary="Can Hardik Pandya join Rajasthan Royals?: Yashasvi Jaiswal may move to Mumbai as franchises explore a major... Bhaskar English" data-source="Bhaskar English" data-published="2026-11-10T03:26:22+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiygFBVV95cUxQS3dxdE8wUjdfdjNQOVJ4WThaRkJaaDVXd1VpU1BSWE43SnBrQmdSQ1ZNMVlYWk9jcGlJT1hhUDMzR1JER1BKWEZabUI1el9KakFyX3lZRkRUWXR0M1JQc0ZmMndlemJiU2F1OUluQ25YSlBOTGJQb3lKRy03UFE3NUt0d0lDNnBvdUdIY1p2YUJIZmV1MHZQdE5YeGVnZ3FLRFJocXFzQU5aZkZQVl9PbWpDTUs1ZHlETnZudVpVeUVPSjZ0cGs5ZmFn0gHPAUFVX3lxTE1hRm5zQmJnaEdhWTU0YUZ5NTZCdl9lWHFLc1NQT0JHQ0hiQTFGR3RZN2JDalhMV3FwZEY1THJmbG1ZbWZ2NXVMZkxuaS1VM090V200NE52TjVpTjM1WGVQakw2dGZEOG1EYXdqVGZYT05sbFpsbTVad2pqQWxFSmZhTkctTjk0UEdSU1dxZGlEUGhqRkM5bnZEdU5MNzBMQ3hqYkpkdjF4WXRHR2czNHJ6cFZENi1EeVNiWnhnUjVQUWdQU0Z1c21DU3Z6WXVKTQ?oc=5" target="_blank" rel="noopener">Can Hardik Pandya join Rajasthan Royals?: Yashasvi Jaiswal may move to Mumbai as franchises explore a major... - Bhaskar English</a>
+          <p class="summary">Can Hardik Pandya join Rajasthan Royals?: Yashasvi Jaiswal may move to Mumbai as franchises explore a major... Bhaskar English</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiygFBVV95cUxQS3dxdE8wUjdfdjNQOVJ4WThaRkJaaDVXd1VpU1BSWE43SnBrQmdSQ1ZNMVlYWk9jcGlJT1hhUDMzR1JER1BKWEZabUI1el9KakFyX3lZRkRUWXR0M1JQc0ZmMndlemJiU2F1OUluQ25YSlBOTGJQb3lKRy03UFE3NUt0d0lDNnBvdUdIY1p2YUJIZmV1MHZQdE5YeGVnZ3FLRFJocXFzQU5aZkZQVl9PbWpDTUs1ZHlETnZudVpVeUVPSjZ0cGs5ZmFn0gHPAUFVX3lxTE1hRm5zQmJnaEdhWTU0YUZ5NTZCdl9lWHFLc1NQT0JHQ0hiQTFGR3RZN2JDalhMV3FwZEY1THJmbG1ZbWZ2NXVMZkxuaS1VM090V200NE52TjVpTjM1WGVQakw2dGZEOG1EYXdqVGZYT05sbFpsbTVad2pqQWxFSmZhTkctTjk0UEdSU1dxZGlEUGhqRkM5bnZEdU5MNzBMQ3hqYkpkdjF4WXRHR2czNHJ6cFZENi1EeVNiWnhnUjVQUWdQU0Z1c21DU3Z6WXVKTQ?oc=5" target="_blank" rel="noopener">Bhaskar English</a> &middot; <span class="pubdate">10 Nov, 03:26</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Can Hardik Pandya join Rajasthan Royals?: Yashasvi Jaiswal may move to Mumbai as franchises explore a major... - Bhaskar English" data-url="https://news.google.com/rss/articles/CBMiygFBVV95cUxQS3dxdE8wUjdfdjNQOVJ4WThaRkJaaDVXd1VpU1BSWE43SnBrQmdSQ1ZNMVlYWk9jcGlJT1hhUDMzR1JER1BKWEZabUI1el9KakFyX3lZRkRUWXR0M1JQc0ZmMndlemJiU2F1OUluQ25YSlBOTGJQb3lKRy03UFE3NUt0d0lDNnBvdUdIY1p2YUJIZmV1MHZQdE5YeGVnZ3FLRFJocXFzQU5aZkZQVl9PbWpDTUs1ZHlETnZudVpVeUVPSjZ0cGs5ZmFn0gHPAUFVX3lxTE1hRm5zQmJnaEdhWTU0YUZ5NTZCdl9lWHFLc1NQT0JHQ0hiQTFGR3RZN2JDalhMV3FwZEY1THJmbG1ZbWZ2NXVMZkxuaS1VM090V200NE52TjVpTjM1WGVQakw2dGZEOG1EYXdqVGZYT05sbFpsbTVad2pqQWxFSmZhTkctTjk0UEdSU1dxZGlEUGhqRkM5bnZEdU5MNzBMQ3hqYkpkdjF4WXRHR2czNHJ6cFZENi1EeVNiWnhnUjVQUWdQU0Z1c21DU3Z6WXVKTQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMipwFBVV95cUxQaGpwOUMyMFZWZmhoN1M0amZFYnB6R3ljTXJEZW92Qmg1alpBal9tMjZuSWdOSTZld0duQ3I5dGFseFpYVFdOUU5LWF9qWllLSG14bFVBVTRuMXJ2Qi1qWUxRS1NuaFlrdktzbUk1ZHFCNWxYb2x2cjYyZThUcTBMVzJ1NlR0Z1dUZmdGMHZPVmJ4d0xEUGZtUlh6QXl2M0xOclFBRWNYWQ?oc=5" data-title="Jofra Archer named in England squad for South Africa Test series 2026-27 - Rajasthan Royals" data-summary="Jofra Archer named in England squad for South Africa Test series 2026-27 Rajasthan Royals" data-source="Rajasthan Royals" data-published="2026-11-09T16:22:39+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMipwFBVV95cUxQaGpwOUMyMFZWZmhoN1M0amZFYnB6R3ljTXJEZW92Qmg1alpBal9tMjZuSWdOSTZld0duQ3I5dGFseFpYVFdOUU5LWF9qWllLSG14bFVBVTRuMXJ2Qi1qWUxRS1NuaFlrdktzbUk1ZHFCNWxYb2x2cjYyZThUcTBMVzJ1NlR0Z1dUZmdGMHZPVmJ4d0xEUGZtUlh6QXl2M0xOclFBRWNYWQ?oc=5" target="_blank" rel="noopener">Jofra Archer named in England squad for South Africa Test series 2026-27 - Rajasthan Royals</a>
+          <p class="summary">Jofra Archer named in England squad for South Africa Test series 2026-27 Rajasthan Royals</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMipwFBVV95cUxQaGpwOUMyMFZWZmhoN1M0amZFYnB6R3ljTXJEZW92Qmg1alpBal9tMjZuSWdOSTZld0duQ3I5dGFseFpYVFdOUU5LWF9qWllLSG14bFVBVTRuMXJ2Qi1qWUxRS1NuaFlrdktzbUk1ZHFCNWxYb2x2cjYyZThUcTBMVzJ1NlR0Z1dUZmdGMHZPVmJ4d0xEUGZtUlh6QXl2M0xOclFBRWNYWQ?oc=5" target="_blank" rel="noopener">Rajasthan Royals</a> &middot; <span class="pubdate">9 Nov, 16:22</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Jofra Archer named in England squad for South Africa Test series 2026-27 - Rajasthan Royals" data-url="https://news.google.com/rss/articles/CBMipwFBVV95cUxQaGpwOUMyMFZWZmhoN1M0amZFYnB6R3ljTXJEZW92Qmg1alpBal9tMjZuSWdOSTZld0duQ3I5dGFseFpYVFdOUU5LWF9qWllLSG14bFVBVTRuMXJ2Qi1qWUxRS1NuaFlrdktzbUk1ZHFCNWxYb2x2cjYyZThUcTBMVzJ1NlR0Z1dUZmdGMHZPVmJ4d0xEUGZtUlh6QXl2M0xOclFBRWNYWQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562100.html?ex_cid=OTC-RSS" data-title="Shakeel, Saqib hand Pakistan the advantage against SL" data-summary="Sri Lanka are 320 behind with seven wickets in hand after two days of action in Rawalpindi" data-source="ESPNcricinfo" data-published="2026-11-10T12:13:51+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562100.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Shakeel, Saqib hand Pakistan the advantage against SL</a>
+          <p class="summary">Sri Lanka are 320 behind with seven wickets in hand after two days of action in Rawalpindi</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562100.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">10 Nov, 12:13</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Shakeel, Saqib hand Pakistan the advantage against SL" data-url="https://www.cricinfo.com/ci/content/story/1562100.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562006.html?ex_cid=OTC-RSS" data-title="Patterson-White wins maiden England call in Test squad for South Africa" data-summary="Nottinghamshire allrounder included ahead of Shoaib Bashir and Rehan Ahmed" data-source="ESPNcricinfo" data-published="2026-11-10T11:38:54+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562006.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Patterson-White wins maiden England call in Test squad for South Africa</a>
+          <p class="summary">Nottinghamshire allrounder included ahead of Shoaib Bashir and Rehan Ahmed</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562006.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">10 Nov, 11:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Patterson-White wins maiden England call in Test squad for South Africa" data-url="https://www.cricinfo.com/ci/content/story/1562006.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562104.html?ex_cid=OTC-RSS" data-title="&#x27;We weren&#x27;t aware&#x27; - Starc denies knowledge of taking sandpaper onto the field" data-summary="&quot;As I said before, I&#x27;ll stick to what I said five years ago, what I said at the time, eight years ago&quot;" data-source="ESPNcricinfo" data-published="2026-11-10T11:36:31+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562104.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">&#x27;We weren&#x27;t aware&#x27; - Starc denies knowledge of taking sandpaper onto the field</a>
+          <p class="summary">&quot;As I said before, I&#x27;ll stick to what I said five years ago, what I said at the time, eight years ago&quot;</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562104.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">10 Nov, 11:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&#x27;We weren&#x27;t aware&#x27; - Starc denies knowledge of taking sandpaper onto the field" data-url="https://www.cricinfo.com/ci/content/story/1562104.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562131.html?ex_cid=OTC-RSS" data-title="Ben McKinney, James Rew blast England Lions to fifth-highest List A total" data-summary="Durham&#x27;s McKinney cracks 43-ball ton as West Indies A thrashed in St Kitts" data-source="ESPNcricinfo" data-published="2026-11-10T11:05:06+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562131.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Ben McKinney, James Rew blast England Lions to fifth-highest List A total</a>
+          <p class="summary">Durham&#x27;s McKinney cracks 43-ball ton as West Indies A thrashed in St Kitts</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562131.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">10 Nov, 11:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ben McKinney, James Rew blast England Lions to fifth-highest List A total" data-url="https://www.cricinfo.com/ci/content/story/1562131.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/c615je0lgleqo?at_medium=RSS&amp;at_campaign=rss" data-title="Birthdays and broken lamps - at home with the Charles brothers" data-summary="Pierce Charles can&#x27;t help but smile as he waits for Shea to walk into the kitchen. It&#x27;s Shea&#x27;s 23rd birthday and he has a cake to surprise him, something he knows will embarrass his older brother. Right on cue, he gets the response that he was looking for as Shea has a sheepish smile, and Pierce launches into a rendition of &#x27;Happy Birthday&#x27; for the cameras." data-source="BBC News" data-published="2026-11-10T14:36:21+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/c615je0lgleqo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Birthdays and broken lamps - at home with the Charles brothers</a>
+          <p class="summary">Pierce Charles can&#x27;t help but smile as he waits for Shea to walk into the kitchen. It&#x27;s Shea&#x27;s 23rd birthday and he has a cake to surprise him, something he knows will embarrass his older brother. Right on cue, he gets the response that he was looking for as Shea has a sheepish smile, and Pierce launches into a rendition of &#x27;Happy Birthday&#x27; for the cameras.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/c615je0lgleqo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Birthdays and broken lamps - at home with the Charles brothers" data-url="https://www.bbc.co.uk/sport/football/articles/c615je0lgleqo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/f1/news/12040/13610302/formula-1-proceeding-with-plans-to-finish-2026-season-in-middle-east-as-deadline-to-hold-race-at-imola-passes" data-title="F1 planning to finish season in Middle East as Imola deadline passes" data-summary="Formula 1 chiefs informed organisers at Imola that the Italian circuit will not be required for use at the end of the 2026 season; the historic track had been on standby to stage a race in the event F1 felt its final two rounds could not safely be staged in Qatar and Abu Dhabi Please use Chrome browser for a more accessible video player Formula 1 chiefs are proceeding with plans to hold the final two rounds of 2026 in the Middle East after a deadline to move one of the season-ending races to Italy passed." data-source="Sky Sports" data-published="2026-11-10T14:00:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/news/12040/13610302/formula-1-proceeding-with-plans-to-finish-2026-season-in-middle-east-as-deadline-to-hold-race-at-imola-passes" target="_blank" rel="noopener">F1 planning to finish season in Middle East as Imola deadline passes</a>
+          <p class="summary">Formula 1 chiefs informed organisers at Imola that the Italian circuit will not be required for use at the end of the 2026 season; the historic track had been on standby to stage a race in the event F1 felt its final two rounds could not safely be staged in Qatar and Abu Dhabi Please use Chrome browser for a more accessible video player Formula 1 chiefs are proceeding with plans to hold the final two rounds of 2026 in the Middle East after a deadline to move one of the season-ending races to Italy passed.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/news/12040/13610302/formula-1-proceeding-with-plans-to-finish-2026-season-in-middle-east-as-deadline-to-hold-race-at-imola-passes" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">10 Nov, 14:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="F1 planning to finish season in Middle East as Imola deadline passes" data-url="https://www.skysports.com/f1/news/12040/13610302/formula-1-proceeding-with-plans-to-finish-2026-season-in-middle-east-as-deadline-to-hold-race-at-imola-passes">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/c674p4el33wno?at_medium=RSS&amp;at_campaign=rss" data-title="Kompany back at Bayern training after collapse" data-summary="Head coach Vincent Kompany has returned to Bayern Munich&#x27;s training ground after collapsing at the end of last month. The 40-year-old former Manchester City captain was taken to hospital after falling ill while watching the club&#x27;s second team train. Kompany was diagnosed with meningeal irritation - an inflammation of the protective membrane surrounding the brain and spinal cord." data-source="BBC News" data-published="2026-11-10T14:17:04+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/c674p4el33wno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Kompany back at Bayern training after collapse</a>
+          <p class="summary">Head coach Vincent Kompany has returned to Bayern Munich&#x27;s training ground after collapsing at the end of last month. The 40-year-old former Manchester City captain was taken to hospital after falling ill while watching the club&#x27;s second team train. Kompany was diagnosed with meningeal irritation - an inflammation of the protective membrane surrounding the brain and spinal cord.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/c674p4el33wno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 14:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Kompany back at Bayern training after collapse" data-url="https://www.bbc.co.uk/sport/football/articles/c674p4el33wno?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/racing/news/12040/13610664/ombudsman-godolphin-great-set-for-japan-cup-swansong" data-title="Ombudsman all set for Japan Cup swansong" data-summary="Champion Stakes hero Ombudsman is set for one final start in the Japan Cup before being retired to stud, trainer John Gosden has confirmed; The Godolphin-owned star, who is the back-to-back winner of the Prince Of Wales&#x27;s Stakes, missed out on a trip to the Breeders&#x27; Cup last month. Having already cemented his status as a Godolphin great, Ombudsman will have the chance to end his stellar career on the global stage when tackling the Japan Cup later this month." data-source="Sky Sports" data-published="2026-11-10T13:46:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/racing/news/12040/13610664/ombudsman-godolphin-great-set-for-japan-cup-swansong" target="_blank" rel="noopener">Ombudsman all set for Japan Cup swansong</a>
+          <p class="summary">Champion Stakes hero Ombudsman is set for one final start in the Japan Cup before being retired to stud, trainer John Gosden has confirmed; The Godolphin-owned star, who is the back-to-back winner of the Prince Of Wales&#x27;s Stakes, missed out on a trip to the Breeders&#x27; Cup last month. Having already cemented his status as a Godolphin great, Ombudsman will have the chance to end his stellar career on the global stage when tackling the Japan Cup later this month.</p>
+          <span class="source"><a href="https://www.skysports.com/racing/news/12040/13610664/ombudsman-godolphin-great-set-for-japan-cup-swansong" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">10 Nov, 13:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ombudsman all set for Japan Cup swansong" data-url="https://www.skysports.com/racing/news/12040/13610664/ombudsman-godolphin-great-set-for-japan-cup-swansong">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/india-exchanges-ideas-on-food-corridors-with-russia-ukraine-101794322282208.html" data-title="India exchanges ideas on ‘food corridors’ with Russia, Ukraine" data-summary="India has exchanged ideas with Russia and Ukraine on opening “food corridors” to facilitate grain exports from Black Sea ports as part of a broader ceasefire proposal and is working with other stakeholders for the return of peace in the region, the external affairs ministry said on Tuesday." data-source="Hindustan Times" data-published="2026-11-10T14:51:21+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/india-exchanges-ideas-on-food-corridors-with-russia-ukraine-101794322282208.html" target="_blank" rel="noopener">India exchanges ideas on ‘food corridors’ with Russia, Ukraine</a>
+          <p class="summary">India has exchanged ideas with Russia and Ukraine on opening “food corridors” to facilitate grain exports from Black Sea ports as part of a broader ceasefire proposal and is working with other stakeholders for the return of peace in the region, the external affairs ministry said on Tuesday.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/india-exchanges-ideas-on-food-corridors-with-russia-ukraine-101794322282208.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">10 Nov, 14:51</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="India exchanges ideas on ‘food corridors’ with Russia, Ukraine" data-url="https://www.hindustantimes.com/india-news/india-exchanges-ideas-on-food-corridors-with-russia-ukraine-101794322282208.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/us/california-teen-katelyn-liu-launches-nonprofit-to-inspire-thousands-with-free-stem-workshops-and-kits/articleshow/135708466.cms" data-title="California teen turns free science workshops into a global 21-chapter nonprofit" data-summary="" data-source="Times of India" data-published="2026-11-10T14:34:00+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/us/california-teen-katelyn-liu-launches-nonprofit-to-inspire-thousands-with-free-stem-workshops-and-kits/articleshow/135708466.cms" target="_blank" rel="noopener">California teen turns free science workshops into a global 21-chapter nonprofit</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/us/california-teen-katelyn-liu-launches-nonprofit-to-inspire-thousands-with-free-stem-workshops-and-kits/articleshow/135708466.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">10 Nov, 14:34</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="California teen turns free science workshops into a global 21-chapter nonprofit" data-url="https://timesofindia.indiatimes.com/world/us/california-teen-katelyn-liu-launches-nonprofit-to-inspire-thousands-with-free-stem-workshops-and-kits/articleshow/135708466.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/ck1l3lzg3y79o?at_medium=RSS&amp;at_campaign=rss" data-title="Oxford museum returns ancestral Naga skulls to India" data-summary="The University of Oxford has returned the remains of 39 people taken from the Naga community during British colonial rule in India. A delegation of around 30 people from Nagaland, a mountainous state in north-eastern India, attended a ceremony at Oxford&#x27;s Pitt Rivers Museum on Monday to mark the handover. The remains, most of which are skulls, will be taken back to India and given what Naga tribal leaders have described as a &quot;respectful rest&quot;." data-source="BBC News" data-published="2026-11-10T06:23:42+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/ck1l3lzg3y79o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Oxford museum returns ancestral Naga skulls to India</a>
+          <p class="summary">The University of Oxford has returned the remains of 39 people taken from the Naga community during British colonial rule in India. A delegation of around 30 people from Nagaland, a mountainous state in north-eastern India, attended a ceremony at Oxford&#x27;s Pitt Rivers Museum on Monday to mark the handover. The remains, most of which are skulls, will be taken back to India and given what Naga tribal leaders have described as a &quot;respectful rest&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/ck1l3lzg3y79o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">10 Nov, 06:23</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Oxford museum returns ancestral Naga skulls to India" data-url="https://www.bbc.co.uk/news/articles/ck1l3lzg3y79o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/as-delhi-gasps-for-clean-air-pollution-in-ncr-dropped-from-parliament-panel-meeting-agenda-101794320265458.html" data-title="As Delhi gasps for clean air, pollution in NCR dropped from Parliament panel meeting agenda" data-summary="As Delhi struggles with polluted air, a Parliamentary committee has decided to drop the key issue of air pollution in NCR from the agenda of its November 17 meeting, prompting a Congress member to raise strong objections with the panel chairperson. The Parliamentary Committee on Home Affairs had earlier decided to hear the views of the Ministry of Home Affairs and agencies concerned on the issue and hold a discussion." data-source="Hindustan Times" data-published="2026-11-10T14:35:32+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/as-delhi-gasps-for-clean-air-pollution-in-ncr-dropped-from-parliament-panel-meeting-agenda-101794320265458.html" target="_blank" rel="noopener">As Delhi gasps for clean air, pollution in NCR dropped from Parliament panel meeting agenda</a>
+          <p class="summary">As Delhi struggles with polluted air, a Parliamentary committee has decided to drop the key issue of air pollution in NCR from the agenda of its November 17 meeting, prompting a Congress member to raise strong objections with the panel chairperson. The Parliamentary Committee on Home Affairs had earlier decided to hear the views of the Ministry of Home Affairs and agencies concerned on the issue and hold a discussion.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/as-delhi-gasps-for-clean-air-pollution-in-ncr-dropped-from-parliament-panel-meeting-agenda-101794320265458.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">10 Nov, 14:35</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="As Delhi gasps for clean air, pollution in NCR dropped from Parliament panel meeting agenda" data-url="https://www.hindustantimes.com/india-news/as-delhi-gasps-for-clean-air-pollution-in-ncr-dropped-from-parliament-panel-meeting-agenda-101794320265458.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
