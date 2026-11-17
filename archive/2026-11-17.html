@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Tuesday, 17 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Tuesday, 17 November 2026, Updated as of 16:05 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-17.html" selected>Tuesday, 17 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-16.html">Monday, 16 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-15.html">Sunday, 15 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-14.html">Saturday, 14 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-13.html">Friday, 13 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-12.html">Thursday, 12 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-11.html">Wednesday, 11 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-10.html">Tuesday, 10 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-09.html">Monday, 09 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-08.html">Sunday, 08 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-07.html">Saturday, 07 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-06.html">Friday, 06 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-05.html">Thursday, 05 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-04.html">Wednesday, 04 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-03.html">Tuesday, 03 November 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOSzFrdG5YazBKdURtbEZjMUNjNU41QzFQeTNqQ3NLTXhNczF1NlQ1TGdGUm1PMzVVSXZ4MEl4Nmp4SEtaT1ZxbmFGeE1KTWlIMkg0NzRZTk4yRjZROENCUXhEX2Jvakhkd01UMGp3RW5pekFKZi00MmRpSlo2dGlCNDVBRFVRMG1KRE0xTnRobFMyRTFwaUhvRFNlNXd6MFNtemQ2dlBzekJsNW5BRkJ5a2VUV2UyTmlpOUUyZw?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 - NDTV Sports</span>
+      </a>
+      <a class="pick" href="https://www.bbc.co.uk/news/articles/cvglr977x3z0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — UK</span>
+        <span class="pick-headline">UK sanctions firms over Israeli West Bank settlements</span>
+      </a>
+      <a class="pick" href="https://www.cricinfo.com/ci/content/story/1562975.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">
+        <span class="pick-topic">Cricket</span>
+        <span class="pick-headline">Heartbreak for Naseer and Afghanistan as Zimbabwe snatch late win</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://arstechnica.com/tech-policy/2026/11/house-democrats-promise-a-us-return-to-global-climate-talks/" data-title="House Democrats promise a US return to global climate talks" data-summary="ANTALYA, Turkey—After their big gains in the 2026 midterm elections , a delegation of Democratic US House members appeared at the United Nations COP31 climate change conference Monday, pledging to rejoin the international fight against global warming. Rep. Jared Huffman (D-Calif.), ranking member of the House Natural Resources Committee, said it is a “pivotal time” for US climate and energy policy." data-source="Ars Technica" data-published="2026-11-17T15:32:43+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/tech-policy/2026/11/house-democrats-promise-a-us-return-to-global-climate-talks/" target="_blank" rel="noopener">House Democrats promise a US return to global climate talks</a>
+          <p class="summary">ANTALYA, Turkey—After their big gains in the 2026 midterm elections , a delegation of Democratic US House members appeared at the United Nations COP31 climate change conference Monday, pledging to rejoin the international fight against global warming. Rep. Jared Huffman (D-Calif.), ranking member of the House Natural Resources Committee, said it is a “pivotal time” for US climate and energy policy.</p>
+          <span class="source"><a href="https://arstechnica.com/tech-policy/2026/11/house-democrats-promise-a-us-return-to-global-climate-talks/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">17 Nov, 15:32</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="House Democrats promise a US return to global climate talks" data-url="https://arstechnica.com/tech-policy/2026/11/house-democrats-promise-a-us-return-to-global-climate-talks/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1035257/fema-fcc-emergency-alert-system-test-2026" data-title="Get ready for a nationwide emergency alert test at 2:20PM ET today" data-summary="Heads-up: Radio and TV programming will be briefly interrupted this afternoon. Radio and TV broadcasts will be interrupted for about one minute at 2:20PM ET today while FEMA and the FCC test the country’s Emergency Alert System. Unlike recent communications outages , this is a planned interruption that FEMA is required to run every three years. FEMA says today’s test includes radio and television broadcasters, cable systems, satellite radio and television providers, and wireline video providers." data-source="The Verge" data-published="2026-11-17T14:28:24+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1035257/fema-fcc-emergency-alert-system-test-2026" target="_blank" rel="noopener">Get ready for a nationwide emergency alert test at 2:20PM ET today</a>
+          <p class="summary">Heads-up: Radio and TV programming will be briefly interrupted this afternoon. Radio and TV broadcasts will be interrupted for about one minute at 2:20PM ET today while FEMA and the FCC test the country’s Emergency Alert System. Unlike recent communications outages , this is a planned interruption that FEMA is required to run every three years. FEMA says today’s test includes radio and television broadcasters, cable systems, satellite radio and television providers, and wireline video providers.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1035257/fema-fcc-emergency-alert-system-test-2026" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">17 Nov, 14:28</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Get ready for a nationwide emergency alert test at 2:20PM ET today" data-url="https://www.theverge.com/tech/1035257/fema-fcc-emergency-alert-system-test-2026">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cwq6e2qgvmlgo?at_medium=RSS&amp;at_campaign=rss" data-title="How new US chip restrictions on South East Asia will hit China" data-summary="As US President Donald Trump heads to China, his administration has renewed efforts to curb Beijing&#x27;s access to advanced semiconductors. On Monday, Washington announced new interim rules that will increase scrutiny of  data centre operators in Singapore, Malaysia, Thailand, Indonesia and Brazil. The move not only restricts the export of advanced chips, but also access to their computing power, which Chinese firms currently rent abroad to train artificial intelligence (AI) models." data-source="BBC News" data-published="2026-11-17T14:25:45+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cwq6e2qgvmlgo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">How new US chip restrictions on South East Asia will hit China</a>
+          <p class="summary">As US President Donald Trump heads to China, his administration has renewed efforts to curb Beijing&#x27;s access to advanced semiconductors. On Monday, Washington announced new interim rules that will increase scrutiny of  data centre operators in Singapore, Malaysia, Thailand, Indonesia and Brazil. The move not only restricts the export of advanced chips, but also access to their computing power, which Chinese firms currently rent abroad to train artificial intelligence (AI) models.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cwq6e2qgvmlgo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 14:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="How new US chip restrictions on South East Asia will hit China" data-url="https://www.bbc.co.uk/news/articles/cwq6e2qgvmlgo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/gadgets/2026/11/ars-live-can-the-cloud-survive-drone-strikes-on-data-centers/" data-title="Ars Live: What do drone strikes on data centers mean for the future? Talk at 1 pm EST today" data-summary="Drone and missile strikes have inflicted unprecedented damage on data centers in Eastern Europe and the Middle East this year, disrupting cloud services for millions of people and permanently deleting some Amazon Web Services customer data. This trend represents a new concern for Big Tech companies—but also for governments and everyone else who depends on common digital services in modern life." data-source="Ars Technica" data-published="2026-11-17T15:28:59+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/gadgets/2026/11/ars-live-can-the-cloud-survive-drone-strikes-on-data-centers/" target="_blank" rel="noopener">Ars Live: What do drone strikes on data centers mean for the future? Talk at 1 pm EST today</a>
+          <p class="summary">Drone and missile strikes have inflicted unprecedented damage on data centers in Eastern Europe and the Middle East this year, disrupting cloud services for millions of people and permanently deleting some Amazon Web Services customer data. This trend represents a new concern for Big Tech companies—but also for governments and everyone else who depends on common digital services in modern life.</p>
+          <span class="source"><a href="https://arstechnica.com/gadgets/2026/11/ars-live-can-the-cloud-survive-drone-strikes-on-data-centers/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">17 Nov, 15:28</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ars Live: What do drone strikes on data centers mean for the future? Talk at 1 pm EST today" data-url="https://arstechnica.com/gadgets/2026/11/ars-live-can-the-cloud-survive-drone-strikes-on-data-centers/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://techcrunch.com/2026/11/17/voyage-labs-raises-12-million-for-a-specialized-ai-travel-assistant/" data-title="Voyage Labs raises $12 million for a specialized AI travel assistant" data-summary="Planning a trip is a favorite demo for personal AI assistants: you can try it with Muse, or with Gemini or half a dozen other choices. But while most pitches use travel-planning as part of a general-purpose agent pitch, a new startup from a Google Maps alum is betting that a specialized travel-planning agent can beat the competition. The company is called Voyage Labs, and on Tuesday it announced $12 million in seed funding led by Kleiner Perkins, with participation from SignalFire and SV Angel." data-source="TechCrunch" data-published="2026-11-17T15:00:00+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/17/voyage-labs-raises-12-million-for-a-specialized-ai-travel-assistant/" target="_blank" rel="noopener">Voyage Labs raises $12 million for a specialized AI travel assistant</a>
+          <p class="summary">Planning a trip is a favorite demo for personal AI assistants: you can try it with Muse, or with Gemini or half a dozen other choices. But while most pitches use travel-planning as part of a general-purpose agent pitch, a new startup from a Google Maps alum is betting that a specialized travel-planning agent can beat the competition. The company is called Voyage Labs, and on Tuesday it announced $12 million in seed funding led by Kleiner Perkins, with participation from SignalFire and SV Angel.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/17/voyage-labs-raises-12-million-for-a-specialized-ai-travel-assistant/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">17 Nov, 15:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Voyage Labs raises $12 million for a specialized AI travel assistant" data-url="https://techcrunch.com/2026/11/17/voyage-labs-raises-12-million-for-a-specialized-ai-travel-assistant/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.technologyreview.com/2026/11/17/1148203/research-reports/" data-title="Research Reports" data-summary="Only available to MIT Technology Review subscribers. To access a report, click on the corresponding image below. Ten years after AlphaGo’s match against Go champion Lee Sedol, today’s AI still isn’t tapping into the machinery that made that win possible. An exclusive interview with Nick Cammarata, the researcher whose 26,000-word viral blog post has AI safety folks celebrating. Breathless claims about AGI and new capabilities fall apart pretty quickly under scrutiny." data-source="MIT Technology Review" data-published="2026-11-17T14:39:46+00:00" data-section="AI" data-paywalled="true">
+          <a class="headline" href="https://www.technologyreview.com/2026/11/17/1148203/research-reports/" target="_blank" rel="noopener">Research Reports</a>
+          <p class="summary">Only available to MIT Technology Review subscribers. To access a report, click on the corresponding image below. Ten years after AlphaGo’s match against Go champion Lee Sedol, today’s AI still isn’t tapping into the machinery that made that win possible. An exclusive interview with Nick Cammarata, the researcher whose 26,000-word viral blog post has AI safety folks celebrating. Breathless claims about AGI and new capabilities fall apart pretty quickly under scrutiny.</p>
+          <span class="source"><a href="https://www.technologyreview.com/2026/11/17/1148203/research-reports/" target="_blank" rel="noopener">MIT Technology Review</a> &middot; <span class="pubdate">17 Nov, 14:39</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="Research Reports" data-url="https://www.technologyreview.com/2026/11/17/1148203/research-reports/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/security/2026/11/grok-bot-took-unapproved-actions-ignored-orders-to-stop-and-then-denied-it/" data-title="Grok Bot took unapproved actions, ignored orders to stop, and then denied it" data-summary="Researchers recently discovered unexpected behavior from Grok Bot, the AI agent platform from Elon Musk’s SpaceXSI. Over five days, Grok bots installed on two separate employee laptops made 31 requests to access data stored in employee calendar, email, Slack, and GitHub accounts. The bots performed the actions even though the employees had never ordered them and continued doing them even after employees instructed them to stop. The bots also denied having taken the actions at all." data-source="Ars Technica" data-published="2026-11-17T14:00:29+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/security/2026/11/grok-bot-took-unapproved-actions-ignored-orders-to-stop-and-then-denied-it/" target="_blank" rel="noopener">Grok Bot took unapproved actions, ignored orders to stop, and then denied it</a>
+          <p class="summary">Researchers recently discovered unexpected behavior from Grok Bot, the AI agent platform from Elon Musk’s SpaceXSI. Over five days, Grok bots installed on two separate employee laptops made 31 requests to access data stored in employee calendar, email, Slack, and GitHub accounts. The bots performed the actions even though the employees had never ordered them and continued doing them even after employees instructed them to stop. The bots also denied having taken the actions at all.</p>
+          <span class="source"><a href="https://arstechnica.com/security/2026/11/grok-bot-took-unapproved-actions-ignored-orders-to-stop-and-then-denied-it/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">17 Nov, 14:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Grok Bot took unapproved actions, ignored orders to stop, and then denied it" data-url="https://arstechnica.com/security/2026/11/grok-bot-took-unapproved-actions-ignored-orders-to-stop-and-then-denied-it/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1035027/tech-leaders-nvidia-jensen-huang-theories" data-title="Tech leaders are convinced that Jensen Huang’s exit was a plot against him" data-summary="David Sacks, Tim Sweeney, and other big names in tech are raising questions about the circumstances surrounding Huang’s resignation. Jensen Huang’s stunning resignation from Nvidia after more than 33 years has sent shockwaves throughout the tech industry. Now prominent figures are calling for Huang’s reinstatement, and many are also hopping on board with a theory spreading throughout Silicon Valley: that the scandal is the result of a plot against the former CEO." data-source="The Verge" data-published="2026-11-16T23:17:34+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1035027/tech-leaders-nvidia-jensen-huang-theories" target="_blank" rel="noopener">Tech leaders are convinced that Jensen Huang’s exit was a plot against him</a>
+          <p class="summary">David Sacks, Tim Sweeney, and other big names in tech are raising questions about the circumstances surrounding Huang’s resignation. Jensen Huang’s stunning resignation from Nvidia after more than 33 years has sent shockwaves throughout the tech industry. Now prominent figures are calling for Huang’s reinstatement, and many are also hopping on board with a theory spreading throughout Silicon Valley: that the scandal is the result of a plot against the former CEO.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1035027/tech-leaders-nvidia-jensen-huang-theories" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">16 Nov, 23:17</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Tech leaders are convinced that Jensen Huang’s exit was a plot against him" data-url="https://www.theverge.com/tech/1035027/tech-leaders-nvidia-jensen-huang-theories">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cvglr977x3z0o?at_medium=RSS&amp;at_campaign=rss" data-title="UK sanctions firms over Israeli West Bank settlements" data-summary="The UK has sanctioned companies it said are involved in building settlements in the occupied West Bank, in the first package of measures since the government announced a tougher approach to Israeli actions in the territory. The government said the sanctions against eight construction and property development firms would disrupt their flows of finance and ability to support building in the West Bank." data-source="BBC News" data-published="2026-11-17T15:59:47+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cvglr977x3z0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">UK sanctions firms over Israeli West Bank settlements</a>
+          <p class="summary">The UK has sanctioned companies it said are involved in building settlements in the occupied West Bank, in the first package of measures since the government announced a tougher approach to Israeli actions in the territory. The government said the sanctions against eight construction and property development firms would disrupt their flows of finance and ability to support building in the West Bank.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cvglr977x3z0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 15:59</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="UK sanctions firms over Israeli West Bank settlements" data-url="https://www.bbc.co.uk/news/articles/cvglr977x3z0o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/politics/live/2026/nov/17/alan-milburn-youth-unempolyment-neets-economy-welfare-brexit-latest-news-updates" data-title="Burnham makes Milburn head of unit to implement new jobs and welfare approach for young people – live" data-summary="Author of Neets report will be in charge of ‘unblocking delivery and driving progress’Full story: Milburn says plan will save only £200m a yearExplainer: what’s in the report?This chart, from the Milburn report, shows what is likely to happen to the Neet rate, with or without the Milburn policies.The Alan Milburn report has now formally been published. It should be online here very soon. Continue reading..." data-source="The Guardian" data-published="2026-11-17T15:49:29+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/live/2026/nov/17/alan-milburn-youth-unempolyment-neets-economy-welfare-brexit-latest-news-updates" target="_blank" rel="noopener">Burnham makes Milburn head of unit to implement new jobs and welfare approach for young people – live</a>
+          <p class="summary">Author of Neets report will be in charge of ‘unblocking delivery and driving progress’Full story: Milburn says plan will save only £200m a yearExplainer: what’s in the report?This chart, from the Milburn report, shows what is likely to happen to the Neet rate, with or without the Milburn policies.The Alan Milburn report has now formally been published. It should be online here very soon. Continue reading...</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/live/2026/nov/17/alan-milburn-youth-unempolyment-neets-economy-welfare-brexit-latest-news-updates" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">17 Nov, 15:49</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Burnham makes Milburn head of unit to implement new jobs and welfare approach for young people – live" data-url="https://www.theguardian.com/politics/live/2026/nov/17/alan-milburn-youth-unempolyment-neets-economy-welfare-brexit-latest-news-updates">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c6d01e8m15mko?at_medium=RSS&amp;at_campaign=rss" data-title="We can&#x27;t afford to hire under-25s, say firms. Will Milburn plans help?" data-summary="Lowering employers&#x27; National Insurance (NI) payments for those between 21 and 24, and cash incentives to take on some workers are among proposals put forward in Alan Milburn&#x27;s report to get more 18-24 year-olds working. Many companies have complained that recent increases in National Insurance and the minimum wage have made it more expensive to take on staff. We talked to firms and business groups about the issues they face when hiring younger works and what they make of the proposals." data-source="BBC News" data-published="2026-11-17T15:56:04+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c6d01e8m15mko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">We can&#x27;t afford to hire under-25s, say firms. Will Milburn plans help?</a>
+          <p class="summary">Lowering employers&#x27; National Insurance (NI) payments for those between 21 and 24, and cash incentives to take on some workers are among proposals put forward in Alan Milburn&#x27;s report to get more 18-24 year-olds working. Many companies have complained that recent increases in National Insurance and the minimum wage have made it more expensive to take on staff. We talked to firms and business groups about the issues they face when hiring younger works and what they make of the proposals.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c6d01e8m15mko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 15:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="We can&#x27;t afford to hire under-25s, say firms. Will Milburn plans help?" data-url="https://www.bbc.co.uk/news/articles/c6d01e8m15mko?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/society/2026/nov/17/alan-milburn-report-young-people-work-neets-job-support-savingsalan-milburn-plan-young-people-work-neets-savings-200m-a-year" data-title="Ministers vow to create new welfare system for young people as they back Milburn report" data-summary="Government promises spending cuts to pay for the proposals, described by prime minister as ‘watershed moment’UK politics live – latest updatesNeet ideas: what’s in Milburn’s report?Ministers have promised to create an entirely new welfare system for young people as they gave their backing to Alan Milburn’s 278-page report, promising spending cuts next year to help pay for his proposals and giving him a government role to push them through.Andy Burnham, the prime minister, told his cabinet colleagues on Tuesday morning the report was a “watershed moment” and offered a “comprehensive vision” as he invited its author to address the meeting." data-source="The Guardian" data-published="2026-11-17T15:35:09+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/society/2026/nov/17/alan-milburn-report-young-people-work-neets-job-support-savingsalan-milburn-plan-young-people-work-neets-savings-200m-a-year" target="_blank" rel="noopener">Ministers vow to create new welfare system for young people as they back Milburn report</a>
+          <p class="summary">Government promises spending cuts to pay for the proposals, described by prime minister as ‘watershed moment’UK politics live – latest updatesNeet ideas: what’s in Milburn’s report?Ministers have promised to create an entirely new welfare system for young people as they gave their backing to Alan Milburn’s 278-page report, promising spending cuts next year to help pay for his proposals and giving him a government role to push them through.Andy Burnham, the prime minister, told his cabinet colleagues on Tuesday morning the report was a “watershed moment” and offered a “comprehensive vision” as he invited its author to address the meeting.</p>
+          <span class="source"><a href="https://www.theguardian.com/society/2026/nov/17/alan-milburn-report-young-people-work-neets-job-support-savingsalan-milburn-plan-young-people-work-neets-savings-200m-a-year" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">17 Nov, 15:35</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Ministers vow to create new welfare system for young people as they back Milburn report" data-url="https://www.theguardian.com/society/2026/nov/17/alan-milburn-report-young-people-work-neets-job-support-savingsalan-milburn-plan-young-people-work-neets-savings-200m-a-year">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.aljazeera.com/video/newsfeed/2026/11/17/serbian-actress-and-former-mp-doused-with-yoghurt-outside-parliament?traffic_source=rss" data-title="Serbian actress and former MP doused with yoghurt outside parliament" data-summary="Serbian actress and former MP doused with yoghurt outside parliament Serbian actress and former MP Lidija Vukicevic, who is backing the ruling SNS party, had yoghurt poured over her as she arrived at Serbia’s National Assembly for its first session following elections won by a student-led opposition movement." data-source="Al Jazeera" data-published="2026-11-17T15:46:45+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/video/newsfeed/2026/11/17/serbian-actress-and-former-mp-doused-with-yoghurt-outside-parliament?traffic_source=rss" target="_blank" rel="noopener">Serbian actress and former MP doused with yoghurt outside parliament</a>
+          <p class="summary">Serbian actress and former MP doused with yoghurt outside parliament Serbian actress and former MP Lidija Vukicevic, who is backing the ruling SNS party, had yoghurt poured over her as she arrived at Serbia’s National Assembly for its first session following elections won by a student-led opposition movement.</p>
+          <span class="source"><a href="https://www.aljazeera.com/video/newsfeed/2026/11/17/serbian-actress-and-former-mp-doused-with-yoghurt-outside-parliament?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">17 Nov, 15:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Serbian actress and former MP doused with yoghurt outside parliament" data-url="https://www.aljazeera.com/video/newsfeed/2026/11/17/serbian-actress-and-former-mp-doused-with-yoghurt-outside-parliament?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/us-news/2026/nov/17/pentagon-fails-audit" data-title="US Pentagon fails ninth straight audit despite progress in organizing finances" data-summary="The audits check whether financial statements ​are fairly presented and financial systems ‌and processes are soundThe Pentagon failed a financial audit for the ninth consecutive year, according to an inspector general ⁠report released on Monday – but an official said a majority of its units passed for the first time.The US defense department chief financial officer, Jules Hurst, told ⁠Reuters an independent auditor ⁠found that ​financial statements for 14 of the Pentagon’s 25 standalone reporting entities passed in the 2026 fiscal year, which ended in September, up from ⁠11 the prior year." data-source="The Guardian" data-published="2026-11-17T15:43:12+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/us-news/2026/nov/17/pentagon-fails-audit" target="_blank" rel="noopener">US Pentagon fails ninth straight audit despite progress in organizing finances</a>
+          <p class="summary">The audits check whether financial statements ​are fairly presented and financial systems ‌and processes are soundThe Pentagon failed a financial audit for the ninth consecutive year, according to an inspector general ⁠report released on Monday – but an official said a majority of its units passed for the first time.The US defense department chief financial officer, Jules Hurst, told ⁠Reuters an independent auditor ⁠found that ​financial statements for 14 of the Pentagon’s 25 standalone reporting entities passed in the 2026 fiscal year, which ended in September, up from ⁠11 the prior year.</p>
+          <span class="source"><a href="https://www.theguardian.com/us-news/2026/nov/17/pentagon-fails-audit" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">17 Nov, 15:43</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="US Pentagon fails ninth straight audit despite progress in organizing finances" data-url="https://www.theguardian.com/us-news/2026/nov/17/pentagon-fails-audit">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/crz9dgz28zwdo?at_medium=RSS&amp;at_campaign=rss" data-title="How the attack on Crimean Bridge unfolded" data-summary="Stretching across the Kerch Strait in the Black Sea, the Crimean Bridge was always a symbol: for Russia, a prestige project cementing its claim to sovereign Ukrainian territory, and for Ukraine, a hated piece of infrastructure emblematic of Moscow&#x27;s occupation of the Crimean Peninsula. A key section of the double-arched, 12-mile-long bridge now lies on the seabed, brought down by an arsenal of Ukrainian long-range weaponry in a seven-stage operation culminating in a dramatic collapse." data-source="BBC News" data-published="2026-11-17T15:38:10+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/crz9dgz28zwdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">How the attack on Crimean Bridge unfolded</a>
+          <p class="summary">Stretching across the Kerch Strait in the Black Sea, the Crimean Bridge was always a symbol: for Russia, a prestige project cementing its claim to sovereign Ukrainian territory, and for Ukraine, a hated piece of infrastructure emblematic of Moscow&#x27;s occupation of the Crimean Peninsula. A key section of the double-arched, 12-mile-long bridge now lies on the seabed, brought down by an arsenal of Ukrainian long-range weaponry in a seven-stage operation culminating in a dramatic collapse.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/crz9dgz28zwdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 15:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="How the attack on Crimean Bridge unfolded" data-url="https://www.bbc.co.uk/news/articles/crz9dgz28zwdo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.economist.com/international/2026/11/16/the-war-room-newsletter-will-america-or-iran-blink-first" data-title="The War Room newsletter: Will America or Iran blink first?" data-summary="Alex Turner, our defence editor, on why neither side can end the stalemate" data-source="The Economist" data-published="2026-11-16T17:38:50+00:00" data-section="Politics — Global" data-paywalled="true">
+          <a class="headline" href="https://www.economist.com/international/2026/11/16/the-war-room-newsletter-will-america-or-iran-blink-first" target="_blank" rel="noopener">The War Room newsletter: Will America or Iran blink first?</a>
+          <p class="summary">Alex Turner, our defence editor, on why neither side can end the stalemate</p>
+          <span class="source"><a href="https://www.economist.com/international/2026/11/16/the-war-room-newsletter-will-america-or-iran-blink-first" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">16 Nov, 17:38</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="The War Room newsletter: Will America or Iran blink first?" data-url="https://www.economist.com/international/2026/11/16/the-war-room-newsletter-will-america-or-iran-blink-first">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.statnews.com/2026/11/17/democrats-new-health-policy-medicare-for-more-stephen-miller-embraces-maha/?utm_campaign=rss" data-title="STAT+: ‘Medicare for More’ gains traction" data-summary="Democrats coalesce around a new health care policy, and Trump&#x27;s new chief of staff embraces MAHA." data-source="STAT News" data-published="2026-11-17T15:27:50+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/17/democrats-new-health-policy-medicare-for-more-stephen-miller-embraces-maha/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: ‘Medicare for More’ gains traction</a>
+          <p class="summary">Democrats coalesce around a new health care policy, and Trump&#x27;s new chief of staff embraces MAHA.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/17/democrats-new-health-policy-medicare-for-more-stephen-miller-embraces-maha/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">17 Nov, 15:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: ‘Medicare for More’ gains traction" data-url="https://www.statnews.com/2026/11/17/democrats-new-health-policy-medicare-for-more-stephen-miller-embraces-maha/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cm9308z78p7ko?at_medium=RSS&amp;at_campaign=rss" data-title="NHS gets £500m boost in Wales&#x27; first budget under Plaid Cymru" data-summary="A funding boost for the NHS has been included in Plaid Cymru&#x27;s first budget, but other public services could still feel the pinch. Despite an extra Â£500m to cut waiting lists, spending on health will not rise as quickly as it has in recent years. Money has also been set aside to negotiate a crucial political deal on the budget â the first since Plaid won power at May&#x27;s Senedd election." data-source="BBC News" data-published="2026-11-17T14:50:38+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cm9308z78p7ko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">NHS gets £500m boost in Wales&#x27; first budget under Plaid Cymru</a>
+          <p class="summary">A funding boost for the NHS has been included in Plaid Cymru&#x27;s first budget, but other public services could still feel the pinch. Despite an extra Â£500m to cut waiting lists, spending on health will not rise as quickly as it has in recent years. Money has also been set aside to negotiate a crucial political deal on the budget â the first since Plaid won power at May&#x27;s Senedd election.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cm9308z78p7ko?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 14:50</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="NHS gets £500m boost in Wales&#x27; first budget under Plaid Cymru" data-url="https://www.bbc.co.uk/news/articles/cm9308z78p7ko?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261116014725.htm" data-title="Scientists tracked kids for 8 years. What they found about screen time was surprising" data-summary="An eight-year study of children in Finland has revealed a surprising connection between screen time and brain function. Researchers found that children who spent more time using screens tended to have better cognitive processing abilities as teenagers, challenging the widespread assumption that screen time is necessarily harmful to developing brains. The findings suggest that the amount of time children spend in front of screens may be less important than how they use that time." data-source="ScienceDaily" data-published="2026-11-17T12:03:58+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261116014725.htm" target="_blank" rel="noopener">Scientists tracked kids for 8 years. What they found about screen time was surprising</a>
+          <p class="summary">An eight-year study of children in Finland has revealed a surprising connection between screen time and brain function. Researchers found that children who spent more time using screens tended to have better cognitive processing abilities as teenagers, challenging the widespread assumption that screen time is necessarily harmful to developing brains. The findings suggest that the amount of time children spend in front of screens may be less important than how they use that time.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261116014725.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">17 Nov, 12:03</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Scientists tracked kids for 8 years. What they found about screen time was surprising" data-url="https://www.sciencedaily.com/releases/2026/11/261116014725.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/pharmalot/2026/11/17/roche-breast-cancer-pill-obesity-drugs-in-children/?utm_campaign=rss" data-title="STAT+: Pharmalittle: We’re reading about a Roche breast cancer pill, obesity drugs in children, and more" data-summary="The FDA approved a breast cancer drug from Roche, teeing up the launch of what the company has said could become its top-selling product" data-source="STAT News" data-published="2026-11-17T14:25:41+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/pharmalot/2026/11/17/roche-breast-cancer-pill-obesity-drugs-in-children/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: Pharmalittle: We’re reading about a Roche breast cancer pill, obesity drugs in children, and more</a>
+          <p class="summary">The FDA approved a breast cancer drug from Roche, teeing up the launch of what the company has said could become its top-selling product</p>
+          <span class="source"><a href="https://www.statnews.com/pharmalot/2026/11/17/roche-breast-cancer-pill-obesity-drugs-in-children/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">17 Nov, 14:25</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: Pharmalittle: We’re reading about a Roche breast cancer pill, obesity drugs in children, and more" data-url="https://www.statnews.com/pharmalot/2026/11/17/roche-breast-cancer-pill-obesity-drugs-in-children/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiogFBVV95cUxNUnNwcHYxQ19EZEFDZHhrcUgyUTBHUGEtSW40V0tHdUcxNHRwRTlwR05qMlM2YWFLejExeGRLck9DOFI1azhKeDBzXzJKMG81dEpqNUJKUjNja3Z5OGthcVdwR2RvbENUUGhidXlTc3JyUFExVFhOUXdxUWljZXJlb2U4c0RaZUNJTHJoWmd1UEpWM0k4RmxESno2MVVZdjJBaWc?oc=5" data-title="We can beat New Zealand if we play to our potential: Shubman Gill - BCCI" data-summary="We can beat New Zealand if we play to our potential: Shubman Gill BCCI" data-source="BCCI" data-published="2026-11-17T09:20:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiogFBVV95cUxNUnNwcHYxQ19EZEFDZHhrcUgyUTBHUGEtSW40V0tHdUcxNHRwRTlwR05qMlM2YWFLejExeGRLck9DOFI1azhKeDBzXzJKMG81dEpqNUJKUjNja3Z5OGthcVdwR2RvbENUUGhidXlTc3JyUFExVFhOUXdxUWljZXJlb2U4c0RaZUNJTHJoWmd1UEpWM0k4RmxESno2MVVZdjJBaWc?oc=5" target="_blank" rel="noopener">We can beat New Zealand if we play to our potential: Shubman Gill - BCCI</a>
+          <p class="summary">We can beat New Zealand if we play to our potential: Shubman Gill BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxNUnNwcHYxQ19EZEFDZHhrcUgyUTBHUGEtSW40V0tHdUcxNHRwRTlwR05qMlM2YWFLejExeGRLck9DOFI1azhKeDBzXzJKMG81dEpqNUJKUjNja3Z5OGthcVdwR2RvbENUUGhidXlTc3JyUFExVFhOUXdxUWljZXJlb2U4c0RaZUNJTHJoWmd1UEpWM0k4RmxESno2MVVZdjJBaWc?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">17 Nov, 09:20</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="We can beat New Zealand if we play to our potential: Shubman Gill - BCCI" data-url="https://news.google.com/rss/articles/CBMiogFBVV95cUxNUnNwcHYxQ19EZEFDZHhrcUgyUTBHUGEtSW40V0tHdUcxNHRwRTlwR05qMlM2YWFLejExeGRLck9DOFI1azhKeDBzXzJKMG81dEpqNUJKUjNja3Z5OGthcVdwR2RvbENUUGhidXlTc3JyUFExVFhOUXdxUWljZXJlb2U4c0RaZUNJTHJoWmd1UEpWM0k4RmxESno2MVVZdjJBaWc?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMi8AFBVV95cUxNY0VVWVR6NGI5OWxZX0F1bDJYYmNlb2xlU1o4enJUblJYZWJTZVhKZ0gtMlN2SGh2NlpNeFJsUUtuaHhlUnREbllOWUs0X0dGMlIya0FhZVpIRHRNXzJXSDNBckN5d1BVVFV4M2MtTXk4VE1oc0pfRzNZdzhFa0pHZ0dXSzdiaXVCRG5WR3N6TDAwZkduSl83dFFkcGhOOUpUblZ3WnEtX2hTYjd3QXlMTzZqa0NOa3VXeEM5TWNRNXhnOGlSdW1NdHJXU1BqSjdjQW5tc2g3VkFicmdqMHM1dXQ3NzZIMGFxRUJMemxLRG7SAfYBQVVfeXFMUG1zUkVXZjNXcFlpbDU5UFg3NXdjVm1lLVJtbTc5UXJ4M01FNnhFanRBX2xWQlo4QVRxVUNFdTRUeExiQmdJZlpOR2tFS2QyMXlGSWlwODRlRHNmeW9yRUVlNTgxdVctcElBazROd1pmTHdzRFdEbmFWVDdoMmpIMjJaeWszSmVDUzNhaGxyWHFLc3h3UDR1Z0Q3XzR1cXo3NldJak4xNjNtendyRTRPSmJxQmlhckxMSHJDeEVLVkhuQU12RnJYNGw0dGRoTkpqNUFPVGd6QXBheGZZMWNIRExfTVhWbEx6clRYTUlFYjBCR2xkYnV3?oc=5" data-title="Meesho’s Vidit Aatrey buys Bengaluru plots pledged against funds raised for BYJU’S BCCI dues for Rs 84 crore - Storyboard18" data-summary="Meesho’s Vidit Aatrey buys Bengaluru plots pledged against funds raised for BYJU’S BCCI dues for Rs 84 crore Storyboard18" data-source="Storyboard18" data-published="2026-11-17T04:06:40+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMi8AFBVV95cUxNY0VVWVR6NGI5OWxZX0F1bDJYYmNlb2xlU1o4enJUblJYZWJTZVhKZ0gtMlN2SGh2NlpNeFJsUUtuaHhlUnREbllOWUs0X0dGMlIya0FhZVpIRHRNXzJXSDNBckN5d1BVVFV4M2MtTXk4VE1oc0pfRzNZdzhFa0pHZ0dXSzdiaXVCRG5WR3N6TDAwZkduSl83dFFkcGhOOUpUblZ3WnEtX2hTYjd3QXlMTzZqa0NOa3VXeEM5TWNRNXhnOGlSdW1NdHJXU1BqSjdjQW5tc2g3VkFicmdqMHM1dXQ3NzZIMGFxRUJMemxLRG7SAfYBQVVfeXFMUG1zUkVXZjNXcFlpbDU5UFg3NXdjVm1lLVJtbTc5UXJ4M01FNnhFanRBX2xWQlo4QVRxVUNFdTRUeExiQmdJZlpOR2tFS2QyMXlGSWlwODRlRHNmeW9yRUVlNTgxdVctcElBazROd1pmTHdzRFdEbmFWVDdoMmpIMjJaeWszSmVDUzNhaGxyWHFLc3h3UDR1Z0Q3XzR1cXo3NldJak4xNjNtendyRTRPSmJxQmlhckxMSHJDeEVLVkhuQU12RnJYNGw0dGRoTkpqNUFPVGd6QXBheGZZMWNIRExfTVhWbEx6clRYTUlFYjBCR2xkYnV3?oc=5" target="_blank" rel="noopener">Meesho’s Vidit Aatrey buys Bengaluru plots pledged against funds raised for BYJU’S BCCI dues for Rs 84 crore - Storyboard18</a>
+          <p class="summary">Meesho’s Vidit Aatrey buys Bengaluru plots pledged against funds raised for BYJU’S BCCI dues for Rs 84 crore Storyboard18</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMi8AFBVV95cUxNY0VVWVR6NGI5OWxZX0F1bDJYYmNlb2xlU1o4enJUblJYZWJTZVhKZ0gtMlN2SGh2NlpNeFJsUUtuaHhlUnREbllOWUs0X0dGMlIya0FhZVpIRHRNXzJXSDNBckN5d1BVVFV4M2MtTXk4VE1oc0pfRzNZdzhFa0pHZ0dXSzdiaXVCRG5WR3N6TDAwZkduSl83dFFkcGhOOUpUblZ3WnEtX2hTYjd3QXlMTzZqa0NOa3VXeEM5TWNRNXhnOGlSdW1NdHJXU1BqSjdjQW5tc2g3VkFicmdqMHM1dXQ3NzZIMGFxRUJMemxLRG7SAfYBQVVfeXFMUG1zUkVXZjNXcFlpbDU5UFg3NXdjVm1lLVJtbTc5UXJ4M01FNnhFanRBX2xWQlo4QVRxVUNFdTRUeExiQmdJZlpOR2tFS2QyMXlGSWlwODRlRHNmeW9yRUVlNTgxdVctcElBazROd1pmTHdzRFdEbmFWVDdoMmpIMjJaeWszSmVDUzNhaGxyWHFLc3h3UDR1Z0Q3XzR1cXo3NldJak4xNjNtendyRTRPSmJxQmlhckxMSHJDeEVLVkhuQU12RnJYNGw0dGRoTkpqNUFPVGd6QXBheGZZMWNIRExfTVhWbEx6clRYTUlFYjBCR2xkYnV3?oc=5" target="_blank" rel="noopener">Storyboard18</a> &middot; <span class="pubdate">17 Nov, 04:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Meesho’s Vidit Aatrey buys Bengaluru plots pledged against funds raised for BYJU’S BCCI dues for Rs 84 crore - Storyboard18" data-url="https://news.google.com/rss/articles/CBMi8AFBVV95cUxNY0VVWVR6NGI5OWxZX0F1bDJYYmNlb2xlU1o4enJUblJYZWJTZVhKZ0gtMlN2SGh2NlpNeFJsUUtuaHhlUnREbllOWUs0X0dGMlIya0FhZVpIRHRNXzJXSDNBckN5d1BVVFV4M2MtTXk4VE1oc0pfRzNZdzhFa0pHZ0dXSzdiaXVCRG5WR3N6TDAwZkduSl83dFFkcGhOOUpUblZ3WnEtX2hTYjd3QXlMTzZqa0NOa3VXeEM5TWNRNXhnOGlSdW1NdHJXU1BqSjdjQW5tc2g3VkFicmdqMHM1dXQ3NzZIMGFxRUJMemxLRG7SAfYBQVVfeXFMUG1zUkVXZjNXcFlpbDU5UFg3NXdjVm1lLVJtbTc5UXJ4M01FNnhFanRBX2xWQlo4QVRxVUNFdTRUeExiQmdJZlpOR2tFS2QyMXlGSWlwODRlRHNmeW9yRUVlNTgxdVctcElBazROd1pmTHdzRFdEbmFWVDdoMmpIMjJaeWszSmVDUzNhaGxyWHFLc3h3UDR1Z0Q3XzR1cXo3NldJak4xNjNtendyRTRPSmJxQmlhckxMSHJDeEVLVkhuQU12RnJYNGw0dGRoTkpqNUFPVGd6QXBheGZZMWNIRExfTVhWbEx6clRYTUlFYjBCR2xkYnV3?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiswFBVV95cUxNVXBGOGlIMjlqYjJmaGFuclBQQkIzYlFaeDQwcmZvY3BSQ1NvTGUxdENYRE40MkRZMnpjcjZNVy1PZ2owQUtXWk5PeG5STTA0bjNUVFdiMzNjbmZGNUlLaTFRSjdvTFFWSTMwc2ctSEVWT2hHdUc0MWdEbUEzUkEycUotc0ljOEVnU0o0cnY5a3BuY1BoMm5CejdpTDRiN3RNYmNDbUMwZm5zam5MMzRTd19jSQ?oc=5" data-title="SMAT 2026, Bengal vs Chandigarh: Mukesh Kumar shows his class with brilliant 4/9 - BCCI" data-summary="SMAT 2026, Bengal vs Chandigarh: Mukesh Kumar shows his class with brilliant 4/9 BCCI" data-source="BCCI" data-published="2026-11-17T08:08:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiswFBVV95cUxNVXBGOGlIMjlqYjJmaGFuclBQQkIzYlFaeDQwcmZvY3BSQ1NvTGUxdENYRE40MkRZMnpjcjZNVy1PZ2owQUtXWk5PeG5STTA0bjNUVFdiMzNjbmZGNUlLaTFRSjdvTFFWSTMwc2ctSEVWT2hHdUc0MWdEbUEzUkEycUotc0ljOEVnU0o0cnY5a3BuY1BoMm5CejdpTDRiN3RNYmNDbUMwZm5zam5MMzRTd19jSQ?oc=5" target="_blank" rel="noopener">SMAT 2026, Bengal vs Chandigarh: Mukesh Kumar shows his class with brilliant 4/9 - BCCI</a>
+          <p class="summary">SMAT 2026, Bengal vs Chandigarh: Mukesh Kumar shows his class with brilliant 4/9 BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiswFBVV95cUxNVXBGOGlIMjlqYjJmaGFuclBQQkIzYlFaeDQwcmZvY3BSQ1NvTGUxdENYRE40MkRZMnpjcjZNVy1PZ2owQUtXWk5PeG5STTA0bjNUVFdiMzNjbmZGNUlLaTFRSjdvTFFWSTMwc2ctSEVWT2hHdUc0MWdEbUEzUkEycUotc0ljOEVnU0o0cnY5a3BuY1BoMm5CejdpTDRiN3RNYmNDbUMwZm5zam5MMzRTd19jSQ?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">17 Nov, 08:08</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="SMAT 2026, Bengal vs Chandigarh: Mukesh Kumar shows his class with brilliant 4/9 - BCCI" data-url="https://news.google.com/rss/articles/CBMiswFBVV95cUxNVXBGOGlIMjlqYjJmaGFuclBQQkIzYlFaeDQwcmZvY3BSQ1NvTGUxdENYRE40MkRZMnpjcjZNVy1PZ2owQUtXWk5PeG5STTA0bjNUVFdiMzNjbmZGNUlLaTFRSjdvTFFWSTMwc2ctSEVWT2hHdUc0MWdEbUEzUkEycUotc0ljOEVnU0o0cnY5a3BuY1BoMm5CejdpTDRiN3RNYmNDbUMwZm5zam5MMzRTd19jSQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMirgFBVV95cUxOR3o1WUxsdUlYaW8zNUV5MGZ3QWt0TXQta1RCbEZSQ2tTaXhfSldrS3ZOS0tvcFpmcDFtckFWWHo0ZGRiRVZnemZITm56aVhvSXRXZDFYMkMwMVM4Mkt3N3RVNVZzWjZBc0YyOEI2TXdQamYtVkQ5N3lLTE1GWWRiQWlfSG5VOFNyaWFwY0hJTDVhZHRpRkUwSHc0OWdvd1c1ZVdhbm1UdGZaY0lfTnc?oc=5" data-title="SMAT 2026, Kerala vs Maharashtra: Dineshan Nidheesh&#x27;s five-star act with 5/27 - BCCI" data-summary="SMAT 2026, Kerala vs Maharashtra: Dineshan Nidheesh&#x27;s five-star act with 5/27 BCCI" data-source="BCCI" data-published="2026-11-17T07:56:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMirgFBVV95cUxOR3o1WUxsdUlYaW8zNUV5MGZ3QWt0TXQta1RCbEZSQ2tTaXhfSldrS3ZOS0tvcFpmcDFtckFWWHo0ZGRiRVZnemZITm56aVhvSXRXZDFYMkMwMVM4Mkt3N3RVNVZzWjZBc0YyOEI2TXdQamYtVkQ5N3lLTE1GWWRiQWlfSG5VOFNyaWFwY0hJTDVhZHRpRkUwSHc0OWdvd1c1ZVdhbm1UdGZaY0lfTnc?oc=5" target="_blank" rel="noopener">SMAT 2026, Kerala vs Maharashtra: Dineshan Nidheesh&#x27;s five-star act with 5/27 - BCCI</a>
+          <p class="summary">SMAT 2026, Kerala vs Maharashtra: Dineshan Nidheesh&#x27;s five-star act with 5/27 BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMirgFBVV95cUxOR3o1WUxsdUlYaW8zNUV5MGZ3QWt0TXQta1RCbEZSQ2tTaXhfSldrS3ZOS0tvcFpmcDFtckFWWHo0ZGRiRVZnemZITm56aVhvSXRXZDFYMkMwMVM4Mkt3N3RVNVZzWjZBc0YyOEI2TXdQamYtVkQ5N3lLTE1GWWRiQWlfSG5VOFNyaWFwY0hJTDVhZHRpRkUwSHc0OWdvd1c1ZVdhbm1UdGZaY0lfTnc?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">17 Nov, 07:56</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="SMAT 2026, Kerala vs Maharashtra: Dineshan Nidheesh&#x27;s five-star act with 5/27 - BCCI" data-url="https://news.google.com/rss/articles/CBMirgFBVV95cUxOR3o1WUxsdUlYaW8zNUV5MGZ3QWt0TXQta1RCbEZSQ2tTaXhfSldrS3ZOS0tvcFpmcDFtckFWWHo0ZGRiRVZnemZITm56aVhvSXRXZDFYMkMwMVM4Mkt3N3RVNVZzWjZBc0YyOEI2TXdQamYtVkQ5N3lLTE1GWWRiQWlfSG5VOFNyaWFwY0hJTDVhZHRpRkUwSHc0OWdvd1c1ZVdhbm1UdGZaY0lfTnc?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMivAFBVV95cUxOSzFrdG5YazBKdURtbEZjMUNjNU41QzFQeTNqQ3NLTXhNczF1NlQ1TGdGUm1PMzVVSXZ4MEl4Nmp4SEtaT1ZxbmFGeE1KTWlIMkg0NzRZTk4yRjZROENCUXhEX2Jvakhkd01UMGp3RW5pekFKZi00MmRpSlo2dGlCNDVBRFVRMG1KRE0xTnRobFMyRTFwaUhvRFNlNXd6MFNtemQ2dlBzekJsNW5BRkJ5a2VUV2UyTmlpOUUyZw?oc=5" data-title="Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 - NDTV Sports" data-summary="Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 NDTV Sports" data-source="NDTV Sports" data-published="2026-11-17T15:51:18+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOSzFrdG5YazBKdURtbEZjMUNjNU41QzFQeTNqQ3NLTXhNczF1NlQ1TGdGUm1PMzVVSXZ4MEl4Nmp4SEtaT1ZxbmFGeE1KTWlIMkg0NzRZTk4yRjZROENCUXhEX2Jvakhkd01UMGp3RW5pekFKZi00MmRpSlo2dGlCNDVBRFVRMG1KRE0xTnRobFMyRTFwaUhvRFNlNXd6MFNtemQ2dlBzekJsNW5BRkJ5a2VUV2UyTmlpOUUyZw?oc=5" target="_blank" rel="noopener">Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 - NDTV Sports</a>
+          <p class="summary">Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 NDTV Sports</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOSzFrdG5YazBKdURtbEZjMUNjNU41QzFQeTNqQ3NLTXhNczF1NlQ1TGdGUm1PMzVVSXZ4MEl4Nmp4SEtaT1ZxbmFGeE1KTWlIMkg0NzRZTk4yRjZROENCUXhEX2Jvakhkd01UMGp3RW5pekFKZi00MmRpSlo2dGlCNDVBRFVRMG1KRE0xTnRobFMyRTFwaUhvRFNlNXd6MFNtemQ2dlBzekJsNW5BRkJ5a2VUV2UyTmlpOUUyZw?oc=5" target="_blank" rel="noopener">NDTV Sports</a> &middot; <span class="pubdate">17 Nov, 15:51</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rajasthan Royals: Full List Of All Released And Retained Players By RR For IPL 2027 - NDTV Sports" data-url="https://news.google.com/rss/articles/CBMivAFBVV95cUxOSzFrdG5YazBKdURtbEZjMUNjNU41QzFQeTNqQ3NLTXhNczF1NlQ1TGdGUm1PMzVVSXZ4MEl4Nmp4SEtaT1ZxbmFGeE1KTWlIMkg0NzRZTk4yRjZROENCUXhEX2Jvakhkd01UMGp3RW5pekFKZi00MmRpSlo2dGlCNDVBRFVRMG1KRE0xTnRobFMyRTFwaUhvRFNlNXd6MFNtemQ2dlBzekJsNW5BRkJ5a2VUV2UyTmlpOUUyZw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMi8AFBVV95cUxOdnFjSVNpT1Buc2RNdmdsa0JoclNJendHUXVvQUFUWWtfWFZYWnI4LXV6U0p6QmpMT2dvVXIzTUhHNWt6YWtScEQ1cGh5aXVJSTRwNi1Bam5uZGRiM29uYkIxeXJpdzNjMEZZYkNLeUZacmNFbjVTdTN5MWxpbXlfd3A1UzhWMkl0M0ZPbXlfckFEU3FUZF8wdGc1NkZUT0lTZVNIbllzOEdXV0ZENVo3ak50WlcyRlNqRERqVExMajBmdkpIY3lDdzZNMjM4RHpjazZPZTBtZndncFphd2FhcklWX1VrZVF4ajlKT3p5UFHSAfcBQVVfeXFMTWR1THl2TzJuNldhZ0ZLOXZXZGVCQTZvd0Izci1xdWpad0c5SG9WeWtTbF93dldwNTYtV1RPcHNCc3daOE1jRElFaHlKMkd6Y3doNXoyVGEzYnlZbGN3M3drV1BsTkI1OVdhVllXWUFHN1JIYXlFTmZVeDY1MjdSTHFmbnRPYkxiV2VDSU91M2FpOXlMdTQ2RWEtT1BZSU9tbE1laDd2LUJVRzBPSzhKRjRLQURubTVENWpra09xdzJYVXhxYXpDWU4zWkZ2d29JMGJlbWYxbDdHR2dmejFxUzNDam1NYzU1SkpOYkpST0VibEVKZjRMbw?oc=5" data-title="RR Retention List: Full List Of Players Retained And Released By Rajasthan Royals Ahead Of IPL 2027 Auction - The Daily Jagran" data-summary="RR Retention List: Full List Of Players Retained And Released By Rajasthan Royals Ahead Of IPL 2027 Auction The Daily Jagran" data-source="The Daily Jagran" data-published="2026-11-17T15:27:00+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMi8AFBVV95cUxOdnFjSVNpT1Buc2RNdmdsa0JoclNJendHUXVvQUFUWWtfWFZYWnI4LXV6U0p6QmpMT2dvVXIzTUhHNWt6YWtScEQ1cGh5aXVJSTRwNi1Bam5uZGRiM29uYkIxeXJpdzNjMEZZYkNLeUZacmNFbjVTdTN5MWxpbXlfd3A1UzhWMkl0M0ZPbXlfckFEU3FUZF8wdGc1NkZUT0lTZVNIbllzOEdXV0ZENVo3ak50WlcyRlNqRERqVExMajBmdkpIY3lDdzZNMjM4RHpjazZPZTBtZndncFphd2FhcklWX1VrZVF4ajlKT3p5UFHSAfcBQVVfeXFMTWR1THl2TzJuNldhZ0ZLOXZXZGVCQTZvd0Izci1xdWpad0c5SG9WeWtTbF93dldwNTYtV1RPcHNCc3daOE1jRElFaHlKMkd6Y3doNXoyVGEzYnlZbGN3M3drV1BsTkI1OVdhVllXWUFHN1JIYXlFTmZVeDY1MjdSTHFmbnRPYkxiV2VDSU91M2FpOXlMdTQ2RWEtT1BZSU9tbE1laDd2LUJVRzBPSzhKRjRLQURubTVENWpra09xdzJYVXhxYXpDWU4zWkZ2d29JMGJlbWYxbDdHR2dmejFxUzNDam1NYzU1SkpOYkpST0VibEVKZjRMbw?oc=5" target="_blank" rel="noopener">RR Retention List: Full List Of Players Retained And Released By Rajasthan Royals Ahead Of IPL 2027 Auction - The Daily Jagran</a>
+          <p class="summary">RR Retention List: Full List Of Players Retained And Released By Rajasthan Royals Ahead Of IPL 2027 Auction The Daily Jagran</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMi8AFBVV95cUxOdnFjSVNpT1Buc2RNdmdsa0JoclNJendHUXVvQUFUWWtfWFZYWnI4LXV6U0p6QmpMT2dvVXIzTUhHNWt6YWtScEQ1cGh5aXVJSTRwNi1Bam5uZGRiM29uYkIxeXJpdzNjMEZZYkNLeUZacmNFbjVTdTN5MWxpbXlfd3A1UzhWMkl0M0ZPbXlfckFEU3FUZF8wdGc1NkZUT0lTZVNIbllzOEdXV0ZENVo3ak50WlcyRlNqRERqVExMajBmdkpIY3lDdzZNMjM4RHpjazZPZTBtZndncFphd2FhcklWX1VrZVF4ajlKT3p5UFHSAfcBQVVfeXFMTWR1THl2TzJuNldhZ0ZLOXZXZGVCQTZvd0Izci1xdWpad0c5SG9WeWtTbF93dldwNTYtV1RPcHNCc3daOE1jRElFaHlKMkd6Y3doNXoyVGEzYnlZbGN3M3drV1BsTkI1OVdhVllXWUFHN1JIYXlFTmZVeDY1MjdSTHFmbnRPYkxiV2VDSU91M2FpOXlMdTQ2RWEtT1BZSU9tbE1laDd2LUJVRzBPSzhKRjRLQURubTVENWpra09xdzJYVXhxYXpDWU4zWkZ2d29JMGJlbWYxbDdHR2dmejFxUzNDam1NYzU1SkpOYkpST0VibEVKZjRMbw?oc=5" target="_blank" rel="noopener">The Daily Jagran</a> &middot; <span class="pubdate">17 Nov, 15:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="RR Retention List: Full List Of Players Retained And Released By Rajasthan Royals Ahead Of IPL 2027 Auction - The Daily Jagran" data-url="https://news.google.com/rss/articles/CBMi8AFBVV95cUxOdnFjSVNpT1Buc2RNdmdsa0JoclNJendHUXVvQUFUWWtfWFZYWnI4LXV6U0p6QmpMT2dvVXIzTUhHNWt6YWtScEQ1cGh5aXVJSTRwNi1Bam5uZGRiM29uYkIxeXJpdzNjMEZZYkNLeUZacmNFbjVTdTN5MWxpbXlfd3A1UzhWMkl0M0ZPbXlfckFEU3FUZF8wdGc1NkZUT0lTZVNIbllzOEdXV0ZENVo3ak50WlcyRlNqRERqVExMajBmdkpIY3lDdzZNMjM4RHpjazZPZTBtZndncFphd2FhcklWX1VrZVF4ajlKT3p5UFHSAfcBQVVfeXFMTWR1THl2TzJuNldhZ0ZLOXZXZGVCQTZvd0Izci1xdWpad0c5SG9WeWtTbF93dldwNTYtV1RPcHNCc3daOE1jRElFaHlKMkd6Y3doNXoyVGEzYnlZbGN3M3drV1BsTkI1OVdhVllXWUFHN1JIYXlFTmZVeDY1MjdSTHFmbnRPYkxiV2VDSU91M2FpOXlMdTQ2RWEtT1BZSU9tbE1laDd2LUJVRzBPSzhKRjRLQURubTVENWpra09xdzJYVXhxYXpDWU4zWkZ2d29JMGJlbWYxbDdHR2dmejFxUzNDam1NYzU1SkpOYkpST0VibEVKZjRMbw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiqAFBVV95cUxOY0p6RGo4Tk85dGZkQ1Utb0VJdEJvdXc4cldrQm82bG54NThRR212MmFLbnlMcHFLLVg1WkktYjVmTzNhbjVYbmtZXzhtamNuWTd6NnJKdm81OHVBVjh5clNOSUcwOWZUazgwU3BjbFhqRmFrNFFiZlBkNW5adnF2TlNWYmZkSzJGUW1XR1REejdmcnZoUGpFNTJDQVN6TDQ3QXNkX2xWMFLSAbYBQVVfeXFMTklHU0ZSV3VheUsyRmdmYnNvSVFYRDR0MkVBQjQyLWozZHFVVzBCbjNqbkV1dXFoUTgyeHRTY0ktTHlVUlZId2xKQUtPSjBZNFF3d2x5c25pd2d1ai0yOGJIZzFQM0tWbDNkWXNxUTlJUWRVcVE3eXlQUVhQWFZUYk1qVXdJVHJEVDVuSEFzLWQ0alpRUXFxZHEtdkV0eWFYSm9YS3hKT3lEaEVjRmsxRi1OM0ZpeHc?oc=5" data-title="Rajasthan Royals: Full List Of Retained And Released Players Ahead Of IPL 2027 - Outlook India" data-summary="Rajasthan Royals: Full List Of Retained And Released Players Ahead Of IPL 2027 Outlook India" data-source="Outlook India" data-published="2026-11-17T15:22:17+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiqAFBVV95cUxOY0p6RGo4Tk85dGZkQ1Utb0VJdEJvdXc4cldrQm82bG54NThRR212MmFLbnlMcHFLLVg1WkktYjVmTzNhbjVYbmtZXzhtamNuWTd6NnJKdm81OHVBVjh5clNOSUcwOWZUazgwU3BjbFhqRmFrNFFiZlBkNW5adnF2TlNWYmZkSzJGUW1XR1REejdmcnZoUGpFNTJDQVN6TDQ3QXNkX2xWMFLSAbYBQVVfeXFMTklHU0ZSV3VheUsyRmdmYnNvSVFYRDR0MkVBQjQyLWozZHFVVzBCbjNqbkV1dXFoUTgyeHRTY0ktTHlVUlZId2xKQUtPSjBZNFF3d2x5c25pd2d1ai0yOGJIZzFQM0tWbDNkWXNxUTlJUWRVcVE3eXlQUVhQWFZUYk1qVXdJVHJEVDVuSEFzLWQ0alpRUXFxZHEtdkV0eWFYSm9YS3hKT3lEaEVjRmsxRi1OM0ZpeHc?oc=5" target="_blank" rel="noopener">Rajasthan Royals: Full List Of Retained And Released Players Ahead Of IPL 2027 - Outlook India</a>
+          <p class="summary">Rajasthan Royals: Full List Of Retained And Released Players Ahead Of IPL 2027 Outlook India</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiqAFBVV95cUxOY0p6RGo4Tk85dGZkQ1Utb0VJdEJvdXc4cldrQm82bG54NThRR212MmFLbnlMcHFLLVg1WkktYjVmTzNhbjVYbmtZXzhtamNuWTd6NnJKdm81OHVBVjh5clNOSUcwOWZUazgwU3BjbFhqRmFrNFFiZlBkNW5adnF2TlNWYmZkSzJGUW1XR1REejdmcnZoUGpFNTJDQVN6TDQ3QXNkX2xWMFLSAbYBQVVfeXFMTklHU0ZSV3VheUsyRmdmYnNvSVFYRDR0MkVBQjQyLWozZHFVVzBCbjNqbkV1dXFoUTgyeHRTY0ktTHlVUlZId2xKQUtPSjBZNFF3d2x5c25pd2d1ai0yOGJIZzFQM0tWbDNkWXNxUTlJUWRVcVE3eXlQUVhQWFZUYk1qVXdJVHJEVDVuSEFzLWQ0alpRUXFxZHEtdkV0eWFYSm9YS3hKT3lEaEVjRmsxRi1OM0ZpeHc?oc=5" target="_blank" rel="noopener">Outlook India</a> &middot; <span class="pubdate">17 Nov, 15:22</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rajasthan Royals: Full List Of Retained And Released Players Ahead Of IPL 2027 - Outlook India" data-url="https://news.google.com/rss/articles/CBMiqAFBVV95cUxOY0p6RGo4Tk85dGZkQ1Utb0VJdEJvdXc4cldrQm82bG54NThRR212MmFLbnlMcHFLLVg1WkktYjVmTzNhbjVYbmtZXzhtamNuWTd6NnJKdm81OHVBVjh5clNOSUcwOWZUazgwU3BjbFhqRmFrNFFiZlBkNW5adnF2TlNWYmZkSzJGUW1XR1REejdmcnZoUGpFNTJDQVN6TDQ3QXNkX2xWMFLSAbYBQVVfeXFMTklHU0ZSV3VheUsyRmdmYnNvSVFYRDR0MkVBQjQyLWozZHFVVzBCbjNqbkV1dXFoUTgyeHRTY0ktTHlVUlZId2xKQUtPSjBZNFF3d2x5c25pd2d1ai0yOGJIZzFQM0tWbDNkWXNxUTlJUWRVcVE3eXlQUVhQWFZUYk1qVXdJVHJEVDVuSEFzLWQ0alpRUXFxZHEtdkV0eWFYSm9YS3hKT3lEaEVjRmsxRi1OM0ZpeHc?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNcUpVdTNRbXRJYXctZ1d6VmVIaGloZ0pYNGE2djM0RWhHS0I1ZkNCZ0wyTjN3bUpocG04VDh5NXBPNEszYTJwbXNyOHp1QlQ5R0VLQWI2WjlhOUtld2Qxd0w3WDRPMzZReFl5VVlGMDc3b0tXbVN0WFNRbExfbkh6QjdoTlppTXhURjZB?oc=5" data-title="Mohammed Shami Joins Rajasthan Royals Ahead of IPL 2027 - The CSR Journal" data-summary="Mohammed Shami Joins Rajasthan Royals Ahead of IPL 2027 The CSR Journal" data-source="The CSR Journal" data-published="2026-11-17T14:33:22+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNcUpVdTNRbXRJYXctZ1d6VmVIaGloZ0pYNGE2djM0RWhHS0I1ZkNCZ0wyTjN3bUpocG04VDh5NXBPNEszYTJwbXNyOHp1QlQ5R0VLQWI2WjlhOUtld2Qxd0w3WDRPMzZReFl5VVlGMDc3b0tXbVN0WFNRbExfbkh6QjdoTlppTXhURjZB?oc=5" target="_blank" rel="noopener">Mohammed Shami Joins Rajasthan Royals Ahead of IPL 2027 - The CSR Journal</a>
+          <p class="summary">Mohammed Shami Joins Rajasthan Royals Ahead of IPL 2027 The CSR Journal</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNcUpVdTNRbXRJYXctZ1d6VmVIaGloZ0pYNGE2djM0RWhHS0I1ZkNCZ0wyTjN3bUpocG04VDh5NXBPNEszYTJwbXNyOHp1QlQ5R0VLQWI2WjlhOUtld2Qxd0w3WDRPMzZReFl5VVlGMDc3b0tXbVN0WFNRbExfbkh6QjdoTlppTXhURjZB?oc=5" target="_blank" rel="noopener">The CSR Journal</a> &middot; <span class="pubdate">17 Nov, 14:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Mohammed Shami Joins Rajasthan Royals Ahead of IPL 2027 - The CSR Journal" data-url="https://news.google.com/rss/articles/CBMiiwFBVV95cUxNcUpVdTNRbXRJYXctZ1d6VmVIaGloZ0pYNGE2djM0RWhHS0I1ZkNCZ0wyTjN3bUpocG04VDh5NXBPNEszYTJwbXNyOHp1QlQ5R0VLQWI2WjlhOUtld2Qxd0w3WDRPMzZReFl5VVlGMDc3b0tXbVN0WFNRbExfbkh6QjdoTlppTXhURjZB?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562975.html?ex_cid=OTC-RSS" data-title="Heartbreak for Naseer and Afghanistan as Zimbabwe snatch late win" data-summary="Debutant Naseer scored a century and picked up nine wickets for the Test but Zimbabwe clinched a win with less than four overs left on the final day" data-source="ESPNcricinfo" data-published="2026-11-17T15:59:02+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562975.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Heartbreak for Naseer and Afghanistan as Zimbabwe snatch late win</a>
+          <p class="summary">Debutant Naseer scored a century and picked up nine wickets for the Test but Zimbabwe clinched a win with less than four overs left on the final day</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562975.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">17 Nov, 15:59</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Heartbreak for Naseer and Afghanistan as Zimbabwe snatch late win" data-url="https://www.cricinfo.com/ci/content/story/1562975.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562991.html?ex_cid=OTC-RSS" data-title="Zimbabwe continue to push for space in WTC even as doors appear to close" data-summary="Cricinfo understands that the match-ups for the next two WTC cycles were decided by the ICC over the weekend but they have not been made public since negotiations are ongoing" data-source="ESPNcricinfo" data-published="2026-11-17T15:53:46+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562991.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Zimbabwe continue to push for space in WTC even as doors appear to close</a>
+          <p class="summary">Cricinfo understands that the match-ups for the next two WTC cycles were decided by the ICC over the weekend but they have not been made public since negotiations are ongoing</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562991.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">17 Nov, 15:53</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Zimbabwe continue to push for space in WTC even as doors appear to close" data-url="https://www.cricinfo.com/ci/content/story/1562991.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562973.html?ex_cid=OTC-RSS" data-title="Bethell to miss South Africa tour and IPL in bid to recover from knee injury" data-summary="Batter has not played since July and will now focus on return to fitness ahead of English summer" data-source="ESPNcricinfo" data-published="2026-11-17T15:35:42+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562973.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Bethell to miss South Africa tour and IPL in bid to recover from knee injury</a>
+          <p class="summary">Batter has not played since July and will now focus on return to fitness ahead of English summer</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562973.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">17 Nov, 15:35</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Bethell to miss South Africa tour and IPL in bid to recover from knee injury" data-url="https://www.cricinfo.com/ci/content/story/1562973.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1562958.html?ex_cid=OTC-RSS" data-title="Starc, Head, Bethell released by DC, SRH, RCB ahead of IPL 2027 player auction" data-summary="The full list of players released and retained by the IPL franchises ahead of the 2027 player auction on December 16" data-source="ESPNcricinfo" data-published="2026-11-17T15:33:19+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1562958.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Starc, Head, Bethell released by DC, SRH, RCB ahead of IPL 2027 player auction</a>
+          <p class="summary">The full list of players released and retained by the IPL franchises ahead of the 2027 player auction on December 16</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1562958.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">17 Nov, 15:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Starc, Head, Bethell released by DC, SRH, RCB ahead of IPL 2027 player auction" data-url="https://www.cricinfo.com/ci/content/story/1562958.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/golf/articles/cm93080ep703o?at_medium=RSS&amp;at_campaign=rss" data-title="Woods set to return next month after two years out" data-summary="Tiger Woods is set to return to competitive golf in December for the first time in more than two years. Woods, 50, has not played in a traditional ranking event since the 2024 Open Championship at Royal Troon amid a series of off-course issues. The 15-time major champion has endured a challenging few years with a number of injuries and turmoil in his personal life." data-source="BBC News" data-published="2026-11-17T15:54:36+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/golf/articles/cm93080ep703o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Woods set to return next month after two years out</a>
+          <p class="summary">Tiger Woods is set to return to competitive golf in December for the first time in more than two years. Woods, 50, has not played in a traditional ranking event since the 2024 Open Championship at Royal Troon amid a series of off-course issues. The 15-time major champion has endured a challenging few years with a number of injuries and turmoil in his personal life.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/golf/articles/cm93080ep703o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 15:54</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Woods set to return next month after two years out" data-url="https://www.bbc.co.uk/sport/golf/articles/cm93080ep703o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/f1/news/12040/13613272/mercedes-confirm-aduo-turbo-upgrade-ready-for-las-vegas-gp-with-kimi-antonelli-set-to-run-new-engine-part" data-title="Mercedes set to run ADUO engine upgrade in Las Vegas with one driver" data-summary="Silver Arrows expecting to run ADUO update on Kimi Antonelli&#x27;s car only as use of another turbo for George Russell would trigger fresh grid drop; watch the Las Vegas GP this weekend on Sky Sports F1, with qualifying at 4am on Saturday and the race at 4am on Sunday Please use Chrome browser for a more accessible video player World champions Mercedes will bring their ADUO turbocharger upgrade to this weekend&#x27;s Las Vegas Grand Prix, although George Russell will not use it to avoid having to take another grid penalty in his bid for second place in the Drivers&#x27; Championship." data-source="Sky Sports" data-published="2026-11-17T15:31:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/news/12040/13613272/mercedes-confirm-aduo-turbo-upgrade-ready-for-las-vegas-gp-with-kimi-antonelli-set-to-run-new-engine-part" target="_blank" rel="noopener">Mercedes set to run ADUO engine upgrade in Las Vegas with one driver</a>
+          <p class="summary">Silver Arrows expecting to run ADUO update on Kimi Antonelli&#x27;s car only as use of another turbo for George Russell would trigger fresh grid drop; watch the Las Vegas GP this weekend on Sky Sports F1, with qualifying at 4am on Saturday and the race at 4am on Sunday Please use Chrome browser for a more accessible video player World champions Mercedes will bring their ADUO turbocharger upgrade to this weekend&#x27;s Las Vegas Grand Prix, although George Russell will not use it to avoid having to take another grid penalty in his bid for second place in the Drivers&#x27; Championship.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/news/12040/13613272/mercedes-confirm-aduo-turbo-upgrade-ready-for-las-vegas-gp-with-kimi-antonelli-set-to-run-new-engine-part" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">17 Nov, 15:31</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Mercedes set to run ADUO engine upgrade in Las Vegas with one driver" data-url="https://www.skysports.com/f1/news/12040/13613272/mercedes-confirm-aduo-turbo-upgrade-ready-for-las-vegas-gp-with-kimi-antonelli-set-to-run-new-engine-part">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/c5742x4xldmpo?at_medium=RSS&amp;at_campaign=rss" data-title="FA wants to host Nations League finals in England" data-summary="England could host the Nations League finals this season after Football Association officials registered their interest. The semi-final and finals of the competition, due to take place in June, are held in one country. As well as England, it is understood that Spain and France have also contacted Uefa to register their interest in hosting the final four games, including the bronze medal match, which will run between 9-13 June." data-source="BBC News" data-published="2026-11-17T15:51:30+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/c5742x4xldmpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">FA wants to host Nations League finals in England</a>
+          <p class="summary">England could host the Nations League finals this season after Football Association officials registered their interest. The semi-final and finals of the competition, due to take place in June, are held in one country. As well as England, it is understood that Spain and France have also contacted Uefa to register their interest in hosting the final four games, including the bronze medal match, which will run between 9-13 June.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/c5742x4xldmpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 15:51</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="FA wants to host Nations League finals in England" data-url="https://www.bbc.co.uk/sport/football/articles/c5742x4xldmpo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/football/news/12040/13613275/wayne-rooney-says-he-contemplated-suicide-during-lowest-point-of-manchester-united-career" data-title="Rooney contemplated suicide at ‘lowest point’ of Man Utd career" data-summary="Wayne Rooney has revealed he considered taking his own life while playing for Manchester United; this article discusses mental health and suicide, which some readers may find distressing; if you have been affected by this story, support and guidance are available at sky.com/viewersupport Wayne Rooney has revealed there was a period in his Manchester United career where he contemplated suicide." data-source="Sky Sports" data-published="2026-11-17T14:36:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/football/news/12040/13613275/wayne-rooney-says-he-contemplated-suicide-during-lowest-point-of-manchester-united-career" target="_blank" rel="noopener">Rooney contemplated suicide at ‘lowest point’ of Man Utd career</a>
+          <p class="summary">Wayne Rooney has revealed he considered taking his own life while playing for Manchester United; this article discusses mental health and suicide, which some readers may find distressing; if you have been affected by this story, support and guidance are available at sky.com/viewersupport Wayne Rooney has revealed there was a period in his Manchester United career where he contemplated suicide.</p>
+          <span class="source"><a href="https://www.skysports.com/football/news/12040/13613275/wayne-rooney-says-he-contemplated-suicide-during-lowest-point-of-manchester-united-career" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">17 Nov, 14:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rooney contemplated suicide at ‘lowest point’ of Man Utd career" data-url="https://www.skysports.com/football/news/12040/13613275/wayne-rooney-says-he-contemplated-suicide-during-lowest-point-of-manchester-united-career">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/us/americas-spy-agency-goes-dark-nsas-classified-internal-network-goes-down-no-cyberattack-evidence-yet-report/articleshow/135932100.cms" data-title="Top secret US national security communications network goes down: Report" data-summary="" data-source="Times of India" data-published="2026-11-17T15:51:29+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/us/americas-spy-agency-goes-dark-nsas-classified-internal-network-goes-down-no-cyberattack-evidence-yet-report/articleshow/135932100.cms" target="_blank" rel="noopener">Top secret US national security communications network goes down: Report</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/us/americas-spy-agency-goes-dark-nsas-classified-internal-network-goes-down-no-cyberattack-evidence-yet-report/articleshow/135932100.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">17 Nov, 15:51</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Top secret US national security communications network goes down: Report" data-url="https://timesofindia.indiatimes.com/world/us/americas-spy-agency-goes-dark-nsas-classified-internal-network-goes-down-no-cyberattack-evidence-yet-report/articleshow/135932100.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/italian-tourist-found-dead-in-manali-hotel-101794927257215.html" data-title="Italian tourist found dead in Manali hotel" data-summary="An Italian tourist was found dead under suspicious circumstances in his hotel room at Chanala-Jagatsukh near Manali in Himachal Pradesh, police said on Tuesday. According to the police, Faraday Michael did not step out of his room for about a day. Suspecting something had gone wrong, the hotel management informed the Manali police station on Tuesday. When police opened the room, they found Michael lying dead on the bed with no injury marks on his body, officials said." data-source="Hindustan Times" data-published="2026-11-17T15:39:05+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/italian-tourist-found-dead-in-manali-hotel-101794927257215.html" target="_blank" rel="noopener">Italian tourist found dead in Manali hotel</a>
+          <p class="summary">An Italian tourist was found dead under suspicious circumstances in his hotel room at Chanala-Jagatsukh near Manali in Himachal Pradesh, police said on Tuesday. According to the police, Faraday Michael did not step out of his room for about a day. Suspecting something had gone wrong, the hotel management informed the Manali police station on Tuesday. When police opened the room, they found Michael lying dead on the bed with no injury marks on his body, officials said.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/italian-tourist-found-dead-in-manali-hotel-101794927257215.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">17 Nov, 15:39</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Italian tourist found dead in Manali hotel" data-url="https://www.hindustantimes.com/india-news/italian-tourist-found-dead-in-manali-hotel-101794927257215.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cr868wd2qg18o?at_medium=RSS&amp;at_campaign=rss" data-title="Gujarat riots gang-rape survivor &#x27;heartbroken&#x27; after bail for two convicts" data-summary="The article has details that some readers may find disturbing A pregnant Muslim woman who was gang-raped and saw 14 family members murdered during the 2002 Gujarat riots has spoken of her &quot;pain, shock and disbelief&quot; after two of her rapists were recently granted bail. Bilkis Bano said in a statement that she heard about the top court order through press reports and vowed to fight back." data-source="BBC News" data-published="2026-11-17T09:27:44+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cr868wd2qg18o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Gujarat riots gang-rape survivor &#x27;heartbroken&#x27; after bail for two convicts</a>
+          <p class="summary">The article has details that some readers may find disturbing A pregnant Muslim woman who was gang-raped and saw 14 family members murdered during the 2002 Gujarat riots has spoken of her &quot;pain, shock and disbelief&quot; after two of her rapists were recently granted bail. Bilkis Bano said in a statement that she heard about the top court order through press reports and vowed to fight back.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cr868wd2qg18o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">17 Nov, 09:27</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Gujarat riots gang-rape survivor &#x27;heartbroken&#x27; after bail for two convicts" data-url="https://www.bbc.co.uk/news/articles/cr868wd2qg18o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/us/i-am-checking-my-bank-account-karoline-leavitt-says-trump-or-any-white-house-official-should-issue-a-statement-on-whats-exactly-going-on/articleshow/135931517.cms" data-title="&#x27;I am checking my bank account&#x27;: Karoline Leavitt says Trump or any White House official should issue a statement on what&#x27;s exactly going on" data-summary="" data-source="Times of India" data-published="2026-11-17T15:39:04+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/us/i-am-checking-my-bank-account-karoline-leavitt-says-trump-or-any-white-house-official-should-issue-a-statement-on-whats-exactly-going-on/articleshow/135931517.cms" target="_blank" rel="noopener">&#x27;I am checking my bank account&#x27;: Karoline Leavitt says Trump or any White House official should issue a statement on what&#x27;s exactly going on</a>
+          <p class="summary"></p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/us/i-am-checking-my-bank-account-karoline-leavitt-says-trump-or-any-white-house-official-should-issue-a-statement-on-whats-exactly-going-on/articleshow/135931517.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">17 Nov, 15:39</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="&#x27;I am checking my bank account&#x27;: Karoline Leavitt says Trump or any White House official should issue a statement on what&#x27;s exactly going on" data-url="https://timesofindia.indiatimes.com/world/us/i-am-checking-my-bank-account-karoline-leavitt-says-trump-or-any-white-house-official-should-issue-a-statement-on-whats-exactly-going-on/articleshow/135931517.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
