@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Applied before first paint so switching to dark mode once never causes
+  // a flash of the light theme on every later page load.
+  (function () {
+    try {
+      if (localStorage.getItem('manojTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manoj's Daily Briefing — Friday, 27 November 2026</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../icon.png">
+<meta name="theme-color" content="#1a2a4a">
+<style>
+  :root {
+    --navy: #1a2a4a;
+    --accent: #1a2a4a;
+    --cream: #f4f4f2;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #767676;
+    --source: #999999;
+    --rule: #d8d4c8;
+    --paywall-bg: #fff4e6;
+    --paywall-text: #92400e;
+    --paywall-border: #f0d2a6;
+  }
+  [data-theme="dark"] {
+    --navy: #24406e;
+    --accent: #8fb0e8;
+    --cream: #14181f;
+    --card-bg: #1f2530;
+    --text: #e8e8e6;
+    --muted: #a8a8a8;
+    --source: #8a8a8a;
+    --rule: #333844;
+    --paywall-bg: #3a2c14;
+    --paywall-text: #f0c987;
+    --paywall-border: #5a4520;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+  }
+  .masthead {
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .masthead h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .masthead .date {
+    display: block;
+    margin-top: 8px;
+    color: #c9d2e3;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .masthead-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .masthead-controls select,
+  .masthead-controls button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #3a4a6a;
+    background: #22345c;
+    color: #fff;
+    cursor: pointer;
+  }
+  .bookmarks-toggle.active {
+    background: #e9b949;
+    border-color: #e9b949;
+    color: #1a2a4a;
+  }
+  #bookmarks-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  #bookmarks-view[hidden] {
+    display: none;
+  }
+  .bookmarks-empty {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .intro {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+  .section {
+    margin-top: 32px;
+  }
+  .section h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+  }
+  .story {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .story:last-child {
+    border-bottom: none;
+  }
+  .headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .headline:hover {
+    text-decoration: underline;
+  }
+  .summary {
+    margin: 6px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .source {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-variant: small-caps;
+    letter-spacing: 0.5px;
+  }
+  .source a {
+    color: var(--source);
+    text-decoration: none;
+  }
+  .source a:hover {
+    text-decoration: underline;
+  }
+  .no-story {
+    padding: 6px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: var(--source);
+    font-style: italic;
+  }
+  .paywall {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--paywall-text);
+    background: var(--paywall-bg);
+    border: 1px solid var(--paywall-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .pubdate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+  }
+  .share-btn, .bookmark-btn {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+  .bookmark-btn {
+    margin-left: 6px;
+  }
+  .bookmark-btn.active {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+  .top-picks {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .top-picks-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pick {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pick-topic {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .pick-headline {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 20px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+  .section[hidden],
+  .filter-bar[hidden],
+  .top-picks[hidden],
+  .intro[hidden],
+  main[hidden] {
+    display: none;
+  }
+  footer {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--source);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">
+    <h1>Manoj's Daily Briefing</h1>
+    <span class="date">Friday, 27 November 2026, Updated as of 16:43 GMT</span>
+    <div class="masthead-controls">
+      <select onchange="if (this.value) { window.location.href = this.value; }" aria-label="Jump to a previous edition" style="margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #3a4a6a;background:#22345c;color:#fff;"><option value="https://williamgitty.github.io/manoj-daily-briefing/">Today</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-27.html" selected>Friday, 27 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-26.html">Thursday, 26 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-25.html">Wednesday, 25 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-24.html">Tuesday, 24 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-23.html">Monday, 23 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-22.html">Sunday, 22 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-21.html">Saturday, 21 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-20.html">Friday, 20 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-19.html">Thursday, 19 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-18.html">Wednesday, 18 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-17.html">Tuesday, 17 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-16.html">Monday, 16 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-15.html">Sunday, 15 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-14.html">Saturday, 14 November 2026</option><option value="https://williamgitty.github.io/manoj-daily-briefing/archive/2026-11-13.html">Friday, 13 November 2026</option></select>
+      <button type="button" id="theme-toggle" aria-label="Toggle dark mode">&#127769; Dark mode</button>
+      <button type="button" id="bookmarks-toggle" class="bookmarks-toggle" aria-label="View bookmarked stories">&#128278; Bookmarks (<span id="bookmarks-count">0</span>)</button>
+    </div>
+  </div>
+  <div class="top-picks">
+    <div class="top-picks-label">Right now</div>
+      <a class="pick" href="https://news.google.com/rss/articles/CBMic0FVX3lxTE5NSE5uME9ncU1NUGVqY25ZOGx5ZXhFaUd5ZG9SQkdoWmFYOVM3WFJoWHoxVXRnc3dGZkFzdW5iVnhSdDlhSWdtSnFBMHY1T2NMSFlNSDRLdzFXX0hPWVdfU2ZheGF5MTNZSzR1Nms5STV2akE?oc=5" target="_blank" rel="noopener">
+        <span class="pick-topic">Rajasthan Royals</span>
+        <span class="pick-headline">Rajasthan Royals Squad - Auction Tracker IPL 2026 - Cricbuzz</span>
+      </a>
+      <a class="pick" href="https://www.bbc.co.uk/news/articles/cmwy95295835o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">
+        <span class="pick-topic">Politics — UK</span>
+        <span class="pick-headline">Tory candidates must sign pledge to scrap net-zero targets, says Badenoch</span>
+      </a>
+      <a class="pick" href="https://www.skysports.com/f1/live-blog/12040/13617151/f1-qatar-gp-live-friday-practice-updates-results-stream-highlights-from-formula-1-race-weekend-at-lusail-international-circuit" target="_blank" rel="noopener">
+        <span class="pick-topic">Sport</span>
+        <span class="pick-headline">Qatar GP: Mercedes&#x27; rivals look to hit back in second practice LIVE!</span>
+      </a>
+  </div>
+  <nav class="filter-bar"><button type="button" class="chip active" data-topic="all">All</button><button type="button" class="chip" data-topic="tech">Tech</button><button type="button" class="chip" data-topic="ai">AI</button><button type="button" class="chip" data-topic="politics_uk">Politics — UK</button><button type="button" class="chip" data-topic="politics_global">Politics — Global</button><button type="button" class="chip" data-topic="health">Health &amp; Fitness</button><button type="button" class="chip" data-topic="bcci">BCCI</button><button type="button" class="chip" data-topic="rajasthan_royals">Rajasthan Royals</button><button type="button" class="chip" data-topic="cricket">Cricket</button><button type="button" class="chip" data-topic="sport">Sport</button><button type="button" class="chip" data-topic="india">India News</button></nav>
+  <p class="intro">All stories below were published within the last 24 hours, pulled directly from source RSS feeds. Where a section has no qualifying story, that is stated explicitly.</p>
+  <main>
+      <section class="section" data-topic="tech">
+        <h2>Tech</h2>
+        <article class="story" data-id="https://www.theverge.com/gadgets/1042512/best-black-friday-laptop-notebook-deals-2026" data-title="Buying a laptop right now is rough, but these Black Friday deals help" data-summary="Despite the year’s bevy of price increases, this is the best time to buy a new laptop (if you absolutely need to). If you buy something from a link, The Verge may earn a commission. See our ethics statement. Laptop prices have been a hot-button topic all year long thanks to RAMageddon . We’ve seen existing models get more expensive and new models arrive at higher prices than last-gen — sometimes with lower specs, too. 2026 in general has been a bad time to buy a computer." data-source="The Verge" data-published="2026-11-27T14:30:00+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/gadgets/1042512/best-black-friday-laptop-notebook-deals-2026" target="_blank" rel="noopener">Buying a laptop right now is rough, but these Black Friday deals help</a>
+          <p class="summary">Despite the year’s bevy of price increases, this is the best time to buy a new laptop (if you absolutely need to). If you buy something from a link, The Verge may earn a commission. See our ethics statement. Laptop prices have been a hot-button topic all year long thanks to RAMageddon . We’ve seen existing models get more expensive and new models arrive at higher prices than last-gen — sometimes with lower specs, too. 2026 in general has been a bad time to buy a computer.</p>
+          <span class="source"><a href="https://www.theverge.com/gadgets/1042512/best-black-friday-laptop-notebook-deals-2026" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">27 Nov, 14:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Buying a laptop right now is rough, but these Black Friday deals help" data-url="https://www.theverge.com/gadgets/1042512/best-black-friday-laptop-notebook-deals-2026">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://arstechnica.com/tech-policy/2026/11/intel-faced-a-choice-give-trump-10-or-face-the-consequences/" data-title="Intel faced a choice: Give Trump 10% or face the consequences" data-summary="The message from the Trump administration to one of the world’s leading semiconductor companies was clear: Give the US government a chunk of your company. Right now. Or else. Do not make the “mistake of thinking that this is a negotiation,” Commerce Department lawyer David Shapiro told the chief financial officer of the Intel Corporation in August 2025, according to internal notes from a company call contained in a federal lawsuit." data-source="Ars Technica" data-published="2026-11-27T12:05:01+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://arstechnica.com/tech-policy/2026/11/intel-faced-a-choice-give-trump-10-or-face-the-consequences/" target="_blank" rel="noopener">Intel faced a choice: Give Trump 10% or face the consequences</a>
+          <p class="summary">The message from the Trump administration to one of the world’s leading semiconductor companies was clear: Give the US government a chunk of your company. Right now. Or else. Do not make the “mistake of thinking that this is a negotiation,” Commerce Department lawyer David Shapiro told the chief financial officer of the Intel Corporation in August 2025, according to internal notes from a company call contained in a federal lawsuit.</p>
+          <span class="source"><a href="https://arstechnica.com/tech-policy/2026/11/intel-faced-a-choice-give-trump-10-or-face-the-consequences/" target="_blank" rel="noopener">Ars Technica</a> &middot; <span class="pubdate">27 Nov, 12:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Intel faced a choice: Give Trump 10% or face the consequences" data-url="https://arstechnica.com/tech-policy/2026/11/intel-faced-a-choice-give-trump-10-or-face-the-consequences/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/c52e8k19y94mo?at_medium=RSS&amp;at_campaign=rss" data-title="Why is there a shortage of &#x27;wizard&#x27; elevator mechanics?" data-summary="Some of them are angry. Nerves are frayed. Many of them are just relieved that he&#x27;s here. When a lift stops working in Chicago, frazzled building managers might get a visit from Jim Lembesis. For more than 47 years, Lembesis has repaired and upgraded lifts. He says he understands why staff and residents are so anxious to have things working again. &quot;They wait and they wait,&quot; says Lembesis, a field technician for Parkway Elevators. &quot;There&#x27;s a lot of frustration. Sometimes it&#x27;s a repeat issue." data-source="BBC News" data-published="2026-11-27T00:02:19+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/c52e8k19y94mo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Why is there a shortage of &#x27;wizard&#x27; elevator mechanics?</a>
+          <p class="summary">Some of them are angry. Nerves are frayed. Many of them are just relieved that he&#x27;s here. When a lift stops working in Chicago, frazzled building managers might get a visit from Jim Lembesis. For more than 47 years, Lembesis has repaired and upgraded lifts. He says he understands why staff and residents are so anxious to have things working again. &quot;They wait and they wait,&quot; says Lembesis, a field technician for Parkway Elevators. &quot;There&#x27;s a lot of frustration. Sometimes it&#x27;s a repeat issue.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/c52e8k19y94mo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 00:02</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Why is there a shortage of &#x27;wizard&#x27; elevator mechanics?" data-url="https://www.bbc.co.uk/news/articles/c52e8k19y94mo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theverge.com/tech/1041801/android-intelligence-create-my-widget-gemini" data-title="Android’s DIY widgets are a bit of vibe-coding fun" data-summary="You can have a good time brewing up widgets — as long as you don’t expect too much.﻿ Aside from dealing with my calendar , there’s one thing I want AI to do: tell me if I’m about to miss the bus. What I need is a widget. It needs to tell me real-time arrivals for the bus stop near my house. Tapping around on my phone screen to open the right app and select my stop will slow me down enough to miss a bus." data-source="The Verge" data-published="2026-11-27T14:00:00+00:00" data-section="Tech" data-paywalled="false">
+          <a class="headline" href="https://www.theverge.com/tech/1041801/android-intelligence-create-my-widget-gemini" target="_blank" rel="noopener">Android’s DIY widgets are a bit of vibe-coding fun</a>
+          <p class="summary">You can have a good time brewing up widgets — as long as you don’t expect too much.﻿ Aside from dealing with my calendar , there’s one thing I want AI to do: tell me if I’m about to miss the bus. What I need is a widget. It needs to tell me real-time arrivals for the bus stop near my house. Tapping around on my phone screen to open the right app and select my stop will slow me down enough to miss a bus.</p>
+          <span class="source"><a href="https://www.theverge.com/tech/1041801/android-intelligence-create-my-widget-gemini" target="_blank" rel="noopener">The Verge</a> &middot; <span class="pubdate">27 Nov, 14:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Android’s DIY widgets are a bit of vibe-coding fun" data-url="https://www.theverge.com/tech/1041801/android-intelligence-create-my-widget-gemini">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="ai">
+        <h2>AI</h2>
+        <article class="story" data-id="https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/" data-title="Nvidia hits pause on chip shipments to Southeast Asia" data-summary="Nvidia is under pressure to do things differently, and a new WSJ report shows how far that’s going. According to the Journal, Nvidia has told manufacturing partners, including Dell and Super Micro, to hit pause on server shipments to Malaysia, Singapore, Thailand, and Indonesia for an unspecified period as it assesses whether its regional partners are meeting U.S. export requirements." data-source="TechCrunch" data-published="2026-11-26T20:03:54+00:00" data-section="AI" data-paywalled="false">
+          <a class="headline" href="https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/" target="_blank" rel="noopener">Nvidia hits pause on chip shipments to Southeast Asia</a>
+          <p class="summary">Nvidia is under pressure to do things differently, and a new WSJ report shows how far that’s going. According to the Journal, Nvidia has told manufacturing partners, including Dell and Super Micro, to hit pause on server shipments to Malaysia, Singapore, Thailand, and Indonesia for an unspecified period as it assesses whether its regional partners are meeting U.S. export requirements.</p>
+          <span class="source"><a href="https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/" target="_blank" rel="noopener">TechCrunch</a> &middot; <span class="pubdate">26 Nov, 20:03</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Nvidia hits pause on chip shipments to Southeast Asia" data-url="https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_uk">
+        <h2>Politics — UK</h2>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmwy95295835o?at_medium=RSS&amp;at_campaign=rss" data-title="Tory candidates must sign pledge to scrap net-zero targets, says Badenoch" data-summary="All Conservative candidates will have to sign a pledge committing themselves to leaving the European Convention on Human Rights and scrapping net-zero emission targets ahead of the next election, Conservative leader Kemi Badenoch has said. Unveiling her &quot;candidates covenant&quot; at an event in the East Midlands, Badenoch said both policies were &quot;necessary for a stronger economy and a stronger country&quot;." data-source="BBC News" data-published="2026-11-27T16:42:22+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmwy95295835o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Tory candidates must sign pledge to scrap net-zero targets, says Badenoch</a>
+          <p class="summary">All Conservative candidates will have to sign a pledge committing themselves to leaving the European Convention on Human Rights and scrapping net-zero emission targets ahead of the next election, Conservative leader Kemi Badenoch has said. Unveiling her &quot;candidates covenant&quot; at an event in the East Midlands, Badenoch said both policies were &quot;necessary for a stronger economy and a stronger country&quot;.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmwy95295835o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 16:42</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Tory candidates must sign pledge to scrap net-zero targets, says Badenoch" data-url="https://www.bbc.co.uk/news/articles/cmwy95295835o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/politics/live/2026/nov/27/department-work-pensions-offline-cyber-incident-rosebank-slapps-latest-news-updates" data-title="UK pensions department hit by ‘serious cyber incident’, minister says – as it happened" data-summary="This blog is now closed, you can read more on this story hereAccording to Downdetector, which tracks online service outages, reports of problems with the government website appeared to begin last night and peaked at about 8am this morning.Tory MP Neil Shastri-Hurst has also commented on the disruption at the DWP, saying the incident highlights the importance of protecting essential public services and ensuring they can recover quickly when systems fail.Today’s cyber incident at DWP is a stark reminder that national resilience is not a tomorrow issue." data-source="The Guardian" data-published="2026-11-27T16:33:28+00:00" data-section="Politics — UK" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/politics/live/2026/nov/27/department-work-pensions-offline-cyber-incident-rosebank-slapps-latest-news-updates" target="_blank" rel="noopener">UK pensions department hit by ‘serious cyber incident’, minister says – as it happened</a>
+          <p class="summary">This blog is now closed, you can read more on this story hereAccording to Downdetector, which tracks online service outages, reports of problems with the government website appeared to begin last night and peaked at about 8am this morning.Tory MP Neil Shastri-Hurst has also commented on the disruption at the DWP, saying the incident highlights the importance of protecting essential public services and ensuring they can recover quickly when systems fail.Today’s cyber incident at DWP is a stark reminder that national resilience is not a tomorrow issue.</p>
+          <span class="source"><a href="https://www.theguardian.com/politics/live/2026/nov/27/department-work-pensions-offline-cyber-incident-rosebank-slapps-latest-news-updates" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">27 Nov, 16:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="UK pensions department hit by ‘serious cyber incident’, minister says – as it happened" data-url="https://www.theguardian.com/politics/live/2026/nov/27/department-work-pensions-offline-cyber-incident-rosebank-slapps-latest-news-updates">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.ft.com/content/8de00d12-8965-41e0-929a-76e80b1ada8e?syn-25a6b1a6=1" data-title="Brexit bear traps for Labour, Tories and Reform" data-summary="Plus, influencer row engulfs No 10" data-source="Financial Times" data-published="2026-11-27T13:13:04+00:00" data-section="Politics — UK" data-paywalled="true">
+          <a class="headline" href="https://www.ft.com/content/8de00d12-8965-41e0-929a-76e80b1ada8e?syn-25a6b1a6=1" target="_blank" rel="noopener">Brexit bear traps for Labour, Tories and Reform</a>
+          <p class="summary">Plus, influencer row engulfs No 10</p>
+          <span class="source"><a href="https://www.ft.com/content/8de00d12-8965-41e0-929a-76e80b1ada8e?syn-25a6b1a6=1" target="_blank" rel="noopener">Financial Times</a> &middot; <span class="pubdate">27 Nov, 13:13</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="Brexit bear traps for Labour, Tories and Reform" data-url="https://www.ft.com/content/8de00d12-8965-41e0-929a-76e80b1ada8e?syn-25a6b1a6=1">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.economist.com/britain/2026/11/27/the-economist-is-hiring-a-senior-producer-narrative-podcasts" data-title="The Economist is hiring a Senior Producer, Narrative Podcasts" data-summary="Join our podcasts team" data-source="The Economist" data-published="2026-11-27T10:48:55+00:00" data-section="Politics — UK" data-paywalled="true">
+          <a class="headline" href="https://www.economist.com/britain/2026/11/27/the-economist-is-hiring-a-senior-producer-narrative-podcasts" target="_blank" rel="noopener">The Economist is hiring a Senior Producer, Narrative Podcasts</a>
+          <p class="summary">Join our podcasts team</p>
+          <span class="source"><a href="https://www.economist.com/britain/2026/11/27/the-economist-is-hiring-a-senior-producer-narrative-podcasts" target="_blank" rel="noopener">The Economist</a> &middot; <span class="pubdate">27 Nov, 10:48</span></span>
+          <span class="paywall">🔒 May require a subscription</span>
+          <button type="button" class="share-btn" hidden data-title="The Economist is hiring a Senior Producer, Narrative Podcasts" data-url="https://www.economist.com/britain/2026/11/27/the-economist-is-hiring-a-senior-producer-narrative-podcasts">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="politics_global">
+        <h2>Politics — Global</h2>
+        <article class="story" data-id="https://www.aljazeera.com/news/2026/11/27/israels-eisenkot-accuses-netanyahus-party-of-stalling-coalition-talks?traffic_source=rss" data-title="Israel’s Eisenkot accuses Netanyahu’s party of stalling coalition talks" data-summary="Gadi Eisenkot has accused the Likud party of caretaker Prime Minister Benjamin Netanyahu of stalling coalition talks in a bid to bring about new elections. Following the October 27 election, the leader of the centrist Yashar party has been tapped by Israel’s president to form a new government but has so far struggled to put together a ruling coalition. He has until December 6 to form a government to replace Netanyahu. The deadline can be extended by 14 days." data-source="Al Jazeera" data-published="2026-11-27T16:33:21+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/news/2026/11/27/israels-eisenkot-accuses-netanyahus-party-of-stalling-coalition-talks?traffic_source=rss" target="_blank" rel="noopener">Israel’s Eisenkot accuses Netanyahu’s party of stalling coalition talks</a>
+          <p class="summary">Gadi Eisenkot has accused the Likud party of caretaker Prime Minister Benjamin Netanyahu of stalling coalition talks in a bid to bring about new elections. Following the October 27 election, the leader of the centrist Yashar party has been tapped by Israel’s president to form a new government but has so far struggled to put together a ruling coalition. He has until December 6 to form a government to replace Netanyahu. The deadline can be extended by 14 days.</p>
+          <span class="source"><a href="https://www.aljazeera.com/news/2026/11/27/israels-eisenkot-accuses-netanyahus-party-of-stalling-coalition-talks?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">27 Nov, 16:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Israel’s Eisenkot accuses Netanyahu’s party of stalling coalition talks" data-url="https://www.aljazeera.com/news/2026/11/27/israels-eisenkot-accuses-netanyahus-party-of-stalling-coalition-talks?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.theguardian.com/world/live/2026/nov/27/zelenskyy-putin-trump-comments-russia-ukraine-latest-news-updates" data-title="Spanish prime minister Pedro Sánchez confident of election victory despite polls – as it happened" data-summary="Spain’s prime minister Pedro Sánchez said on Friday that he was convinced he would ⁠secure a left-wing majority ⁠in a snap ​general election despite adverse public polling, as the political parties prepared to wrap up campaigning ahead of Sunday’s vote, Reuters reported. Amid a legal ban on publishing new ⁠opinion surveys, the Socialist leader insisted that internal data suggested his party would win the most votes, allowing him to clinch re-election with the support of smaller ⁠leftist allies." data-source="The Guardian" data-published="2026-11-27T16:19:50+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.theguardian.com/world/live/2026/nov/27/zelenskyy-putin-trump-comments-russia-ukraine-latest-news-updates" target="_blank" rel="noopener">Spanish prime minister Pedro Sánchez confident of election victory despite polls – as it happened</a>
+          <p class="summary">Spain’s prime minister Pedro Sánchez said on Friday that he was convinced he would ⁠secure a left-wing majority ⁠in a snap ​general election despite adverse public polling, as the political parties prepared to wrap up campaigning ahead of Sunday’s vote, Reuters reported. Amid a legal ban on publishing new ⁠opinion surveys, the Socialist leader insisted that internal data suggested his party would win the most votes, allowing him to clinch re-election with the support of smaller ⁠leftist allies.</p>
+          <span class="source"><a href="https://www.theguardian.com/world/live/2026/nov/27/zelenskyy-putin-trump-comments-russia-ukraine-latest-news-updates" target="_blank" rel="noopener">The Guardian</a> &middot; <span class="pubdate">27 Nov, 16:19</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Spanish prime minister Pedro Sánchez confident of election victory despite polls – as it happened" data-url="https://www.theguardian.com/world/live/2026/nov/27/zelenskyy-putin-trump-comments-russia-ukraine-latest-news-updates">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/cmy49de4xx1zo?at_medium=RSS&amp;at_campaign=rss" data-title="Kenyan doomsday cult leader convicted over further 123 deaths" data-summary="A court in Kenya has convicted the leader of a doomsday Christian cult of the manslaughter of 123 of his followers. Paul Mackenzie was found guilty in Mombasa of ordering his followers, all adults, to fast to death in Shakahola forest near the coast between January 2021 and September 2023. Earlier this month Mackenzie was jailed for 200 years for murdering 191 people, all but one of them children, in the same mass killing." data-source="BBC News" data-published="2026-11-27T16:06:37+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/cmy49de4xx1zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Kenyan doomsday cult leader convicted over further 123 deaths</a>
+          <p class="summary">A court in Kenya has convicted the leader of a doomsday Christian cult of the manslaughter of 123 of his followers. Paul Mackenzie was found guilty in Mombasa of ordering his followers, all adults, to fast to death in Shakahola forest near the coast between January 2021 and September 2023. Earlier this month Mackenzie was jailed for 200 years for murdering 191 people, all but one of them children, in the same mass killing.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/cmy49de4xx1zo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 16:06</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Kenyan doomsday cult leader convicted over further 123 deaths" data-url="https://www.bbc.co.uk/news/articles/cmy49de4xx1zo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.aljazeera.com/economy/2026/11/27/norse-atlantic-files-for-bankruptcy-halts-flights-and-ticket-sales?traffic_source=rss" data-title="Norse Atlantic files for bankruptcy, halts flights and ticket sales" data-summary="Norwegian budget airline Norse Atlantic said it would file for bankruptcy for its main Norwegian operating unit and has stopped selling tickets, becoming the latest airline casualty of fuel-cost spikes stemming from the war in Iran.. The airline has cancelled all flights and said on its website that its customer service department is no longer available. The shutdown came quickly. On Wednesday, the airline, which was founded in 2021, said its financial situation was “critical”." data-source="Al Jazeera" data-published="2026-11-27T16:31:20+00:00" data-section="Politics — Global" data-paywalled="false">
+          <a class="headline" href="https://www.aljazeera.com/economy/2026/11/27/norse-atlantic-files-for-bankruptcy-halts-flights-and-ticket-sales?traffic_source=rss" target="_blank" rel="noopener">Norse Atlantic files for bankruptcy, halts flights and ticket sales</a>
+          <p class="summary">Norwegian budget airline Norse Atlantic said it would file for bankruptcy for its main Norwegian operating unit and has stopped selling tickets, becoming the latest airline casualty of fuel-cost spikes stemming from the war in Iran.. The airline has cancelled all flights and said on its website that its customer service department is no longer available. The shutdown came quickly. On Wednesday, the airline, which was founded in 2021, said its financial situation was “critical”.</p>
+          <span class="source"><a href="https://www.aljazeera.com/economy/2026/11/27/norse-atlantic-files-for-bankruptcy-halts-flights-and-ticket-sales?traffic_source=rss" target="_blank" rel="noopener">Al Jazeera</a> &middot; <span class="pubdate">27 Nov, 16:31</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Norse Atlantic files for bankruptcy, halts flights and ticket sales" data-url="https://www.aljazeera.com/economy/2026/11/27/norse-atlantic-files-for-bankruptcy-halts-flights-and-ticket-sales?traffic_source=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="health">
+        <h2>Health &amp; Fitness</h2>
+        <article class="story" data-id="https://www.statnews.com/2026/11/27/fda-vertex-povetacicept-kidney-capricor-duchenne-readout-newsletter/?utm_campaign=rss" data-title="STAT+: FDA extends assessment of experimental Vertex kidney drug" data-summary="The FDA is extending its assessment of Vertex&#x27;s investigational kidney drug, as the company faces questions about potential safety concerns." data-source="STAT News" data-published="2026-11-27T16:00:54+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/27/fda-vertex-povetacicept-kidney-capricor-duchenne-readout-newsletter/?utm_campaign=rss" target="_blank" rel="noopener">STAT+: FDA extends assessment of experimental Vertex kidney drug</a>
+          <p class="summary">The FDA is extending its assessment of Vertex&#x27;s investigational kidney drug, as the company faces questions about potential safety concerns.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/27/fda-vertex-povetacicept-kidney-capricor-duchenne-readout-newsletter/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">27 Nov, 16:00</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="STAT+: FDA extends assessment of experimental Vertex kidney drug" data-url="https://www.statnews.com/2026/11/27/fda-vertex-povetacicept-kidney-capricor-duchenne-readout-newsletter/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/videos/cqly4vx16gzdo?at_medium=RSS&amp;at_campaign=rss" data-title="Catherine joins cancer support group in new documentary" data-summary="The Princess of Wales is seen joining a cancer support group in newly-released footage from a forthcoming documentary called Heal." data-source="BBC News" data-published="2026-11-27T15:38:55+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/videos/cqly4vx16gzdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Catherine joins cancer support group in new documentary</a>
+          <p class="summary">The Princess of Wales is seen joining a cancer support group in newly-released footage from a forthcoming documentary called Heal.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/videos/cqly4vx16gzdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 15:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Catherine joins cancer support group in new documentary" data-url="https://www.bbc.co.uk/news/videos/cqly4vx16gzdo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.sciencedaily.com/releases/2026/11/261125045304.htm" data-title="Breathing less oxygen tripled lifespan in mice with a deadly brain disorder" data-summary="Oxygen is essential for life, but too much of it can become dangerously toxic, particularly in people with certain neurological and mitochondrial disorders. Scientists at Gladstone Institutes have discovered that defective proteins can disrupt the ability of mitochondria to consume oxygen, allowing harmful levels to accumulate in tissues. Remarkably, mice with a genetic disorder that causes motor neuron degeneration lived three times longer when they breathed air containing less oxygen." data-source="ScienceDaily" data-published="2026-11-27T09:38:19+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.sciencedaily.com/releases/2026/11/261125045304.htm" target="_blank" rel="noopener">Breathing less oxygen tripled lifespan in mice with a deadly brain disorder</a>
+          <p class="summary">Oxygen is essential for life, but too much of it can become dangerously toxic, particularly in people with certain neurological and mitochondrial disorders. Scientists at Gladstone Institutes have discovered that defective proteins can disrupt the ability of mitochondria to consume oxygen, allowing harmful levels to accumulate in tissues. Remarkably, mice with a genetic disorder that causes motor neuron degeneration lived three times longer when they breathed air containing less oxygen.</p>
+          <span class="source"><a href="https://www.sciencedaily.com/releases/2026/11/261125045304.htm" target="_blank" rel="noopener">ScienceDaily</a> &middot; <span class="pubdate">27 Nov, 09:38</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Breathing less oxygen tripled lifespan in mice with a deadly brain disorder" data-url="https://www.sciencedaily.com/releases/2026/11/261125045304.htm">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.statnews.com/2026/11/27/favorite-stat-stories-health-news-morning-rounds/?utm_campaign=rss" data-title="The stories we’re grateful for this year" data-summary="STAT staffers have put together a list of the stories we’re thankful for this year — check out our favorites." data-source="STAT News" data-published="2026-11-27T15:49:05+00:00" data-section="Health &amp; Fitness" data-paywalled="false">
+          <a class="headline" href="https://www.statnews.com/2026/11/27/favorite-stat-stories-health-news-morning-rounds/?utm_campaign=rss" target="_blank" rel="noopener">The stories we’re grateful for this year</a>
+          <p class="summary">STAT staffers have put together a list of the stories we’re thankful for this year — check out our favorites.</p>
+          <span class="source"><a href="https://www.statnews.com/2026/11/27/favorite-stat-stories-health-news-morning-rounds/?utm_campaign=rss" target="_blank" rel="noopener">STAT News</a> &middot; <span class="pubdate">27 Nov, 15:49</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="The stories we’re grateful for this year" data-url="https://www.statnews.com/2026/11/27/favorite-stat-stories-health-news-morning-rounds/?utm_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="bcci">
+        <h2>BCCI</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMiywFBVV95cUxQWGJoNWhHdV9Ja3NJamx5a3lSTWg3a2xuM2pGVW1aN0FoR2s4VkNyeE8wdndQaDlmMVBLMndDNnRraDVqdzdWTFI5bjVxQi03RG4xR2dzSEhSb0FyQzF1X1NsVWVjNXRGZXdpeTR4QVlJRE00WUdrd0tvS0xhaElvR2lxOGdHQmFXbFE5S3lZdUR3TzdsdFdWd2d3QjVxMGRzWDFIUzFIRkZ1M2NRVDItTG5VTGsxNEVucjhHOHFrcVBBZUNHOVBOek8yZw?oc=5" data-title="Vaibhav Sooryavanshi Compared To Sachin Tendulkar By Ex-BCCI Selector: &quot;Once In A Generation&quot; - NDTV Sports" data-summary="Vaibhav Sooryavanshi Compared To Sachin Tendulkar By Ex-BCCI Selector: &quot;Once In A Generation&quot; NDTV Sports" data-source="NDTV Sports" data-published="2026-11-27T15:10:28+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQWGJoNWhHdV9Ja3NJamx5a3lSTWg3a2xuM2pGVW1aN0FoR2s4VkNyeE8wdndQaDlmMVBLMndDNnRraDVqdzdWTFI5bjVxQi03RG4xR2dzSEhSb0FyQzF1X1NsVWVjNXRGZXdpeTR4QVlJRE00WUdrd0tvS0xhaElvR2lxOGdHQmFXbFE5S3lZdUR3TzdsdFdWd2d3QjVxMGRzWDFIUzFIRkZ1M2NRVDItTG5VTGsxNEVucjhHOHFrcVBBZUNHOVBOek8yZw?oc=5" target="_blank" rel="noopener">Vaibhav Sooryavanshi Compared To Sachin Tendulkar By Ex-BCCI Selector: &quot;Once In A Generation&quot; - NDTV Sports</a>
+          <p class="summary">Vaibhav Sooryavanshi Compared To Sachin Tendulkar By Ex-BCCI Selector: &quot;Once In A Generation&quot; NDTV Sports</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQWGJoNWhHdV9Ja3NJamx5a3lSTWg3a2xuM2pGVW1aN0FoR2s4VkNyeE8wdndQaDlmMVBLMndDNnRraDVqdzdWTFI5bjVxQi03RG4xR2dzSEhSb0FyQzF1X1NsVWVjNXRGZXdpeTR4QVlJRE00WUdrd0tvS0xhaElvR2lxOGdHQmFXbFE5S3lZdUR3TzdsdFdWd2d3QjVxMGRzWDFIUzFIRkZ1M2NRVDItTG5VTGsxNEVucjhHOHFrcVBBZUNHOVBOek8yZw?oc=5" target="_blank" rel="noopener">NDTV Sports</a> &middot; <span class="pubdate">27 Nov, 15:10</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Vaibhav Sooryavanshi Compared To Sachin Tendulkar By Ex-BCCI Selector: &quot;Once In A Generation&quot; - NDTV Sports" data-url="https://news.google.com/rss/articles/CBMiywFBVV95cUxQWGJoNWhHdV9Ja3NJamx5a3lSTWg3a2xuM2pGVW1aN0FoR2s4VkNyeE8wdndQaDlmMVBLMndDNnRraDVqdzdWTFI5bjVxQi03RG4xR2dzSEhSb0FyQzF1X1NsVWVjNXRGZXdpeTR4QVlJRE00WUdrd0tvS0xhaElvR2lxOGdHQmFXbFE5S3lZdUR3TzdsdFdWd2d3QjVxMGRzWDFIUzFIRkZ1M2NRVDItTG5VTGsxNEVucjhHOHFrcVBBZUNHOVBOek8yZw?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMingFBVV95cUxQM3QtS3hQeTI3ZXV1RWQtZl9VRjY4LTZzU0l0RC0wWmZWUm1GQWs0b1NnVGJqMWFEUkZBSXI3UWRTX3Z6ZmxnR21aTW44QnM4WDNZNlFrWGpZeVNwTjF2MFkyYlhJOTNFaGlReDIyOGo1Z29KSU0yNWhkbHlYYmxWUWFjaF9YU2Nfdmxpa0JRUlZtdXpxMVZMb3Q5a0pmUQ?oc=5" data-title="Tried to make the batters play as much as possible: Akash Deep - BCCI" data-summary="Tried to make the batters play as much as possible: Akash Deep BCCI" data-source="BCCI" data-published="2026-11-27T10:19:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMingFBVV95cUxQM3QtS3hQeTI3ZXV1RWQtZl9VRjY4LTZzU0l0RC0wWmZWUm1GQWs0b1NnVGJqMWFEUkZBSXI3UWRTX3Z6ZmxnR21aTW44QnM4WDNZNlFrWGpZeVNwTjF2MFkyYlhJOTNFaGlReDIyOGo1Z29KSU0yNWhkbHlYYmxWUWFjaF9YU2Nfdmxpa0JRUlZtdXpxMVZMb3Q5a0pmUQ?oc=5" target="_blank" rel="noopener">Tried to make the batters play as much as possible: Akash Deep - BCCI</a>
+          <p class="summary">Tried to make the batters play as much as possible: Akash Deep BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMingFBVV95cUxQM3QtS3hQeTI3ZXV1RWQtZl9VRjY4LTZzU0l0RC0wWmZWUm1GQWs0b1NnVGJqMWFEUkZBSXI3UWRTX3Z6ZmxnR21aTW44QnM4WDNZNlFrWGpZeVNwTjF2MFkyYlhJOTNFaGlReDIyOGo1Z29KSU0yNWhkbHlYYmxWUWFjaF9YU2Nfdmxpa0JRUlZtdXpxMVZMb3Q5a0pmUQ?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">27 Nov, 10:19</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Tried to make the batters play as much as possible: Akash Deep - BCCI" data-url="https://news.google.com/rss/articles/CBMingFBVV95cUxQM3QtS3hQeTI3ZXV1RWQtZl9VRjY4LTZzU0l0RC0wWmZWUm1GQWs0b1NnVGJqMWFEUkZBSXI3UWRTX3Z6ZmxnR21aTW44QnM4WDNZNlFrWGpZeVNwTjF2MFkyYlhJOTNFaGlReDIyOGo1Z29KSU0yNWhkbHlYYmxWUWFjaF9YU2Nfdmxpa0JRUlZtdXpxMVZMb3Q5a0pmUQ?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMijgFBVV95cUxQX0FqOTg0MEpfRXpOMVhtNkdWTTdycWtkdDE4VmFXdC0wVktQZ0lnemhpLTRJbGhjU0lzQy1TVUx6czEyWkxaYWVxU213bTd4VUtpeU1hdEtrM0hfTDZ1eUNQWkNpSjVmeFUxMU1zdXJOT0VuS0hibHJDRDF0WXpaZ19vaVFzVjduVkJiMkRB?oc=5" data-title="Syed Mushtaq Ali Trophy 2026-27 Group Stage Round Up - BCCI" data-summary="Syed Mushtaq Ali Trophy 2026-27 Group Stage Round Up BCCI" data-source="BCCI" data-published="2026-11-27T03:30:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMijgFBVV95cUxQX0FqOTg0MEpfRXpOMVhtNkdWTTdycWtkdDE4VmFXdC0wVktQZ0lnemhpLTRJbGhjU0lzQy1TVUx6czEyWkxaYWVxU213bTd4VUtpeU1hdEtrM0hfTDZ1eUNQWkNpSjVmeFUxMU1zdXJOT0VuS0hibHJDRDF0WXpaZ19vaVFzVjduVkJiMkRB?oc=5" target="_blank" rel="noopener">Syed Mushtaq Ali Trophy 2026-27 Group Stage Round Up - BCCI</a>
+          <p class="summary">Syed Mushtaq Ali Trophy 2026-27 Group Stage Round Up BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMijgFBVV95cUxQX0FqOTg0MEpfRXpOMVhtNkdWTTdycWtkdDE4VmFXdC0wVktQZ0lnemhpLTRJbGhjU0lzQy1TVUx6czEyWkxaYWVxU213bTd4VUtpeU1hdEtrM0hfTDZ1eUNQWkNpSjVmeFUxMU1zdXJOT0VuS0hibHJDRDF0WXpaZ19vaVFzVjduVkJiMkRB?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">27 Nov, 03:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Syed Mushtaq Ali Trophy 2026-27 Group Stage Round Up - BCCI" data-url="https://news.google.com/rss/articles/CBMijgFBVV95cUxQX0FqOTg0MEpfRXpOMVhtNkdWTTdycWtkdDE4VmFXdC0wVktQZ0lnemhpLTRJbGhjU0lzQy1TVUx6czEyWkxaYWVxU213bTd4VUtpeU1hdEtrM0hfTDZ1eUNQWkNpSjVmeFUxMU1zdXJOT0VuS0hibHJDRDF0WXpaZ19vaVFzVjduVkJiMkRB?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMikAFBVV95cUxOajEtS1BBRmVlV1lRMEIzWUVnanZ4YXNUS1dmRU4yMnVRb1g1ZmlaVnBNMDhTS0NiTEU5VnBaX2J0QkpMS1JHbjdXM3d6NVJxQnl2QmdKbURIY19rTXlaWkxmVzFDM01hMzE0eWxRMGxtMUY5ZEE4enlwdElTUTVGeUk5STU5eE9wYW9kcUlfQ0g?oc=5" data-title="From Jasprit Bumrah to Test Cap No. 321 - Gurnoor Brar - BCCI" data-summary="From Jasprit Bumrah to Test Cap No. 321 - Gurnoor Brar BCCI" data-source="BCCI" data-published="2026-11-27T02:58:00+00:00" data-section="BCCI" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMikAFBVV95cUxOajEtS1BBRmVlV1lRMEIzWUVnanZ4YXNUS1dmRU4yMnVRb1g1ZmlaVnBNMDhTS0NiTEU5VnBaX2J0QkpMS1JHbjdXM3d6NVJxQnl2QmdKbURIY19rTXlaWkxmVzFDM01hMzE0eWxRMGxtMUY5ZEE4enlwdElTUTVGeUk5STU5eE9wYW9kcUlfQ0g?oc=5" target="_blank" rel="noopener">From Jasprit Bumrah to Test Cap No. 321 - Gurnoor Brar - BCCI</a>
+          <p class="summary">From Jasprit Bumrah to Test Cap No. 321 - Gurnoor Brar BCCI</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMikAFBVV95cUxOajEtS1BBRmVlV1lRMEIzWUVnanZ4YXNUS1dmRU4yMnVRb1g1ZmlaVnBNMDhTS0NiTEU5VnBaX2J0QkpMS1JHbjdXM3d6NVJxQnl2QmdKbURIY19rTXlaWkxmVzFDM01hMzE0eWxRMGxtMUY5ZEE4enlwdElTUTVGeUk5STU5eE9wYW9kcUlfQ0g?oc=5" target="_blank" rel="noopener">BCCI</a> &middot; <span class="pubdate">27 Nov, 02:58</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="From Jasprit Bumrah to Test Cap No. 321 - Gurnoor Brar - BCCI" data-url="https://news.google.com/rss/articles/CBMikAFBVV95cUxOajEtS1BBRmVlV1lRMEIzWUVnanZ4YXNUS1dmRU4yMnVRb1g1ZmlaVnBNMDhTS0NiTEU5VnBaX2J0QkpMS1JHbjdXM3d6NVJxQnl2QmdKbURIY19rTXlaWkxmVzFDM01hMzE0eWxRMGxtMUY5ZEE4enlwdElTUTVGeUk5STU5eE9wYW9kcUlfQ0g?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="rajasthan_royals">
+        <h2>Rajasthan Royals</h2>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMic0FVX3lxTE5NSE5uME9ncU1NUGVqY25ZOGx5ZXhFaUd5ZG9SQkdoWmFYOVM3WFJoWHoxVXRnc3dGZkFzdW5iVnhSdDlhSWdtSnFBMHY1T2NMSFlNSDRLdzFXX0hPWVdfU2ZheGF5MTNZSzR1Nms5STV2akE?oc=5" data-title="Rajasthan Royals Squad - Auction Tracker IPL 2026 - Cricbuzz" data-summary="Rajasthan Royals Squad - Auction Tracker IPL 2026 Cricbuzz" data-source="Cricbuzz" data-published="2026-11-27T09:41:51+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMic0FVX3lxTE5NSE5uME9ncU1NUGVqY25ZOGx5ZXhFaUd5ZG9SQkdoWmFYOVM3WFJoWHoxVXRnc3dGZkFzdW5iVnhSdDlhSWdtSnFBMHY1T2NMSFlNSDRLdzFXX0hPWVdfU2ZheGF5MTNZSzR1Nms5STV2akE?oc=5" target="_blank" rel="noopener">Rajasthan Royals Squad - Auction Tracker IPL 2026 - Cricbuzz</a>
+          <p class="summary">Rajasthan Royals Squad - Auction Tracker IPL 2026 Cricbuzz</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMic0FVX3lxTE5NSE5uME9ncU1NUGVqY25ZOGx5ZXhFaUd5ZG9SQkdoWmFYOVM3WFJoWHoxVXRnc3dGZkFzdW5iVnhSdDlhSWdtSnFBMHY1T2NMSFlNSDRLdzFXX0hPWVdfU2ZheGF5MTNZSzR1Nms5STV2akE?oc=5" target="_blank" rel="noopener">Cricbuzz</a> &middot; <span class="pubdate">27 Nov, 09:41</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rajasthan Royals Squad - Auction Tracker IPL 2026 - Cricbuzz" data-url="https://news.google.com/rss/articles/CBMic0FVX3lxTE5NSE5uME9ncU1NUGVqY25ZOGx5ZXhFaUd5ZG9SQkdoWmFYOVM3WFJoWHoxVXRnc3dGZkFzdW5iVnhSdDlhSWdtSnFBMHY1T2NMSFlNSDRLdzFXX0hPWVdfU2ZheGF5MTNZSzR1Nms5STV2akE?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMirgFBVV95cUxOaDN0VDhwdVNqeFhXV0tSTVlZTDlWNXp0cEpVczNfbHR6Y1MtYU1XRFdKYVcxdVdjenV0ZVJ4RmVZUFBldU9sdjFVRTJNdldTcmtkbTZ3LS1PYkprdGlTNEh1X2RfT1lsS3FITW04amVWTnJWUkZpV2RZaFJQcmEyZU9CVHJoTTFTbllleFhWY05yV0xUS0lLblN3T1R3ZnBkT2ItMTNORW1heC05MlHSAbMBQVVfeXFMT195UlFlSTR2b3cwYjRTU25RTlROam1qY1hray1pM254eTdQNVUxelNDUzBPREhxOVBRSC1keDJUcE15amk5QUNOelJkdlhTamY5S1I2ejhnQU80eS1pNmdBakkxTFFrSXZ4d2RyMWdOMW1kMjZRb1R2Y0tUSDg0U0xTMTBTV3dVbDk0LTlOcXpsbHpDYmR6UFNBQ1otZ3VJQXU3RGNaRjFnMS1JLU9OdHFGeVk?oc=5" data-title="Hardik Pandya’s trade to Rajasthan Royals failed due to two players: Report - Crictoday" data-summary="Hardik Pandya’s trade to Rajasthan Royals failed due to two players: Report Crictoday" data-source="Crictoday" data-published="2026-11-26T23:30:37+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMirgFBVV95cUxOaDN0VDhwdVNqeFhXV0tSTVlZTDlWNXp0cEpVczNfbHR6Y1MtYU1XRFdKYVcxdVdjenV0ZVJ4RmVZUFBldU9sdjFVRTJNdldTcmtkbTZ3LS1PYkprdGlTNEh1X2RfT1lsS3FITW04amVWTnJWUkZpV2RZaFJQcmEyZU9CVHJoTTFTbllleFhWY05yV0xUS0lLblN3T1R3ZnBkT2ItMTNORW1heC05MlHSAbMBQVVfeXFMT195UlFlSTR2b3cwYjRTU25RTlROam1qY1hray1pM254eTdQNVUxelNDUzBPREhxOVBRSC1keDJUcE15amk5QUNOelJkdlhTamY5S1I2ejhnQU80eS1pNmdBakkxTFFrSXZ4d2RyMWdOMW1kMjZRb1R2Y0tUSDg0U0xTMTBTV3dVbDk0LTlOcXpsbHpDYmR6UFNBQ1otZ3VJQXU3RGNaRjFnMS1JLU9OdHFGeVk?oc=5" target="_blank" rel="noopener">Hardik Pandya’s trade to Rajasthan Royals failed due to two players: Report - Crictoday</a>
+          <p class="summary">Hardik Pandya’s trade to Rajasthan Royals failed due to two players: Report Crictoday</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMirgFBVV95cUxOaDN0VDhwdVNqeFhXV0tSTVlZTDlWNXp0cEpVczNfbHR6Y1MtYU1XRFdKYVcxdVdjenV0ZVJ4RmVZUFBldU9sdjFVRTJNdldTcmtkbTZ3LS1PYkprdGlTNEh1X2RfT1lsS3FITW04amVWTnJWUkZpV2RZaFJQcmEyZU9CVHJoTTFTbllleFhWY05yV0xUS0lLblN3T1R3ZnBkT2ItMTNORW1heC05MlHSAbMBQVVfeXFMT195UlFlSTR2b3cwYjRTU25RTlROam1qY1hray1pM254eTdQNVUxelNDUzBPREhxOVBRSC1keDJUcE15amk5QUNOelJkdlhTamY5S1I2ejhnQU80eS1pNmdBakkxTFFrSXZ4d2RyMWdOMW1kMjZRb1R2Y0tUSDg0U0xTMTBTV3dVbDk0LTlOcXpsbHpDYmR6UFNBQ1otZ3VJQXU3RGNaRjFnMS1JLU9OdHFGeVk?oc=5" target="_blank" rel="noopener">Crictoday</a> &middot; <span class="pubdate">26 Nov, 23:30</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hardik Pandya’s trade to Rajasthan Royals failed due to two players: Report - Crictoday" data-url="https://news.google.com/rss/articles/CBMirgFBVV95cUxOaDN0VDhwdVNqeFhXV0tSTVlZTDlWNXp0cEpVczNfbHR6Y1MtYU1XRFdKYVcxdVdjenV0ZVJ4RmVZUFBldU9sdjFVRTJNdldTcmtkbTZ3LS1PYkprdGlTNEh1X2RfT1lsS3FITW04amVWTnJWUkZpV2RZaFJQcmEyZU9CVHJoTTFTbllleFhWY05yV0xUS0lLblN3T1R3ZnBkT2ItMTNORW1heC05MlHSAbMBQVVfeXFMT195UlFlSTR2b3cwYjRTU25RTlROam1qY1hray1pM254eTdQNVUxelNDUzBPREhxOVBRSC1keDJUcE15amk5QUNOelJkdlhTamY5S1I2ejhnQU80eS1pNmdBakkxTFFrSXZ4d2RyMWdOMW1kMjZRb1R2Y0tUSDg0U0xTMTBTV3dVbDk0LTlOcXpsbHpDYmR6UFNBQ1otZ3VJQXU3RGNaRjFnMS1JLU9OdHFGeVk?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://news.google.com/rss/articles/CBMixwFBVV95cUxPN2xEWnFBanNtelBtdFRnMkhRM0thX3JhZTl3SzZveS1BOXlzcTJtZUM5bnBCM2JVUVk0OTB1V1ZxalVuVEdlTTA1SnhMZ3BEeVZrbGtPY2dvbXlGUS1CMXAyNGlBbTduZ2NSSTdFX0l6Wk5ZSWJ5dXhrR05kTW9oUW12UjZwYWdISTFfSlllNk1zRlQ4UVF2RjhlZ2tQMWlLZWxjd0lNV1JBUk9PdjllUTBNdUxXb3BtczlDVklCQ2hXU2E2NGFN?oc=5" data-title="Hardik Pandya To Rajasthan Royals? MI Reportedly Demanded Yashasvi Jaiswal And Jofra Archer - Mashable India" data-summary="Hardik Pandya To Rajasthan Royals? MI Reportedly Demanded Yashasvi Jaiswal And Jofra Archer Mashable India" data-source="Mashable India" data-published="2026-11-26T19:15:49+00:00" data-section="Rajasthan Royals" data-paywalled="false">
+          <a class="headline" href="https://news.google.com/rss/articles/CBMixwFBVV95cUxPN2xEWnFBanNtelBtdFRnMkhRM0thX3JhZTl3SzZveS1BOXlzcTJtZUM5bnBCM2JVUVk0OTB1V1ZxalVuVEdlTTA1SnhMZ3BEeVZrbGtPY2dvbXlGUS1CMXAyNGlBbTduZ2NSSTdFX0l6Wk5ZSWJ5dXhrR05kTW9oUW12UjZwYWdISTFfSlllNk1zRlQ4UVF2RjhlZ2tQMWlLZWxjd0lNV1JBUk9PdjllUTBNdUxXb3BtczlDVklCQ2hXU2E2NGFN?oc=5" target="_blank" rel="noopener">Hardik Pandya To Rajasthan Royals? MI Reportedly Demanded Yashasvi Jaiswal And Jofra Archer - Mashable India</a>
+          <p class="summary">Hardik Pandya To Rajasthan Royals? MI Reportedly Demanded Yashasvi Jaiswal And Jofra Archer Mashable India</p>
+          <span class="source"><a href="https://news.google.com/rss/articles/CBMixwFBVV95cUxPN2xEWnFBanNtelBtdFRnMkhRM0thX3JhZTl3SzZveS1BOXlzcTJtZUM5bnBCM2JVUVk0OTB1V1ZxalVuVEdlTTA1SnhMZ3BEeVZrbGtPY2dvbXlGUS1CMXAyNGlBbTduZ2NSSTdFX0l6Wk5ZSWJ5dXhrR05kTW9oUW12UjZwYWdISTFfSlllNk1zRlQ4UVF2RjhlZ2tQMWlLZWxjd0lNV1JBUk9PdjllUTBNdUxXb3BtczlDVklCQ2hXU2E2NGFN?oc=5" target="_blank" rel="noopener">Mashable India</a> &middot; <span class="pubdate">26 Nov, 19:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Hardik Pandya To Rajasthan Royals? MI Reportedly Demanded Yashasvi Jaiswal And Jofra Archer - Mashable India" data-url="https://news.google.com/rss/articles/CBMixwFBVV95cUxPN2xEWnFBanNtelBtdFRnMkhRM0thX3JhZTl3SzZveS1BOXlzcTJtZUM5bnBCM2JVUVk0OTB1V1ZxalVuVEdlTTA1SnhMZ3BEeVZrbGtPY2dvbXlGUS1CMXAyNGlBbTduZ2NSSTdFX0l6Wk5ZSWJ5dXhrR05kTW9oUW12UjZwYWdISTFfSlllNk1zRlQ4UVF2RjhlZ2tQMWlLZWxjd0lNV1JBUk9PdjllUTBNdUxXb3BtczlDVklCQ2hXU2E2NGFN?oc=5">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="cricket">
+        <h2>Cricket</h2>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1564474.html?ex_cid=OTC-RSS" data-title="CSA 4-day match in Newlands abandoned due to dangerous pitch" data-summary="The game between Western Province and Titans was abandoned on the second morning after 14 wickets fell on the opening day" data-source="ESPNcricinfo" data-published="2026-11-27T16:04:40+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1564474.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">CSA 4-day match in Newlands abandoned due to dangerous pitch</a>
+          <p class="summary">The game between Western Province and Titans was abandoned on the second morning after 14 wickets fell on the opening day</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1564474.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">27 Nov, 16:04</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="CSA 4-day match in Newlands abandoned due to dangerous pitch" data-url="https://www.cricinfo.com/ci/content/story/1564474.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1564465.html?ex_cid=OTC-RSS" data-title="Shreyas Iyer to join Mumbai&#x27;s squad for Super League phase of Syed Mushtaq Ali Trophy" data-summary="His inclusion further strengthens an already robust Mumbai batting line-up" data-source="ESPNcricinfo" data-published="2026-11-27T15:33:01+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1564465.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Shreyas Iyer to join Mumbai&#x27;s squad for Super League phase of Syed Mushtaq Ali Trophy</a>
+          <p class="summary">His inclusion further strengthens an already robust Mumbai batting line-up</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1564465.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">27 Nov, 15:33</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Shreyas Iyer to join Mumbai&#x27;s squad for Super League phase of Syed Mushtaq Ali Trophy" data-url="https://www.cricinfo.com/ci/content/story/1564465.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1563366.html?ex_cid=OTC-RSS" data-title="Rohit Sharma to lead Mumbai Indians again in IPL 2027" data-summary="Rohit Sharma, who turns 40 next April, last led Mumbai Indians in IPL 2023, when the team lost in Qualifier 2 to Gujarat Titans" data-source="ESPNcricinfo" data-published="2026-11-27T13:16:53+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1563366.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Rohit Sharma to lead Mumbai Indians again in IPL 2027</a>
+          <p class="summary">Rohit Sharma, who turns 40 next April, last led Mumbai Indians in IPL 2023, when the team lost in Qualifier 2 to Gujarat Titans</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1563366.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">27 Nov, 13:16</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Rohit Sharma to lead Mumbai Indians again in IPL 2027" data-url="https://www.cricinfo.com/ci/content/story/1563366.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.cricinfo.com/ci/content/story/1564453.html?ex_cid=OTC-RSS" data-title="Jamie Overton skittles Australia with five as England surge to series lead" data-summary="The home side were bundled out for just 108 at the Gabba in a miserable batting display" data-source="ESPNcricinfo" data-published="2026-11-27T11:46:13+00:00" data-section="Cricket" data-paywalled="false">
+          <a class="headline" href="https://www.cricinfo.com/ci/content/story/1564453.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">Jamie Overton skittles Australia with five as England surge to series lead</a>
+          <p class="summary">The home side were bundled out for just 108 at the Gabba in a miserable batting display</p>
+          <span class="source"><a href="https://www.cricinfo.com/ci/content/story/1564453.html?ex_cid=OTC-RSS" target="_blank" rel="noopener">ESPNcricinfo</a> &middot; <span class="pubdate">27 Nov, 11:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Jamie Overton skittles Australia with five as England surge to series lead" data-url="https://www.cricinfo.com/ci/content/story/1564453.html?ex_cid=OTC-RSS">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="sport">
+        <h2>Sport</h2>
+        <article class="story" data-id="https://www.skysports.com/f1/live-blog/12040/13617151/f1-qatar-gp-live-friday-practice-updates-results-stream-highlights-from-formula-1-race-weekend-at-lusail-international-circuit" data-title="Qatar GP: Mercedes&#x27; rivals look to hit back in second practice LIVE!" data-summary="Follow live updates and watch the best video from Friday at the Qatar Grand Prix. Watch live on Sky Sports F1 and Main Event Sorry, this blog is currently unavailable. Please try again later." data-source="Sky Sports" data-published="2026-11-27T16:37:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/f1/live-blog/12040/13617151/f1-qatar-gp-live-friday-practice-updates-results-stream-highlights-from-formula-1-race-weekend-at-lusail-international-circuit" target="_blank" rel="noopener">Qatar GP: Mercedes&#x27; rivals look to hit back in second practice LIVE!</a>
+          <p class="summary">Follow live updates and watch the best video from Friday at the Qatar Grand Prix. Watch live on Sky Sports F1 and Main Event Sorry, this blog is currently unavailable. Please try again later.</p>
+          <span class="source"><a href="https://www.skysports.com/f1/live-blog/12040/13617151/f1-qatar-gp-live-friday-practice-updates-results-stream-highlights-from-formula-1-race-weekend-at-lusail-international-circuit" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">27 Nov, 16:37</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Qatar GP: Mercedes&#x27; rivals look to hit back in second practice LIVE!" data-url="https://www.skysports.com/f1/live-blog/12040/13617151/f1-qatar-gp-live-friday-practice-updates-results-stream-highlights-from-formula-1-race-weekend-at-lusail-international-circuit">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cmy49d5kpw78o?at_medium=RSS&amp;at_campaign=rss" data-title="Arsenal head coach Slegers leaves by mutual consent" data-summary="Arsenal have parted company with head coach Renee Slegers by mutual consent after a disappointing start to the season. Slegers, 37, was initially appointed on an interim basis in October 2024 before being handed the role permanently three months later. The Dutchwoman led Arsenal to a second Women&#x27;s Champions League title in May 2025 and the inaugural Fifa Women&#x27;s Champions Cup in February 2026." data-source="BBC News" data-published="2026-11-27T16:14:34+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cmy49d5kpw78o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Arsenal head coach Slegers leaves by mutual consent</a>
+          <p class="summary">Arsenal have parted company with head coach Renee Slegers by mutual consent after a disappointing start to the season. Slegers, 37, was initially appointed on an interim basis in October 2024 before being handed the role permanently three months later. The Dutchwoman led Arsenal to a second Women&#x27;s Champions League title in May 2025 and the inaugural Fifa Women&#x27;s Champions Cup in February 2026.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cmy49d5kpw78o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 16:14</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Arsenal head coach Slegers leaves by mutual consent" data-url="https://www.bbc.co.uk/sport/football/articles/cmy49d5kpw78o?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.skysports.com/racing/news/12040/13617253/saturday-tips-kap-vert-fancied-to-lift-coral-gold-cup-crown-at-newbury" data-title="Saturday tips: Kap Vert fancied to lift Coral Gold Cup crown at Newbury" data-summary="Wendigo heads the market for a typically competitive renewal of the Coral Gold Cup at Newbury, with Mr Hope Street, Road To Home and Kap Vert among the challengers; Panic Attack back to defend her crown for in-form Dan Skelton team With a hugely exciting renewal of the Coral Gold Cup on Saturday, Kate Tracey, Declan Rix and Sam Boswell headed to Newbury for a very special episode of Weekend Winners." data-source="Sky Sports" data-published="2026-11-27T16:15:00+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.skysports.com/racing/news/12040/13617253/saturday-tips-kap-vert-fancied-to-lift-coral-gold-cup-crown-at-newbury" target="_blank" rel="noopener">Saturday tips: Kap Vert fancied to lift Coral Gold Cup crown at Newbury</a>
+          <p class="summary">Wendigo heads the market for a typically competitive renewal of the Coral Gold Cup at Newbury, with Mr Hope Street, Road To Home and Kap Vert among the challengers; Panic Attack back to defend her crown for in-form Dan Skelton team With a hugely exciting renewal of the Coral Gold Cup on Saturday, Kate Tracey, Declan Rix and Sam Boswell headed to Newbury for a very special episode of Weekend Winners.</p>
+          <span class="source"><a href="https://www.skysports.com/racing/news/12040/13617253/saturday-tips-kap-vert-fancied-to-lift-coral-gold-cup-crown-at-newbury" target="_blank" rel="noopener">Sky Sports</a> &middot; <span class="pubdate">27 Nov, 16:15</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Saturday tips: Kap Vert fancied to lift Coral Gold Cup crown at Newbury" data-url="https://www.skysports.com/racing/news/12040/13617253/saturday-tips-kap-vert-fancied-to-lift-coral-gold-cup-crown-at-newbury">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/sport/football/articles/cw4gnm4p3zxlo?at_medium=RSS&amp;at_campaign=rss" data-title="Spurs&#x27; Savio to miss festive fixtures after injury setback" data-summary="Tottenham winger Savio will miss the club&#x27;s Christmas fixtures with injury and could be out for up to 80 days, manager Roberto de Zerbi has confirmed. Savio joined Spurs from Manchester City for Â£75m this summer, but has played in just five of their 11 Premier League matches this season. The 22-year-old came on as a substitute in the 64th minute of Tottenham &#x27;s 2-0 win over Ipswich on Saturday, but was forced off with two minutes remaining with a hamstring injury." data-source="BBC News" data-published="2026-11-27T16:05:30+00:00" data-section="Sport" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/sport/football/articles/cw4gnm4p3zxlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Spurs&#x27; Savio to miss festive fixtures after injury setback</a>
+          <p class="summary">Tottenham winger Savio will miss the club&#x27;s Christmas fixtures with injury and could be out for up to 80 days, manager Roberto de Zerbi has confirmed. Savio joined Spurs from Manchester City for Â£75m this summer, but has played in just five of their 11 Premier League matches this season. The 22-year-old came on as a substitute in the 64th minute of Tottenham &#x27;s 2-0 win over Ipswich on Saturday, but was forced off with two minutes remaining with a hamstring injury.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/sport/football/articles/cw4gnm4p3zxlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 16:05</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Spurs&#x27; Savio to miss festive fixtures after injury setback" data-url="https://www.bbc.co.uk/sport/football/articles/cw4gnm4p3zxlo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+      <section class="section" data-topic="india">
+        <h2>India News</h2>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/rest-of-world/a-new-zealand-couple-built-a-four-bedroom-home-using-1300-recycled-tyres-and-7000-glass-bottles-after-appearing-on-grand-designs-their-earthship-is-now-looking-for-a-new-owner/articleshow/136227264.cms" data-title="New Zealand Earthship built from 1,300 tyres and 7,000 bottles goes on sale after TV fame" data-summary="For sale in New Zealand&#x27;s scenic Coromandel region, a distinct four-bedroom Earthship home composed of recycled tyres and glass bottles awaits new owners. This eco-conscious abode, featuring solar power and passive heating, was constructed in 2015 and has gained popularity following its showcase on Grand Designs New Zealand. Owners Gus Anning and Sarah Rowe are transitioning to the Bay of Islands, seeking individuals who will honor their sustainable dream." data-source="Times of India" data-published="2026-11-27T15:46:16+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/rest-of-world/a-new-zealand-couple-built-a-four-bedroom-home-using-1300-recycled-tyres-and-7000-glass-bottles-after-appearing-on-grand-designs-their-earthship-is-now-looking-for-a-new-owner/articleshow/136227264.cms" target="_blank" rel="noopener">New Zealand Earthship built from 1,300 tyres and 7,000 bottles goes on sale after TV fame</a>
+          <p class="summary">For sale in New Zealand&#x27;s scenic Coromandel region, a distinct four-bedroom Earthship home composed of recycled tyres and glass bottles awaits new owners. This eco-conscious abode, featuring solar power and passive heating, was constructed in 2015 and has gained popularity following its showcase on Grand Designs New Zealand. Owners Gus Anning and Sarah Rowe are transitioning to the Bay of Islands, seeking individuals who will honor their sustainable dream.</p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/rest-of-world/a-new-zealand-couple-built-a-four-bedroom-home-using-1300-recycled-tyres-and-7000-glass-bottles-after-appearing-on-grand-designs-their-earthship-is-now-looking-for-a-new-owner/articleshow/136227264.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">27 Nov, 15:46</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="New Zealand Earthship built from 1,300 tyres and 7,000 bottles goes on sale after TV fame" data-url="https://timesofindia.indiatimes.com/world/rest-of-world/a-new-zealand-couple-built-a-four-bedroom-home-using-1300-recycled-tyres-and-7000-glass-bottles-after-appearing-on-grand-designs-their-earthship-is-now-looking-for-a-new-owner/articleshow/136227264.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.hindustantimes.com/india-news/50-seat-rise-for-every-state-now-in-writing-what-the-new-delimitation-bill-says-full-text-parliament-special-sitting-lok-sabha-women-resrvation-101795794182738.html" data-title="Govt’s delimitation plan: 50% seat hike for every state, Lok Sabha strength ceiling rises to 850" data-summary="Follow the latest breaking news, major developments and agenda-setting stories from India and around the world with the newsdesk at Hindustan Times. Operating round the clock, the desk brings together experienced editors, reporters and correspondents to deliver fast, accurate and contextual reporting across subjects that influence public policy, governance, business, society and international affairs." data-source="Hindustan Times" data-published="2026-11-27T15:43:53+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.hindustantimes.com/india-news/50-seat-rise-for-every-state-now-in-writing-what-the-new-delimitation-bill-says-full-text-parliament-special-sitting-lok-sabha-women-resrvation-101795794182738.html" target="_blank" rel="noopener">Govt’s delimitation plan: 50% seat hike for every state, Lok Sabha strength ceiling rises to 850</a>
+          <p class="summary">Follow the latest breaking news, major developments and agenda-setting stories from India and around the world with the newsdesk at Hindustan Times. Operating round the clock, the desk brings together experienced editors, reporters and correspondents to deliver fast, accurate and contextual reporting across subjects that influence public policy, governance, business, society and international affairs.</p>
+          <span class="source"><a href="https://www.hindustantimes.com/india-news/50-seat-rise-for-every-state-now-in-writing-what-the-new-delimitation-bill-says-full-text-parliament-special-sitting-lok-sabha-women-resrvation-101795794182738.html" target="_blank" rel="noopener">Hindustan Times</a> &middot; <span class="pubdate">27 Nov, 15:43</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="Govt’s delimitation plan: 50% seat hike for every state, Lok Sabha strength ceiling rises to 850" data-url="https://www.hindustantimes.com/india-news/50-seat-rise-for-every-state-now-in-writing-what-the-new-delimitation-bill-says-full-text-parliament-special-sitting-lok-sabha-women-resrvation-101795794182738.html">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://www.bbc.co.uk/news/articles/crkgvjy7q83wo?at_medium=RSS&amp;at_campaign=rss" data-title="India busts cyberfraud and trafficking network rescuing 164 foreigners" data-summary="Police in India say they have uncovered an international cyberfraud and human trafficking operation on the outskirts of capital city Delhi and rescued 92 Indonesian and 72 Malaysian nationals. They were allegedly lured to India with promises of lucrative IT jobs, but forced into cyber crime, according to police. Police say the scheme was exposed after a Malaysian worker managed to escape and revealed the operation." data-source="BBC News" data-published="2026-11-27T10:01:07+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://www.bbc.co.uk/news/articles/crkgvjy7q83wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">India busts cyberfraud and trafficking network rescuing 164 foreigners</a>
+          <p class="summary">Police in India say they have uncovered an international cyberfraud and human trafficking operation on the outskirts of capital city Delhi and rescued 92 Indonesian and 72 Malaysian nationals. They were allegedly lured to India with promises of lucrative IT jobs, but forced into cyber crime, according to police. Police say the scheme was exposed after a Malaysian worker managed to escape and revealed the operation.</p>
+          <span class="source"><a href="https://www.bbc.co.uk/news/articles/crkgvjy7q83wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">BBC News</a> &middot; <span class="pubdate">27 Nov, 10:01</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="India busts cyberfraud and trafficking network rescuing 164 foreigners" data-url="https://www.bbc.co.uk/news/articles/crkgvjy7q83wo?at_medium=RSS&amp;at_campaign=rss">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+        <article class="story" data-id="https://timesofindia.indiatimes.com/world/uk/uks-department-for-work-and-pensions-takes-nearly-all-its-online-services-offline-after-a-cyber-incident-hitting-universal-credit-pip-and-pension-applications-while-benefit-payments-continue/articleshow/136223523.cms" data-title="UK DWP takes online services offline after cyber incident, but benefit payments continue" data-summary="On November 27, 2026, a significant cyber incident struck the UK&#x27;s Department for Work and Pensions, leading to the suspension of online services for Universal Credit and other benefits as a precautionary measure. Although regular payments remained unaffected, users faced difficulties accessing their accounts and processing applications. Cybersecurity professionals cautioned about potential scams aimed at those caught up in this disruption." data-source="Times of India" data-published="2026-11-27T15:36:52+00:00" data-section="India News" data-paywalled="false">
+          <a class="headline" href="https://timesofindia.indiatimes.com/world/uk/uks-department-for-work-and-pensions-takes-nearly-all-its-online-services-offline-after-a-cyber-incident-hitting-universal-credit-pip-and-pension-applications-while-benefit-payments-continue/articleshow/136223523.cms" target="_blank" rel="noopener">UK DWP takes online services offline after cyber incident, but benefit payments continue</a>
+          <p class="summary">On November 27, 2026, a significant cyber incident struck the UK&#x27;s Department for Work and Pensions, leading to the suspension of online services for Universal Credit and other benefits as a precautionary measure. Although regular payments remained unaffected, users faced difficulties accessing their accounts and processing applications. Cybersecurity professionals cautioned about potential scams aimed at those caught up in this disruption.</p>
+          <span class="source"><a href="https://timesofindia.indiatimes.com/world/uk/uks-department-for-work-and-pensions-takes-nearly-all-its-online-services-offline-after-a-cyber-incident-hitting-universal-credit-pip-and-pension-applications-while-benefit-payments-continue/articleshow/136223523.cms" target="_blank" rel="noopener">Times of India</a> &middot; <span class="pubdate">27 Nov, 15:36</span></span>
+          
+          <button type="button" class="share-btn" hidden data-title="UK DWP takes online services offline after cyber incident, but benefit payments continue" data-url="https://timesofindia.indiatimes.com/world/uk/uks-department-for-work-and-pensions-takes-nearly-all-its-online-services-offline-after-a-cyber-incident-hitting-universal-credit-pip-and-pension-applications-while-benefit-payments-continue/articleshow/136223523.cms">&#8599; Share</button>
+          <button type="button" class="bookmark-btn" aria-label="Bookmark this story">&#9734; Bookmark</button>
+        </article>
+      </section>
+  </main>
+  <div id="bookmarks-view" hidden></div>
+  <footer>Built automatically from live RSS feeds &mdash; no AI-generated content.</footer>
+  <script>
+    (function () {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var topic = chip.getAttribute('data-topic');
+          sections.forEach(function (s) {
+            s.hidden = topic !== 'all' && s.getAttribute('data-topic') !== topic;
+          });
+        });
+      });
+
+      if (navigator.share) {
+        Array.prototype.slice.call(document.querySelectorAll('.share-btn')).forEach(function (btn) {
+          btn.hidden = false;
+          btn.addEventListener('click', function () {
+            navigator.share({
+              title: btn.getAttribute('data-title'),
+              url: btn.getAttribute('data-url')
+            }).catch(function () {});
+          });
+        });
+      }
+
+      // Dark mode - persisted, applied before paint on every future load by
+      // the small script at the top of <head>; this handler just flips it.
+      var themeToggle = document.getElementById('theme-toggle');
+      function refreshThemeLabel() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeToggle.textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+      }
+      refreshThemeLabel();
+      themeToggle.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          try { localStorage.setItem('manojTheme', 'light'); } catch (e) {}
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          try { localStorage.setItem('manojTheme', 'dark'); } catch (e) {}
+        }
+        refreshThemeLabel();
+      });
+
+      // Bookmarks - stores each bookmarked story's full content (not just
+      // its link), because tomorrow's rebuild removes the story from this
+      // page entirely; only localStorage will still have it. Shared across
+      // every page on this site (today's edition, any archive date) since
+      // localStorage is per-origin, not per-page.
+      var BOOKMARK_KEY = 'manojBookmarks';
+
+      function getBookmarks() {
+        try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveBookmarks(list) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function updateBookmarksCount() {
+        var el = document.getElementById('bookmarks-count');
+        if (el) el.textContent = getBookmarks().length;
+      }
+      function syncBookmarkButtons() {
+        var bookmarks = getBookmarks();
+        Array.prototype.slice.call(document.querySelectorAll('.story')).forEach(function (story) {
+          var id = story.getAttribute('data-id');
+          var btn = story.querySelector('.bookmark-btn');
+          if (!btn) return;
+          var bookmarked = bookmarks.some(function (b) { return b.id === id; });
+          btn.classList.toggle('active', bookmarked);
+          btn.innerHTML = bookmarked ? '★ Bookmarked' : '☆ Bookmark';
+        });
+        updateBookmarksCount();
+      }
+      function toggleBookmark(story) {
+        var id = story.getAttribute('data-id');
+        var bookmarks = getBookmarks();
+        var idx = -1;
+        for (var i = 0; i < bookmarks.length; i++) {
+          if (bookmarks[i].id === id) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          bookmarks.splice(idx, 1);
+        } else {
+          bookmarks.unshift({
+            id: id,
+            title: story.getAttribute('data-title'),
+            summary: story.getAttribute('data-summary'),
+            source: story.getAttribute('data-source'),
+            published: story.getAttribute('data-published'),
+            section: story.getAttribute('data-section'),
+            paywalled: story.getAttribute('data-paywalled') === 'true'
+          });
+        }
+        saveBookmarks(bookmarks);
+        syncBookmarkButtons();
+        if (!bookmarksView.hidden) renderBookmarksView();
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+        btn.addEventListener('click', function () { toggleBookmark(btn.closest('.story')); });
+      });
+      syncBookmarkButtons();
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+      }
+      function renderBookmarksView() {
+        var bookmarks = getBookmarks();
+        if (!bookmarks.length) {
+          bookmarksView.innerHTML = '<p class="bookmarks-empty">No bookmarks yet &mdash; tap Bookmark on any story to save it here, even after it drops off the daily page.</p>';
+          return;
+        }
+        bookmarksView.innerHTML = bookmarks.map(function (b) {
+          var paywallHtml = b.paywalled ? '<span class="paywall">🔒 May require a subscription</span>' : '';
+          var pub = '';
+          try {
+            pub = new Date(b.published).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          } catch (e) {}
+          return '<article class="story">' +
+            '<span class="pick-topic">' + escapeHtml(b.section) + '</span>' +
+            '<a class="headline" href="' + escapeHtml(b.id) + '" target="_blank" rel="noopener">' + escapeHtml(b.title) + '</a>' +
+            '<p class="summary">' + escapeHtml(b.summary) + '</p>' +
+            '<span class="source">' + escapeHtml(b.source) + (pub ? ' &middot; <span class="pubdate">' + escapeHtml(pub) + '</span>' : '') + '</span>' +
+            paywallHtml +
+            '<button type="button" class="bookmark-btn active" data-bookmark-id="' + escapeHtml(b.id) + '">★ Remove bookmark</button>' +
+            '</article>';
+        }).join('');
+        Array.prototype.slice.call(bookmarksView.querySelectorAll('.bookmark-btn')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-bookmark-id');
+            saveBookmarks(getBookmarks().filter(function (b) { return b.id !== id; }));
+            syncBookmarkButtons();
+            renderBookmarksView();
+          });
+        });
+      }
+
+      var bookmarksToggle = document.getElementById('bookmarks-toggle');
+      var bookmarksView = document.getElementById('bookmarks-view');
+      var mainEl = document.querySelector('main');
+      var filterBarEl = document.querySelector('.filter-bar');
+      var topPicksEl = document.querySelector('.top-picks');
+      var introEl = document.querySelector('.intro');
+      bookmarksToggle.addEventListener('click', function () {
+        var showingBookmarks = !bookmarksView.hidden;
+        bookmarksView.hidden = showingBookmarks;
+        mainEl.hidden = !showingBookmarks;
+        if (filterBarEl) filterBarEl.hidden = !showingBookmarks;
+        if (topPicksEl) topPicksEl.hidden = !showingBookmarks;
+        if (introEl) introEl.hidden = !showingBookmarks;
+        bookmarksToggle.classList.toggle('active', !showingBookmarks);
+        if (!showingBookmarks) renderBookmarksView();
+      });
+    })();
+  </script>
+</body>
+</html>
